@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>JS 001</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>JS 001 Scopes using var keyword</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>8th of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>Javascript scope var index for loop function</dd>
+        <dt>Tested with</dt>
+          <dd>Mozilla Firefox 4.0.1, Fedora Linux</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax js"><pre><span class="nx">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">];</span>
+
+<span class="kd">function</span> <span class="nx">func1</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="nx">key</span> <span class="k">in</span> <span class="nx">a</span><span class="p">)</span>
+        <span class="nx">alert</span><span class="p">(</span><span class="nx">key</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">func2</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nx">alert</span><span class="p">(</span><span class="nx">key</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">func1</span><span class="p">();</span> <span class="c1">// alerts &quot;0&quot;, &quot;1&quot;, &quot;2&quot; and &quot;3&quot;</span>
+<span class="nx">func2</span><span class="p">();</span> <span class="c1">// alerts &quot;3&quot;</span>
+
+
+<span class="nx">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">];</span>
+
+<span class="kd">function</span> <span class="nx">funk1</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">index</span> <span class="k">in</span> <span class="nx">a</span><span class="p">)</span>
+        <span class="nx">alert</span><span class="p">(</span><span class="nx">index</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">funk2</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nx">alert</span><span class="p">(</span><span class="nx">index</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">funk1</span><span class="p">();</span> <span class="c1">// alerts &quot;0&quot;, &quot;1&quot;, &quot;2&quot; and &quot;3&quot;</span>
+<span class="nx">funk2</span><span class="p">();</span> <span class="c1">// ReferenceError: index is not defined</span></pre></figure>
+  </body>
+</html>

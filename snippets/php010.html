@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 010</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 010 goto statement in loop</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>18th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP no goto label into loop</dd>
+        <dt>Tested with</dt>
+          <dd>Not. Copied by PHP documentation.</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nx">goto</span> <span class="nx">loop</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="nv">$j</span><span class="o">=</span><span class="mi">50</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="mi">100</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">while</span> <span class="p">(</span><span class="nv">$j</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">loop</span><span class="o">:</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">echo</span> <span class="s2">&quot;</span><span class="si">$i</span><span class="s2"> = </span><span class="si">$i</span><span class="s2">&quot;</span><span class="p">;</span>
+<span class="cp">?&gt;</span><span class="x"></span></pre></figure>
+
+    <h3 id="output">
+        Output PHP 5.2
+    </h3>
+
+    <figure class="syntax php"><pre class="err"><b>Parse error:</b> syntax error, unexpected T_STRING in <b>test.php</b> on line <b>2</b></pre></figure>
+
+    <h3>
+        Output PHP 5.3
+    </h3>
+
+    <figure class="syntax php"><pre class="err"><b>Fatal error:</b> 'goto' into loop or switch statement is disallowed in <b>test.php</b> on line <b>2</b></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#got01-ref" id="got01">[got01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: goto", <br>
+        <a href="http://php.net/goto#example-135">http://php.net/goto#example-135</a>
+        [accessed 18th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

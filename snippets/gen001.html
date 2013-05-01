@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>General 001</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>General 001 Typing system test</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>31th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>typing system code sample programming languages</dd>
+        <dt>Tested with</dt>
+          <dd>Algol 68 Genie 2.2.0, clojure 1.2.1, gcc 4.5.1, Mozilla Firefox 6, Free Pascal Compiler 2.4.2, PHP 5.2, perl 5.12.3, Python 2.7, ruby 1.8.7, Scala 2.8.1.final, bash 4.1.7(1)-release</dd>
+      </dl>
+    </aside>
+
+    <p>
+        The following code snippets want to demonstrate the different
+        behaviours of various programming languages to a typing system
+        test example.
+    </p>
+
+    <h2 id="algol">
+        Algol (strong, static)
+    </h2>
+
+    <figure class="syntax algol"><pre><span class="c1"># Algol #</span>
+<span class="kt">STRING</span> <span class="nv">a</span> := <span class="s2">"4"</a>;
+
+<span class="k">IF</span> <span class="p">((</span><span class="nv">a</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> AND <span class="p">(</span><span class="nv">a</span> <span class="k">MOD</span> <span class="mi">2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">))</span>
+<span class="k">THEN</span>
+  <span class="nb">print</span> <span class="p">(</span><span class="s2">"Hello World"</span><span class="p">)</span>;
+<span class="k">FI</span>;
+<span class="c1">#IF ((a = 0) AND (a MOD 2 = 0))     #</span>
+<span class="c1">#       1           2               #</span>
+<span class="c1">#a68g: error: 1: dyadic operator REF STRING "=" INT has not been declared #</span>
+<span class="c1">#a68g: error: 2: dyadic operator REF STRING "MOD" INT has not been declared#</span>
+</pre></figure>
+
+    <h2 id="bash">
+        Bash (weak, dynamic)
+    </h2>
+
+    <figure class="syntax bash sh"><pre><span class="c"># bash</span>
+
+<span class="nv">a</span><span class="o">=</span><span class="s2">&quot;4&quot;</span>
+<span class="nv">b</span><span class="o">=</span><span class="k">$((</span><span class="nv">$a</span> <span class="o">%</span> <span class="m">2</span><span class="k">))</span>
+<span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$a&quot;</span> !<span class="o">=</span> 0 -a <span class="s2">&quot;$b&quot;</span> -eq 0 <span class="o">]</span>; <span class="k">then</span>
+<span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;Hello World&quot;</span>;
+<span class="k">fi</span>
+
+<span class="nv">a</span><span class="o">=</span><span class="s2">&quot;4 eggs&quot;</span>
+<span class="nv">b</span><span class="o">=</span><span class="k">$((</span><span class="nv">$a</span> <span class="o">%</span> <span class="m">2</span><span class="k">))</span>
+<span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$a&quot;</span> !<span class="o">=</span> 0 -a <span class="s2">&quot;$b&quot;</span> -eq 0 <span class="o">]</span>; <span class="k">then</span>
+<span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;Hello World 2&quot;</span>;
+<span class="k">fi</span>
+<span class="c"># prints &quot;Hello World&quot;</span>
+<span class="c"># line 10: 4 eggs % 2: syntax error in expression (error token is &quot;eggs % 2&quot;)</span></pre></figure>
+
+    <h2 id="clojure">
+        Clojure (strong, dynamic)
+    </h2>
+
+    <figure class="syntax clojure"><pre><span class="c1">; clojure</span>
+
+<span class="p">(</span><span class="k">def </span><span class="nv">a</span> <span class="s">&quot;4&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">println </span><span class="p">(</span><span class="nb">when </span><span class="p">(</span><span class="nb">and </span><span class="p">(</span><span class="nb">not= </span><span class="nv">a</span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="nb">= </span><span class="p">(</span><span class="nf">mod</span> <span class="nv">a</span> <span class="mi">2</span><span class="p">)</span> <span class="mi">0</span><span class="p">))))</span>
+<span class="c1">; java.lang.String cannot be cast to java.lang.Number</span>
+<span class="c1">; (println &quot;Modulo is only arithmetic&quot;)</span></pre></figure>
+
+    <h2 id="cpp">
+        C++ (unsafe, static)
+    </h2>
+
+    <figure class="syntax cpp"><pre><span class="cp">// C++</span>
+
+<span class="cp">#include &lt;iostream&gt;</span>
+
+<span class="kt">int</span>
+<span class="n">main</span> <span class="p">()</span>
+<span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">a</span> <span class="o">=</span> <span class="s">&quot;4&quot;</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">((</span><span class="n">a</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Hello World&quot;</span><span class="p">;</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">b</span> <span class="o">=</span> <span class="s">&quot;4 eggs&quot;</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">((</span><span class="n">a</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Hello World 2&quot;</span><span class="p">;</span>
+
+  <span class="cm">/* error: no match for &#39;operator!=&#39; in &#39;a != 0&#39; */</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span></pre></figure>
+
+    <h2 id="c">
+        C (weak, static)
+    </h2>
+
+    <figure class="syntax c"><pre><span class="cp">// C</span>
+
+<span class="cp">#include &lt;stdio.h&gt;</span>
+
+<span class="kt">int</span>
+<span class="nf">main</span> <span class="p">()</span>
+<span class="p">{</span>
+  <span class="kt">char</span> <span class="n">a</span> <span class="o">=</span> <span class="sc">&#39;4&#39;</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">printf</span> <span class="p">(</span><span class="s">&quot;Hello World&quot;</span><span class="p">);</span>
+
+  <span class="kt">char</span> <span class="o">*</span><span class="n">b</span> <span class="o">=</span> <span class="s">&quot;4 eggs&quot;</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">((</span><span class="o">*</span><span class="n">b</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="o">*</span><span class="n">b</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">printf</span> <span class="p">(</span><span class="s">&quot;Hello World 2&quot;</span><span class="p">);</span>
+  
+  <span class="c1">// prints &quot;Hello WorldHello World 2&quot;</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span></pre></figure>
+
+    <h2 id="js">
+        Javascript (weak, dynamic)
+    </h2>
+
+    <figure class="syntax javascript js"><pre><span class="c1">// Javascript</span>
+<span class="nx">a</span> <span class="o">=</span> <span class="s2">&quot;4&quot;</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">a</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nx">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">);</span>
+  
+<span class="nx">a</span> <span class="o">=</span> <span class="s2">&quot;4 eggs&quot;</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">a</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nx">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;Hello World 2&quot;</span><span class="p">);</span>
+<span class="c1">// alerts &quot;Hello World&quot;</span></pre></figure>
+
+    <h2 id="lua">
+        Lua (strong, dynamic)
+    </h2>
+
+    <figure class="syntax lua"><pre><span class="c1">-- Lua</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="s">4&quot;</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="s">Hello World&quot;</span><span class="p">)</span>
+<span class="k">else</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="k">end</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="s">4&quot;</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="s">Hello World&quot;</span><span class="p">)</span>
+<span class="k">else</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="k">end</span>
+<span class="c1">-- Prints nothing.</span></pre></figure>
+
+    <h2 id="pascal">
+        Pascal (strong, static)
+    </h2>
+
+    <figure class="syntax pascal"><pre><span class="cm">(* pascal *)</span>
+<span class="k">program</span> <span class="n">main</span><span class="o">;</span>
+<span class="k">const</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="s">&#39;4&#39;</span><span class="o">;</span> 
+
+<span class="k">begin</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">and</span> <span class="p">(</span><span class="n">a</span> <span class="k">mod</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">then</span> 
+        <span class="nb">writeln</span><span class="p">(</span><span class="s">&#39;Hello World&#39;</span><span class="p">)</span><span class="o">;</span>
+    <span class="k">end</span><span class="o">;</span>
+<span class="k">end</span><span class="o">.</span>
+<span class="cm">(* Error: Incompatible types: got &quot;Char&quot; expected &quot;Int64&quot; *)</span></pre></figure>
+
+    <h2 id="php">
+        PHP (weak, dynamic)
+    </h2>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="c1">// PHP</span>
+    <span class="nv">$a</span> <span class="o">=</span> <span class="s2">&quot;4&quot;</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$a</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nv">$a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">);</span>
+
+    <span class="nv">$a</span> <span class="o">=</span> <span class="s2">&quot;4 eggs&quot;</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$a</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nv">$a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Hello World 2&quot;</span><span class="p">);</span>
+    <span class="c1">// prints &quot;Hello WorldHello World 2&quot;</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h2 id="perl">
+        Perl (weak, static/dynamic)
+    </h2>
+
+    <figure class="syntax perl"><pre><span class="c1"># perl</span>
+<span class="nv">$a</span> <span class="o">=</span> <span class="s">&#39;4&#39;</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$a</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nv">$a</span> <span class="nv">%</span> <span class="nv">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">print</span> <span class="s">&#39;Hello World&#39;</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nv">$a</span> <span class="o">=</span> <span class="s">&#39;4 eggs&#39;</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$a</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nv">$a</span> <span class="nv">%</span> <span class="nv">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">print</span> <span class="s">&#39;Hello World 2&#39;</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="c1"># prints &quot;Hello WorldHello World 2&quot;</span></pre></figure>
+
+    <h2 id="python">
+        Python (strong, dynamic)
+    </h2>
+
+    <figure class="syntax python"><pre><span class="c"># python</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="s">&quot;4&quot;</span>
+<span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="s">&quot;4 eggs&quot;</span>
+<span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="c"># (line 2) TypeError: not all arguments converted during string formatting</span></pre></figure>
+
+    <h2 id="ruby">
+        Ruby (strong, dynamic)
+    </h2>
+
+    <figure class="syntax ruby"><pre><span class="c1"># ruby</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="s2">&quot;4&quot;</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+<span class="k">then</span>
+  <span class="nb">puts</span> <span class="s2">&quot;Hello World&quot;</span>
+<span class="k">end</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="s2">&quot;4 eggs&quot;</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+<span class="k">then</span>
+  <span class="nb">puts</span> <span class="s2">&quot;Hello World 2&quot;</span>
+<span class="k">end</span>
+<span class="c1"># prints nothing</span></pre></figure>
+
+    <h2 id="scala">
+        Scala (strong, static)
+    </h2>
+
+    <figure class="syntax scala"><pre><span class="c1">// Scala</span>
+<span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="s">&quot;4&quot;</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">a</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
+    <span class="n">println</span><span class="o">(</span><span class="s">&quot;Hello World&quot;</span><span class="o">);</span>
+<span class="c1">//:3:error: value % is not a member of java.lang.String</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#dyn01-ref" id="dyn01">[dyn01]</a>
+      </dt>
+      <dd>Wikipedia, "Type system", <br>
+        <a href="http://en.wikipedia.org/wiki/Type_system">http://en.wikipedia.org/wiki/Type_system</a>
+        [accessed 31th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

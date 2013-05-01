@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>TeX 005</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>TeX 005 Leads to symbol with vertical bar</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>18th of Jul 2012</dd>
+        <dt>Tags</dt>
+          <dd>LaTeX kerning \leadsto latexsym vertical bar</dd>
+        <dt>Tested with</dt>
+          <dd>LuaTeX-0.71.0, XeTeX-3.1415926-2.2-0.9995.2 and pdfTeX-3.1415926-1.40.10-2.2 always with LaTeX2e &lt;2009/09/24&gt;</dd>
+        <dt>Compiled using</dt>
+          <dd>pdflatex tex005.tex</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax tex"><pre><span class="k">\documentclass</span><span class="nb">{</span>article<span class="nb">}</span>
+<span class="k">\usepackage</span><span class="nb">{</span>amsmath<span class="nb">}</span>
+<span class="k">\usepackage</span><span class="nb">{</span>amssymb<span class="nb">}</span>
+<span class="k">\usepackage</span><span class="nb">{</span>latexsym<span class="nb">}</span>
+
+<span class="c">% text environment</span>
+<span class="k">\def\tmleadsto</span><span class="nb">{</span><span class="k">\lower</span> -0.7pt<span class="k">\hbox</span><span class="nb">{</span><span class="s">$</span><span class="nv">\shortmid</span><span class="s">$</span><span class="nb">}</span><span class="s">$</span><span class="nv">\mkern</span><span class="o">-</span><span class="m">2</span><span class="nb">mu</span><span class="nv">\leadsto</span><span class="s">$</span><span class="nb">}</span>
+<span class="k">\def\dtmleadsto</span><span class="nb">{</span><span class="s">$</span><span class="nb">{</span><span class="nv">\shortmid</span><span class="nb">}</span><span class="nv">\mkern</span><span class="o">-</span><span class="m">7</span><span class="nb">mu</span><span class="nv">\leadsto</span><span class="s">$</span><span class="nb">}</span>
+
+<span class="c">% math environment</span>
+<span class="k">\def\mleadsto</span><span class="nb">{{</span><span class="k">\raisebox</span><span class="nb">{</span>0.7pt<span class="nb">}{</span><span class="s">$</span><span class="nv">\shortmid</span><span class="s">$</span><span class="nb">}}</span><span class="k">\mkern</span>-6.9mu<span class="k">\leadsto</span><span class="nb">}</span>
+<span class="k">\def\dmleadsto</span><span class="nb">{{</span><span class="k">\shortmid</span><span class="nb">}</span><span class="k">\mkern</span>-6.9mu<span class="k">\leadsto</span><span class="nb">}</span>
+
+<span class="c">% example usage</span>
+<span class="k">\begin</span><span class="nb">{</span>document<span class="nb">}</span>
+<span class="sb">\[</span><span class="nb"></span>
+<span class="nb">  </span><span class="nv">\begin</span><span class="nb">{pmatrix}</span>
+<span class="nb">     </span><span class="m">2</span><span class="nb"> &amp;  </span><span class="m">1</span><span class="nb"> &amp; </span><span class="o">-</span><span class="m">1</span><span class="nb"> </span><span class="nv">\\</span><span class="nb"></span>
+<span class="nb">    </span><span class="o">-</span><span class="m">3</span><span class="nb"> &amp; </span><span class="o">-</span><span class="m">1</span><span class="nb"> &amp;  </span><span class="m">2</span><span class="nb"> </span><span class="nv">\\</span><span class="nb"></span>
+<span class="nb">    </span><span class="o">-</span><span class="m">2</span><span class="nb"> &amp;  </span><span class="m">1</span><span class="nb"> &amp;  </span><span class="m">2</span><span class="nb"></span>
+<span class="nb">  </span><span class="nv">\end</span><span class="nb">{pmatrix}</span>
+<span class="nb">  </span><span class="nv">\mleadsto</span><span class="nb"></span>
+<span class="nb">  </span><span class="nv">\begin</span><span class="nb">{pmatrix}</span>
+<span class="nb">    </span><span class="m">1</span><span class="nb"> &amp; </span><span class="nv">\frac</span><span class="m">13</span><span class="nb"> &amp; </span><span class="nv">\frac</span><span class="nb">{</span><span class="o">-</span><span class="m">2</span><span class="nb">}</span><span class="m">3</span><span class="nb"> </span><span class="nv">\\</span><span class="nb"></span>
+<span class="nb">    </span><span class="m">0</span><span class="nb"> &amp; </span><span class="m">1</span><span class="nb"> &amp; </span><span class="nv">\frac</span><span class="m">25</span><span class="nb"> </span><span class="nv">\\</span><span class="nb"></span>
+<span class="nb">    </span><span class="m">0</span><span class="nb"> &amp; </span><span class="m">0</span><span class="nb"> &amp; </span><span class="m">1</span><span class="nb"></span>
+<span class="nb">  </span><span class="nv">\end</span><span class="nb">{pmatrix}</span>
+<span class="nb">  </span><span class="nv">\dmleadsto</span><span class="nb"></span>
+<span class="nb">  </span><span class="nv">\begin</span><span class="nb">{pmatrix}</span>
+<span class="nb">    </span><span class="m">1</span><span class="nb"> &amp; </span><span class="m">0</span><span class="nb"> &amp; </span><span class="m">0</span><span class="nb"> </span><span class="nv">\\</span><span class="nb"></span>
+<span class="nb">    </span><span class="m">0</span><span class="nb"> &amp; </span><span class="m">1</span><span class="nb"> &amp; </span><span class="m">0</span><span class="nb"> </span><span class="nv">\\</span><span class="nb"></span>
+<span class="nb">    </span><span class="m">0</span><span class="nb"> &amp; </span><span class="m">0</span><span class="nb"> &amp; </span><span class="m">1</span><span class="nb"></span>
+<span class="nb">  </span><span class="nv">\end</span><span class="nb">{pmatrix}</span>
+<span class="s">\]</span>
+
+And we can use <span class="k">\tmleadsto</span><span class="nb">{}</span> in text mode. Or the dirty <span class="k">\dtmleadsto</span><span class="nb">{}</span> version.
+
+<span class="k">\end</span><span class="nb">{</span>document<span class="nb">}</span>
+</pre></figure>
+
+    <h3 id="notes">
+      Notes
+    </h3>
+
+    <ul>
+      <li>
+        <code>\leadsto</code> is defined by LaTeX. So it does not work
+        for plain TeX.
+      </li>
+      <li>
+        I could not find any counter-examples,
+        but this symbol might be fontsize-dependent
+      </li>
+      <li>
+        Please be aware, that this snippet uses the latexsym package.
+        The <code>\leadsto</code> symbol of amsmath does look differently.
+      </li>
+    </ul>
+  </body>
+</html>

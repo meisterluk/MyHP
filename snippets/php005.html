@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 005</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 005 error message of type hinting</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>14th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP design flaws catchable type hinting string given</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="k">function</span> <span class="nf">foo</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$bar</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">echo</span> <span class="nv">$bar</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">foo</span><span class="p">(</span><span class="s1">&#39;bazbar&#39;</span><span class="p">);</span>
+<span class="cp">?&gt;</span><span class="x"></span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax php"><pre class="err"><b>Catchable fatal error:</b> Argument 1 passed to foo() must be an instance of string,
+string given, called in test.php on line 7 and defined in <b>test.php</b> on line <b>2</b></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#hin01-ref" id="hin01">[hin01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Type Hinting", <br>
+        <a href="http://php.net/manual/en/language.oop5.typehinting.php">http://php.net/manual/en/language.oop5.typehinting.php</a>
+        [accessed 14th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

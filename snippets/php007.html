@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 007</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 007 class property declaration</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>14th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP class properties attributes operations array design flaw</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="k">function</span> <span class="nf">foo</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="s1">&#39;bar&#39;</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">class</span> <span class="nc">Format</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="nv">$valid1</span>   <span class="o">=</span> <span class="mi">4</span><span class="p">;</span> <span class="c1">// correct</span>
+        <span class="k">public</span> <span class="nv">$valid2</span>   <span class="o">=</span> <span class="mf">4.5</span><span class="p">;</span> <span class="c1">// correct</span>
+        <span class="k">public</span> <span class="nv">$valid3</span>   <span class="o">=</span> <span class="s2">&quot;foobar&quot;</span><span class="p">;</span> <span class="c1">// correct</span>
+        <span class="k">public</span> <span class="nv">$invalid4</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">5</span><span class="p">;</span> <span class="c1">// Parse error</span>
+        <span class="k">public</span> <span class="nv">$invalid5</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="s2">&quot; foobar &quot;</span><span class="p">);</span> <span class="c1">// Parse error</span>
+        <span class="k">public</span> <span class="nv">$invalid6</span> <span class="o">=</span> <span class="nx">foo</span><span class="p">();</span> <span class="c1">// Parse error</span>
+        <span class="k">public</span> <span class="nv">$valid7</span>   <span class="o">=</span> <span class="k">array</span><span class="p">();</span> <span class="c1">// correct (!)</span>
+        <span class="k">public</span> <span class="nv">$invalid8</span> <span class="o">=</span> <span class="s1">&#39;&lt;label title=&quot;A simple label&quot;&gt;&#39;</span><span class="o">.</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span> <span class="c1">// Parse error</span>
+    <span class="p">}</span>
+<span class="cp">?&gt;</span><span class="x"></span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax php"><pre class="err"><b>Parse error:</b> syntax error, unexpected '+', expecting ',' or ';' in <b>test.php</b> on line <b>8</b></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#pro01-ref" id="pro01">[pro01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Properties", <br>
+        <a href="http://php.net/manual/en/language.oop5.properties.php">http://php.net/manual/en/language.oop5.properties.php</a>
+        [accessed 14th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

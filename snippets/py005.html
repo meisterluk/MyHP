@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>Python 005</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Python 005 dict.get and dict.pop default parameters</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>MeisterLuk, segfaulthunter</dd>
+        <dt>Date</dt>
+          <dd>25th of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>Python dictionary pop get default parameters</dd>
+      </dl>
+    </aside>
+
+    <h2 id="input">
+        Input
+    </h2>
+
+    <figure class="syntax python"><pre><span class="c">#!/usr/bin/env python</span>
+
+<span class="c"># ACCESSING</span>
+<span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+
+<span class="c"># valid</span>
+<span class="k">print</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>             <span class="c"># 2</span>
+<span class="k">print</span> <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>         <span class="c"># 2</span>
+<span class="k">print</span> <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>  <span class="c"># 2</span>
+
+<span class="c"># invalid</span>
+<span class="k">print</span> <span class="n">a</span><span class="p">[</span><span class="mi">99</span><span class="p">]</span>            <span class="c"># KeyError: 99</span>
+<span class="k">print</span> <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">99</span><span class="p">)</span>        <span class="c"># None</span>
+<span class="k">print</span> <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span> <span class="c"># False</span>
+
+<span class="c"># DELETION</span>
+<span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+
+<span class="c"># valid</span>
+<span class="k">del</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>               <span class="c"># None</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="n">a</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>               <span class="c"># 2</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="n">a</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>        <span class="c"># 2</span>
+
+<span class="c">#invalid</span>
+<span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="k">del</span> <span class="n">a</span><span class="p">[</span><span class="mi">99</span><span class="p">]</span>              <span class="c"># KeyError: 99</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="n">a</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">99</span><span class="p">)</span>              <span class="c"># KeyError: 99</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="n">a</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>       <span class="c"># False</span>
+
+<span class="c"># Inconsistency:</span>
+<span class="c">#   Why does dict.pop(undefined) does not default to None like dict.get?</span>
+<span class="c">#   Even though it is documented, it can be considered to be an inconsistency.</span>
+<span class="c">#</span>
+<span class="c">#   &gt;&gt;&gt; help(dict.get)</span>
+<span class="c">#       [...] else d.  d defaults to None.</span>
+<span class="c">#   &gt;&gt;&gt; help(dict.pop)</span>
+<span class="c">#       [...] If key is not found, d is returned if given, otherwise KeyError is raised</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#dic01-ref" id="dic01">[dic01]</a>
+      </dt>
+      <dd>Python Software Foundation, "5. Built-in Types &mdash; Python v2.7.2 documentation", <br>
+        <a href="http://docs.python.org/library/stdtypes.html#mapping-types-dict">http://docs.python.org/library/stdtypes.html#mapping-types-dict</a>
+        [accessed 25th Sep 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

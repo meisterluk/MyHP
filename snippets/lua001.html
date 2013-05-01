@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <title>Lua 001</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Lua 001 Arbitrary number of arguments</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>29th of Feb 2011</dd>
+        <dt>Tags</dt>
+          <dd>Lua parameters nil arbitrary number variadic function</dd>
+        <dt>Tested with</dt>
+          <dd>Lua 5.1.4</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax lua"><pre><span class="n">f1</span> <span class="o">=</span> <span class="k">function</span> <span class="p">(</span><span class="n">param1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">param1</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="n">f2</span> <span class="o">=</span> <span class="k">function</span> <span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="n">f3</span> <span class="o">=</span> <span class="k">function</span> <span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">,</span> <span class="o">..</span><span class="p">.)</span>
+    <span class="c1">-- does not work:</span>
+    <span class="c1">-- print(type(...))</span>
+    <span class="c1">-- http://lua-users.org/wiki/VarargTheSecondClassCitizen</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">,</span> <span class="o">..</span><span class="p">.)</span>
+<span class="k">end</span>
+
+<span class="n">f1</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1">-- 0</span>
+<span class="n">f1</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1">-- 0</span>
+<span class="n">f1</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1">-- 0</span>
+
+<span class="n">f2</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1">-- 0, nil</span>
+<span class="n">f2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1">-- 0, 1</span>
+<span class="n">f2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1">-- 0, 1</span>
+
+<span class="n">f3</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1">-- 0, nil</span>
+<span class="n">f3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1">-- 0, 1</span>
+<span class="n">f3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1">-- 0, 1, 2</span>
+<span class="n">f3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="c1">-- 0, 1, 2, 3</span>
+<span class="n">f3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="c1">-- 0, 1, 2, 3, 4</span>
+
+<span class="c1">-- I dislike the idea of accepting an arbitrary number of parameters.</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">0
+0
+0
+0       nil
+0       1
+0       1
+0       nil
+0       1
+0       1       2
+0       1       2       3
+0       1       2       3       4</span></pre></figure>
+  </body>
+</html>

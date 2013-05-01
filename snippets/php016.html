@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 016</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 016 optional code block parentheses</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>18th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP inconsistent parentheses code block function</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">true</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="mi">2</span><span class="p">;</span>
+
+    <span class="k">foreach</span> <span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">as</span> <span class="nv">$i</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="mi">3</span><span class="p">;</span>
+
+    <span class="k">function</span> <span class="nf">x</span><span class="p">()</span>
+        <span class="k">echo</span> <span class="mi">4</span><span class="p">;</span>
+
+    <span class="nx">x</span><span class="p">();</span>
+<span class="cp">?&gt;</span><span class="x"></span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax php"><pre class="err"><b>Parse error:</b> syntax error, unexpected T_ECHO, expecting '{' in <b>test.php</b> on line <b>12</b></pre></figure>
+
+    <h3 id="output">
+        Expected Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">12223334</span></pre></figure>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 021</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 021 associative and numerical indizes</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>24th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP array associative numeric indizes iteration</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nb">header</span><span class="p">(</span><span class="s1">&#39;Content-type: text/plain&#39;</span><span class="p">);</span>
+
+    <span class="nv">$a</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
+    <span class="nv">$b</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">0</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">=&gt;</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span> <span class="o">=&gt;</span> <span class="mi">3</span><span class="p">);</span>
+
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$a</span> <span class="k">as</span> <span class="nv">$key</span> <span class="o">=&gt;</span> <span class="nv">$value</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="nv">$key</span><span class="o">.</span><span class="s1">&#39; =&gt; &#39;</span><span class="o">.</span><span class="nv">$value</span><span class="o">.</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$b</span> <span class="k">as</span> <span class="nv">$key</span> <span class="o">=&gt;</span> <span class="nv">$value</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="nv">$key</span><span class="o">.</span><span class="s1">&#39; =&gt; &#39;</span><span class="o">.</span><span class="nv">$value</span><span class="o">.</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">0 =&gt; 1
+1 =&gt; 2
+2 =&gt; 3
+0 =&gt; 1
+1 =&gt; 2
+2 =&gt; 3</pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#arr01-ref" id="arr01">[arr01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Arrays", <br>
+        <a href="http://us2.php.net/manual/en/language.types.array.php">http://us2.php.net/manual/en/language.types.array.php</a>
+        [accessed 24th Aug 2011].
+      </dd>
+
+    </dl>
+  </body>
+</html>

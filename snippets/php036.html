@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 036</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 036 References in class properties</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP class properties references</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="k">class</span> <span class="nc">Foo</span>
+    <span class="p">{</span>
+        <span class="k">protected</span> <span class="nv">$array</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$_GET</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">class</span> <span class="nc">Bar</span>
+    <span class="p">{</span>
+        <span class="k">protected</span> <span class="nv">$array</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+        <span class="k">public</span> <span class="nx">__construct</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">array</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$_GET</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        HTML Output
+    </h3>
+
+    <figure class="syntax php"><pre class="err"><b>Parse error:</b> syntax error, unexpected '&amp;', expecting ')' in <b>test.php</b> on line <b>4</b></pre></figure>
+  </body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 011</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 011 Unicode incapability</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>18th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP unicode strings multibyte umlauts strlen</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+  <span class="k">echo</span> <span class="p">(</span><span class="nx">int</span><span class="p">)(</span><span class="nb">strlen</span><span class="p">(</span><span class="s1">&#39;ä&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="nb">strlen</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">));</span>
+<span class="cp">?&gt;</span><span class="x"></span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">0</span></pre></figure>
+
+    <h3 id="output">
+        Expected Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">1</span></pre></figure>
+
+
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#mbs01-ref" id="mbs01">[mbs01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Multibyte string", <br>
+        <a href="http://us2.php.net/manual/en/book.mbstring.php">http://us2.php.net/manual/en/book.mbstring.php</a>
+        [accessed 18th Aug 2011].
+      </dd>
+
+      <dt class="index">
+        <a href="#str01-ref" id="str01">[str01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: strlen", <br>
+        <a href="http://us2.php.net/strlen">http://us2.php.net/strlen</a>
+        [accessed 18th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

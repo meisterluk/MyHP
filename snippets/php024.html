@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 024</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 024 switch statement loose comparison</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP switch case type comparison</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="k">switch</span> <span class="p">(</span><span class="s1">&#39;hw&#39;</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">case</span> <span class="k">true</span><span class="o">:</span> <span class="k">die</span><span class="p">(</span><span class="s1">&#39;true&#39;</span><span class="p">);</span>
+        <span class="k">case</span> <span class="k">false</span><span class="o">:</span> <span class="k">die</span><span class="p">(</span><span class="s1">&#39;false&#39;</span><span class="p">);</span>
+        <span class="k">case</span> <span class="k">NULL</span><span class="o">:</span> <span class="k">die</span><span class="p">(</span><span class="s1">&#39;NULL&#39;</span><span class="p">);</span>
+        <span class="k">case</span> <span class="s1">&#39;hw&#39;</span><span class="o">:</span> <span class="k">die</span><span class="p">(</span><span class="s1">&#39;Hello World&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">true</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#swi01-ref" id="swi01">[swi01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: switch", <br>
+        <a href="http://us2.php.net/manual/en/control-structures.switch.php">http://us2.php.net/manual/en/control-structures.switch.php</a>
+        [accessed 27th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

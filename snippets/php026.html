@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 026</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 026 Static call of non-static method</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>5th of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP static method call </dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nb">error_reporting</span><span class="p">(</span><span class="k">E_ALL</span><span class="p">);</span>
+
+    <span class="c1">//</span>
+    <span class="c1">// Here, it&#39;s my mistake to call Bar-&gt;cmp statically even though</span>
+    <span class="c1">// cmp is bound the class Bar. Because of compatibility issues,</span>
+    <span class="c1">// PHP will try to access a constant &quot;self&quot;.</span>
+    <span class="c1">//</span>
+    <span class="c1">//     Notice: Use of undefined constant self - assumed &#39;self&#39; in</span>
+    <span class="c1">//     test.php on line 29</span>
+    <span class="c1">//</span>
+    <span class="c1">// The fun factor is the error message trying to use &quot;self&quot; instead</span>
+    <span class="c1">// of &quot;self&quot;. E_STRICT in error_reporting will tell the real problem:</span>
+    <span class="c1">//</span>
+    <span class="c1">//     Strict Standards: Non-static method Bar::cmp() cannot be</span>
+    <span class="c1">//     called statically, assuming $this from compatible context Bar</span>
+    <span class="c1">//     in test.php on line 29</span>
+    <span class="c1">//</span>
+
+    <span class="k">class</span> <span class="nc">Bar</span>
+    <span class="p">{</span>
+        <span class="k">protected</span> <span class="k">function</span> <span class="nf">cmp</span><span class="p">(</span><span class="nv">$item1</span><span class="p">,</span> <span class="nv">$item2</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nb">strcmp</span><span class="p">(</span><span class="nv">$item2</span><span class="p">,</span> <span class="nv">$item1</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">sort</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$list</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nb">usort</span><span class="p">(</span><span class="nv">$list</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="s1">&#39;cmp&#39;</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nv">$list</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">13</span><span class="p">);</span>
+    <span class="nv">$b</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Bar</span><span class="p">();</span>
+    <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">sort</span><span class="p">(</span><span class="nv">$list</span><span class="p">);</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nv">$list</span><span class="p">);</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        HTML Output
+    </h3>
+
+    <figure class="syntax"><pre><b>Notice:</b> Use of undefined constant self - assumed 'self' in <b>test.php</b> on line <b>29</b>
+array(5) { [0]=&gt; int(7) [1]=&gt; int(4) [2]=&gt; int(13) [3]=&gt; int(10) [4]=&gt; int(1) }</pre></figure>
+  </body>
+</html>

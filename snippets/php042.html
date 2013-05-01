@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 042</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 042 Benchmark</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>17th of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP global static constant instance object access write benchmark</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nb">error_reporting</span><span class="p">(</span><span class="k">E_ALL</span> <span class="o">|</span> <span class="nx">E_STRICT</span><span class="p">);</span>
+    <span class="nb">ini_set</span><span class="p">(</span><span class="s1">&#39;display_errors&#39;</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+
+    <span class="c1">// CONFIG -----------------------------------------------------------------</span>
+
+    <span class="nv">$trials</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">;</span>
+
+    <span class="c1">// DEFINITIONS ------------------------------------------------------------</span>
+
+    <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">function</span> <span class="nf">func</span><span class="p">()</span> <span class="p">{}</span>
+    <span class="k">function</span> <span class="nf">func_p</span><span class="p">(</span><span class="nv">$a</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="k">function</span> <span class="nf">func_r</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">function</span> <span class="nf">func_pr</span><span class="p">(</span><span class="nv">$a</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">function</span> <span class="nf">func_prs</span><span class="p">(</span><span class="nv">$a</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nv">$a</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">class</span> <span class="nc">A</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">method</span><span class="p">()</span> <span class="p">{}</span>
+    <span class="p">}</span>
+
+    <span class="k">class</span> <span class="nc">B</span> <span class="k">extends</span> <span class="nx">A</span>
+    <span class="p">{</span>
+    <span class="p">}</span>
+
+    <span class="k">class</span> <span class="nc">C</span>
+    <span class="p">{</span>
+        <span class="k">static</span> <span class="k">public</span> <span class="nv">$a</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">class</span> <span class="nc">D</span>
+    <span class="p">{</span>
+        <span class="k">const</span> <span class="no">A</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">class</span> <span class="nc">E</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="nv">$a</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">class</span> <span class="nc">F</span> <span class="k">extends</span> <span class="nx">E</span>
+    <span class="p">{</span>
+    <span class="p">}</span>
+
+    <span class="k">class</span> <span class="nc">G</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="nv">$a</span><span class="p">;</span>
+
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">getA</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span> <span class="p">}</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">setA</span><span class="p">(</span><span class="nv">$a</span><span class="p">)</span> <span class="p">{</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="nv">$a</span><span class="p">;</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">class</span> <span class="nc">H</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">read_global</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="k">global</span> <span class="nv">$v_global</span><span class="p">;</span>
+            <span class="nv">$v_global</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// LOOPS ------------------------------------------------------------------</span>
+
+    <span class="k">function</span> <span class="nf">loop_overhead</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// VARIABLES --------------------------------------------------------------</span>
+
+    <span class="k">function</span> <span class="nf">read_local</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">// &quot;$var;&quot; will not access the file as far as the interpreter will optimize it</span>
+        <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>
+            <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>
+            <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>
+            <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>
+            <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>    <span class="nv">$v_local</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">read_global</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">global</span> <span class="nv">$v_global</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>
+            <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>
+            <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>
+            <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>
+            <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>   <span class="nv">$v_global</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">read_superglobal</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> 
+            <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span>
+            <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> 
+            <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> 
+            <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> 
+            <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> 
+            <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span>
+            <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> 
+            <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">];</span> 
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">write_local</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_local</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">write_global</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">global</span> <span class="nv">$v_global</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$v_global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">write_superglobal</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+            <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+            <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+            <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+            <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+            <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+            <span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// FUNCTION CALLS BUILTINS ------------------------------------------------</span>
+
+    <span class="k">function</span> <span class="nf">call_builtin_with_parameter</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">call_builtin_with_parameter_return_value</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span> <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nb">intval</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// FUNCTION CALLS CUSTOM --------------------------------------------------</span>
+
+    <span class="k">function</span> <span class="nf">call_function</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>
+            <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>
+            <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>
+            <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>
+            <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>    <span class="nx">func</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">call_function_with_parameter</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">func_p</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">call_function_with_return_value</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_r</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">call_function_with_parameter_with_return_value</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_pr</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">call_function_with_parameter_with_same_return_value</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="nv">$a</span> <span class="o">=</span> <span class="nx">func_prs</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// CLASSES AND OBJECTS ----------------------------------------------------</span>
+
+    <span class="k">function</span> <span class="nf">read_static</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>
+            <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>
+            <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>
+            <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>
+            <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>    <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">write_static</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">C</span><span class="o">::</span><span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">read_const</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>
+            <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>
+            <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>
+            <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>
+            <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>    <span class="nx">D</span><span class="o">::</span><span class="na">A</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">read_property</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$e</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">E</span><span class="p">();</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>
+            <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>
+            <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>
+            <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>
+            <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>   <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">write_property</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$e</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">E</span><span class="p">();</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">call_getter</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$g</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">G</span><span class="p">();</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span>
+            <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span>
+            <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span>
+            <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span>
+            <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">getA</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">call_setter</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$g</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">G</span><span class="p">();</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+            <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+            <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+            <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+            <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">setA</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">read_global_in_method</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$h</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">H</span><span class="p">();</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>  <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="na">read_global</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">call_superclass_method</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$b</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">B</span><span class="p">();</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>
+            <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>
+            <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>
+            <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>
+            <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>
+            <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>  <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>
+            <span class="nv">$b</span><span class="o">-&gt;</span><span class="na">method</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">write_inherited_property</span><span class="p">(</span><span class="nv">$iters</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$f</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">F</span><span class="p">();</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$iters</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">measure</span><span class="p">(</span><span class="nv">$func</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">global</span> <span class="nv">$trials</span><span class="p">;</span>
+        <span class="k">echo</span> <span class="nb">str_pad</span><span class="p">(</span><span class="nv">$func</span><span class="o">.</span><span class="s1">&#39;: &#39;</span><span class="p">,</span> <span class="mi">60</span><span class="p">);</span>
+        <span class="nv">$start</span> <span class="o">=</span> <span class="nb">microtime</span><span class="p">(</span><span class="k">true</span><span class="p">);</span>
+        <span class="nv">$func</span><span class="p">(</span><span class="nv">$trials</span><span class="p">);</span>
+        <span class="k">echo</span> <span class="nb">number_format</span><span class="p">(</span><span class="nb">microtime</span><span class="p">(</span><span class="k">true</span><span class="p">)</span> <span class="o">-</span> <span class="nv">$start</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nb">header</span><span class="p">(</span><span class="s1">&#39;Content-type: text/plain&#39;</span><span class="p">);</span>
+
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;loop_overhead&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;read_local&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;read_global&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;read_superglobal&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;write_local&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;write_global&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;write_superglobal&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;call_builtin_with_parameter&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;call_builtin_with_parameter_return_value&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;call_function&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;call_function_with_parameter&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;call_function_with_return_value&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;call_function_with_parameter_with_return_value&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;call_function_with_parameter_with_same_return_value&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;read_static&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;write_static&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;read_const&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;read_property&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;write_property&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;call_getter&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;call_setter&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;read_global_in_method&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;call_superclass_method&#39;</span><span class="p">);</span>
+    <span class="nx">measure</span><span class="p">(</span><span class="s1">&#39;write_inherited_property&#39;</span><span class="p">);</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">loop_overhead:                                              0.00
+read_local:                                                 0.00
+read_global:                                                0.00
+read_superglobal:                                           0.05
+write_local:                                                0.01
+write_global:                                               0.01
+write_superglobal:                                          0.06
+call_builtin_with_parameter:                                0.16
+call_builtin_with_parameter_return_value:                   0.19
+call_function:                                              0.10
+call_function_with_parameter:                               0.17
+call_function_with_return_value:                            0.11
+call_function_with_parameter_with_return_value:             0.18
+call_function_with_parameter_with_same_return_value:        0.17
+read_static:                                                0.06
+write_static:                                               0.07
+read_const:                                                 0.05
+read_property:                                              0.04
+write_property:                                             0.07
+call_getter:                                                0.15
+call_setter:                                                0.26
+read_global_in_method:                                      0.21
+call_superclass_method:                                     0.13
+write_inherited_property:                                   0.07
+</span></pre></figure>
+
+    <h3 id="testrun2">
+        Second run (local shell, iters=1000000)
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">loop_overhead:                                              0.04
+read_local:                                                 0.06
+read_global:                                                0.05
+write_local:                                                0.47
+write_global:                                               0.38
+write_superglobal:                                          2.43
+call_builtin_with_parameter:                                4.69
+call_builtin_with_parameter_return_value:                   4.96
+call_function:                                              1.80
+call_function_with_parameter:                               2.90
+call_function_with_return_value:                            2.61
+call_function_with_parameter_with_return_value:             3.77
+call_function_with_parameter_with_same_return_value:        3.48
+read_static:                                                2.75
+write_static:                                               3.12
+read_const:                                                 1.96
+read_property:                                              1.78
+write_property:                                             2.39
+call_getter:                                                4.80
+call_setter:                                                6.26
+read_global_in_method:                                      5.28
+call_superclass_method:                                     3.17
+write_inherited_property:                                   2.48
+</span></pre></figure>
+
+    <p>
+      Inspiration for this benchmark was <a href="#com01" id="com01-ref">[com01]</a>.
+    </p>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#com01-ref" id="com01">[com01]</a>
+      </dt>
+
+      <dd>Raymond Hettinger, "Compare speeds of different kinds of access to variables (Python recipe)", <br>
+        <a href="http://code.activestate.com/recipes/577834-compare-speeds-of-different-kinds-of-access-to-var/">http://code.activestate.com/recipes/577834-compare-speeds-of-different-kinds-of-access-to-var/</a>
+        [accessed 17th Sep 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

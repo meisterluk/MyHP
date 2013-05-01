@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 023</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 023 list() in foreach</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>25th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP list on-the-fly unpacking foreach loop</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nv">$a</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="k">array</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">));</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$a</span> <span class="k">as</span> <span class="k">list</span><span class="p">(</span><span class="nv">$b</span><span class="p">,</span> <span class="nv">$c</span><span class="p">,</span> <span class="nv">$d</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="k">echo</span> <span class="nv">$b</span><span class="o">.</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="nv">$c</span><span class="o">.</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="nv">$d</span><span class="o">.</span><span class="s1">&#39;&lt;br&gt;&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax php"><pre class="err"><b>Parse error:</b> syntax error, unexpected T_LIST, expecting '&amp;' or T_STRING or T_VARIABLE or '$' in <b>test.php</b> on line <b>3</b></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#lis01-ref" id="lis01">[lis01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: list", <br>
+        <a href="http://us.php.net/list">http://us.php.net/list</a>
+        [accessed 27th Aug 2011].
+      </dd>
+
+      <dt class="index">
+        <a href="#rfc01-ref" id="rfc01">[rfc01]</a>
+      </dt>
+      <dd>Xinchen Hui, "RFC: foreach_variable supporting T_LIST", <br>
+        <a href="https://wiki.php.net/rfc/foreachlist">https://wiki.php.net/rfc/foreachlist</a>
+        [accessed 2nd Oct 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

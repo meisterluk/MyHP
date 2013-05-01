@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>General 002</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>General 002 Iteration protocol</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>3rd of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>iteration protocol php python __iter__ fetchAll Zend Framework Django</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.3, python 2.6</dd>
+      </dl>
+    </aside>
+
+    <p>
+        The following code snippets wants to demonstrate the iteration
+        protocol implemented by Django 1.1 (python) and Zend Framework 1.9 (PHP).
+    </p>
+
+    <h2 id="zend">
+        PHP Zend Framework
+    </h2>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+<span class="nv">$table_iter</span> <span class="o">=</span> <span class="nv">$table_data</span><span class="o">-&gt;</span><span class="na">fetchAll</span><span class="p">();</span>
+<span class="k">while</span> <span class="p">(</span><span class="nv">$table_iter</span><span class="o">-&gt;</span><span class="na">valid</span><span class="p">())</span>
+<span class="p">{</span>
+    <span class="nv">$cat</span> <span class="o">=</span> <span class="nv">$table_iter</span><span class="o">-&gt;</span><span class="na">current</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">toArray</span><span class="p">();</span>
+    <span class="nv">$array</span><span class="p">[</span><span class="nv">$cat</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="nv">$cat</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">];</span>
+    <span class="nv">$table_iter</span> <span class="o">=</span> <span class="nv">$table_iter</span><span class="o">-&gt;</span><span class="na">next</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h2 id="django">
+        Python Django
+    </h2>
+
+    <figure class="syntax python"><pre><span class="n">storage</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">Entry</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+    <span class="n">storage</span><span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#ite01-ref" id="ite01">[ite01]</a>
+      </dt>
+      <dd>Wikipedia, "Iterator", <br>
+        <a href="http://en.wikipedia.org/wiki/Iterator">http://en.wikipedia.org/wiki/Iterator</a>
+        [accessed 3rd Sep 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

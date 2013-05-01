@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 006</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 006 optional call parentheses</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>14th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP instantiation optional parentheses syntax fail</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nb">error_reporting</span><span class="p">(</span><span class="k">E_ALL</span><span class="p">);</span>
+
+    <span class="k">class</span> <span class="nc">Foo</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">x</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="mi">42</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nv">$f</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Foo</span><span class="p">();</span>
+    <span class="nv">$g</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Foo</span><span class="p">;</span>
+
+    <span class="k">echo</span> <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">x</span><span class="p">()</span> <span class="o">.</span> <span class="nx">PHP_EOL</span><span class="p">;</span>
+    <span class="k">echo</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">x</span><span class="p">()</span> <span class="o">.</span> <span class="nx">PHP_EOL</span><span class="p">;</span>
+
+    <span class="k">echo</span> <span class="nv">$f</span><span class="o">-&gt;</span><span class="na">x</span> <span class="o">.</span> <span class="nx">PHP_EOL</span><span class="p">;</span>
+    <span class="k">echo</span> <span class="nv">$g</span><span class="o">-&gt;</span><span class="na">x</span> <span class="o">.</span> <span class="nx">PHP_EOL</span><span class="p">;</span>
+<span class="cp">?&gt;</span><span class="x"></span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax php"><pre><span class="m">42</span> <span class="m">42</span>
+<span class="err"><b>Notice:</b> Undefined property: Foo::$x in <b>test.php</b> on line <b>18</b></span>
+
+<span class="err"><b>Notice:</b> Undefined property: Foo::$x in <b>test.php</b> on line <b>19</b></span></pre></figure>
+
+    <h3>Expected Output</h3>
+
+    <figure class="syntax php"><pre class="err"><b>Parse error:</b> syntax error, unexpected ';', expecting '(' in <b>test.php</b> on line <b>13</b></pre></figure>
+  </body>
+</html>

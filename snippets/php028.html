@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 028</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 028 Type juggling in array keys</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>17th of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP type juggling array key array_key_exists isset</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nv">$a</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;99_bottles_of_beer&#39;</span> <span class="o">=&gt;</span> <span class="mi">99</span><span class="p">);</span>
+    <span class="nv">$keys</span> <span class="o">=</span> <span class="nb">array_keys</span><span class="p">(</span><span class="nv">$a</span><span class="p">);</span>
+
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nb">in_array</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="nv">$keys</span><span class="p">));</span>         <span class="c1">// true</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$a</span><span class="p">[</span><span class="mi">99</span><span class="p">]));</span>               <span class="c1">// false</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nb">array_key_exists</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="nv">$a</span><span class="p">));</span>    <span class="c1">// false</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nv">$a</span><span class="p">[</span><span class="mi">99</span><span class="p">]);</span>                      <span class="c1">// NULL</span>
+<span class="cp">?&gt;</span></pre></figure>
+  </body>
+</html>

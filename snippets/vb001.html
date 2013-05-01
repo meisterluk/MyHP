@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>VB 001</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>VB 001 My very first program</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>04th of March 2012</dd>
+        <dt>Tags</dt>
+          <dd>VBA Microsoft Office Excel 2003 computer science course school</dd>
+        <dt>Dedicated to</dt>
+          <dd>Prof. Schmidhofer</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax vb"><pre><span class="c">&#39; Working tipps with VBE</span>
+<span class="c">&#39; author: Lukas Prokop</span>
+<span class="c">&#39; special thanks to: M. Prokop</span>
+<span class="c">&#39; made for a lecture</span>
+
+<span class="k">Sub</span> <span class="nf">Color</span><span class="p">()</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c">&#39;red box</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c">&#39;yellow box</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span> <span class="c">&#39;blue box</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c">&#39;green box</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c">&#39;black box</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span> <span class="c">&#39;white box</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span> <span class="c">&#39;blue-green box</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span> <span class="c">&#39; fuchsia box</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;Beim Markieren werden die Farben dunkler!&quot;</span> <span class="c">&#39; message</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Font</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c">&#39; black font</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">ColumnWidth</span> <span class="o">=</span> <span class="s">&quot;40&quot;</span> <span class="c">&#39; Columnwidth = 40</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">RowHeight</span> <span class="o">=</span> <span class="s">&quot;40&quot;</span>
+<span class="k">End</span> <span class="k">Sub</span>
+
+<span class="k">Sub</span> <span class="nf">Question</span><span class="p">()</span>
+ <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Möchten Sie den Test durchführen?&quot;</span>
+ <span class="n">answer</span> <span class="o">=</span> <span class="n">MsgBox</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">vbQuestion</span> <span class="o">+</span> <span class="n">vbYesNo</span><span class="p">)</span>
+  <span class="k">If</span> <span class="n">answer</span> <span class="o">=</span> <span class="n">vbYes</span> <span class="k">Then</span>
+   <span class="n">Cells</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;Name&quot;</span>
+   <span class="n">Cells</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;Alter&quot;</span>
+   <span class="n">Cells</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;Strasse&quot;</span>
+   <span class="n">Cells</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;Hausnummer&quot;</span>
+   <span class="n">Cells</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;Ort&quot;</span>
+  <span class="k">Else</span>
+   <span class="n">MsgBox</span> <span class="p">(</span><span class="s">&quot;Bye!&quot;</span><span class="p">)</span>
+  <span class="k">End</span> <span class="k">If</span>
+<span class="k">End</span> <span class="k">Sub</span>
+<span class="k">Sub</span> <span class="nf">control</span><span class="p">()</span>
+ <span class="k">If</span> <span class="n">Cells</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">50</span> <span class="k">Then</span>
+ <span class="n">MsgBox</span> <span class="p">(</span><span class="s">&quot;Sie sind schon über 50!&quot;</span><span class="p">)</span>
+ <span class="k">Else</span>
+ <span class="n">MsgBox</span> <span class="p">(</span><span class="s">&quot;So jung?&quot;</span><span class="p">)</span>
+ <span class="k">End</span> <span class="k">If</span>
+<span class="k">End</span> <span class="k">Sub</span>
+
+<span class="k">Sub</span> <span class="nf">password</span><span class="p">()</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span> <span class="c">&#39; white box</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span> <span class="c">&#39; white box</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span> <span class="c">&#39; clear box</span>
+ <span class="n">Cells</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span> <span class="c">&#39; clear box</span>
+ <span class="n">Kennwort</span> <span class="o">=</span> <span class="n">InputBox</span><span class="p">(</span><span class="s">&quot;Bitte Kennwort eingeben: &quot;</span><span class="p">,</span> <span class="s">&quot;Passwortabfrage&quot;</span><span class="p">,</span> <span class="s">&quot; &quot;</span><span class="p">)</span>
+ <span class="k">Select</span> <span class="k">Case</span> <span class="n">Kennwort</span>
+   <span class="k">Case</span> <span class="s">&quot;Clemens&quot;</span>      <span class="c">&#39; Case1: kennwort = Clemens</span>
+     <span class="n">accept_password</span>
+     <span class="n">welcome_user</span> <span class="p">(</span><span class="s">&quot;Clemens&quot;</span><span class="p">)</span>
+   <span class="k">Case</span> <span class="s">&quot;Lukas&quot;</span>      <span class="c">&#39; Case2: kennwort = Lukas</span>
+     <span class="n">accept_password</span>
+     <span class="n">welcome_user</span> <span class="p">(</span><span class="s">&quot;Lukas&quot;</span><span class="p">)</span>
+   <span class="k">Case</span> <span class="s">&quot; &quot;</span>      <span class="c">&#39; Case3: kennwort = (empty box)</span>
+     <span class="n">empty_password</span>
+   <span class="k">Case</span> <span class="k">Else</span>      <span class="c">&#39; Case4: kennwort not Case1, 2 or 3</span>
+     <span class="n">deny_password</span>
+ <span class="k">End</span> <span class="k">Select</span>
+<span class="k">End</span> <span class="k">Sub</span>
+
+<span class="k">Sub</span> <span class="nf">accept_password</span><span class="p">()</span>
+  <span class="n">MsgBox</span> <span class="p">(</span><span class="s">&quot;Passwort wurde akzeptiert.&quot;</span><span class="p">)</span>
+  <span class="n">Cells</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;Herzlich willkommen&quot;</span>
+  <span class="n">Cells</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>      <span class="c">&#39; black border</span>
+<span class="k">End</span> <span class="k">Sub</span>
+
+<span class="k">Sub</span> <span class="nf">deny_password</span><span class="p">()</span>
+  <span class="n">MsgBox</span> <span class="p">(</span><span class="s">&quot;Passwort wurde nicht akzeptiert.&quot;</span><span class="p">)</span>
+  <span class="n">Cells</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;Falsches Passwort. Leider nein!&quot;</span>
+  <span class="n">Cells</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>    <span class="c">&#39; red box</span>
+  <span class="n">Columns</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">ColumnWidth</span> <span class="o">=</span> <span class="s">&quot;40&quot;</span>
+<span class="k">End</span> <span class="k">Sub</span>
+
+<span class="k">Sub</span> <span class="nf">welcome_user</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+  <span class="n">Cells</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;Benutzer &quot;</span> <span class="o">&amp;</span> <span class="n">username</span> <span class="o">&amp;</span> <span class="s">&quot; erfolgreich eingeloggt&quot;</span>
+  <span class="n">Cells</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c">&#39; yellow box</span>
+  <span class="n">Cells</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>      <span class="c">&#39; black border</span>
+  <span class="n">Columns</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">ColumnWidth</span> <span class="o">=</span> <span class="s">&quot;40&quot;</span>                 <span class="c">&#39; set witdth</span>
+<span class="k">End</span> <span class="k">Sub</span>
+
+<span class="k">Sub</span> <span class="nf">empty_password</span><span class="p">()</span>
+  <span class="k">Dim</span> <span class="n">text</span><span class="p">,</span> <span class="n">answer</span>
+  <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Leeres Passwort. Nocheinmal probieren?&quot;</span>
+  <span class="n">answer</span> <span class="o">=</span> <span class="n">MsgBox</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">vbQuestion</span> <span class="o">+</span> <span class="n">vbYesNo</span><span class="p">)</span>
+  <span class="k">If</span> <span class="n">answer</span> <span class="o">=</span> <span class="n">vbYes</span> <span class="k">Then</span>
+    <span class="n">password</span>
+  <span class="k">Else</span>
+    <span class="n">MsgBox</span> <span class="p">(</span><span class="s">&quot;Auf Wiedersehen&quot;</span><span class="p">)</span>
+  <span class="k">End</span> <span class="k">If</span>
+<span class="k">End</span> <span class="k">Sub</span>
+
+<span class="k">Sub</span> <span class="nf">Wait1</span><span class="p">()</span>
+<span class="n">newHour</span> <span class="o">=</span> <span class="n">Hour</span><span class="p">(</span><span class="n">Now</span><span class="p">())</span>
+<span class="n">newMinute</span> <span class="o">=</span> <span class="n">Minute</span><span class="p">(</span><span class="n">Now</span><span class="p">())</span>
+<span class="n">newSecond</span> <span class="o">=</span> <span class="n">Second</span><span class="p">(</span><span class="n">Now</span><span class="p">())</span> <span class="o">+</span> <span class="mi">10</span> <span class="c">&#39; wait: time now + 10 sec.</span>
+<span class="n">waitTime</span> <span class="o">=</span> <span class="n">TimeSerial</span><span class="p">(</span><span class="n">newHour</span><span class="p">,</span> <span class="n">newMinute</span><span class="p">,</span> <span class="n">newSecond</span><span class="p">)</span>
+<span class="n">Application</span><span class="p">.</span><span class="n">Wait</span> <span class="n">waitTime</span>
+<span class="k">End</span> <span class="k">Sub</span>
+
+<span class="k">Sub</span> <span class="nf">Clear</span><span class="p">()</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">RowHeight</span> <span class="o">=</span> <span class="s">&quot;12.75&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">RowHeight</span> <span class="o">=</span> <span class="s">&quot;12.75&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">RowHeight</span> <span class="o">=</span> <span class="s">&quot;12.75&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">4</span><span class="p">).</span><span class="n">RowHeight</span> <span class="o">=</span> <span class="s">&quot;12.75&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">5</span><span class="p">).</span><span class="n">RowHeight</span> <span class="o">=</span> <span class="s">&quot;12.75&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">6</span><span class="p">).</span><span class="n">RowHeight</span> <span class="o">=</span> <span class="s">&quot;12.75&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">7</span><span class="p">).</span><span class="n">RowHeight</span> <span class="o">=</span> <span class="s">&quot;12.75&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">8</span><span class="p">).</span><span class="n">RowHeight</span> <span class="o">=</span> <span class="s">&quot;12.75&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">9</span><span class="p">).</span><span class="n">RowHeight</span> <span class="o">=</span> <span class="s">&quot;12.75&quot;</span>
+ <span class="n">Rows</span><span class="p">(</span><span class="mi">10</span><span class="p">).</span><span class="n">RowHeight</span> <span class="o">=</span> <span class="s">&quot;12.75&quot;</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">ColumnWidth</span> <span class="o">=</span> <span class="s">&quot;10.71&quot;</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">ColumnWidth</span> <span class="o">=</span> <span class="s">&quot;10.71&quot;</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">ColumnWidth</span> <span class="o">=</span> <span class="s">&quot;10.71&quot;</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">4</span><span class="p">).</span><span class="n">ColumnWidth</span> <span class="o">=</span> <span class="s">&quot;10.71&quot;</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">5</span><span class="p">).</span><span class="n">ColumnWidth</span> <span class="o">=</span> <span class="s">&quot;10.71&quot;</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">4</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">5</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">6</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">7</span><span class="p">).</span><span class="n">Interior</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">4</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">5</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">6</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">7</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">8</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">9</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">10</span><span class="p">).</span><span class="n">Borders</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">Font</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="n">Columns</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">Font</span><span class="p">.</span><span class="n">Color</span> <span class="o">=</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="k">End</span> <span class="k">Sub</span>
+
+<span class="k">Sub</span> <span class="nf">Wait</span><span class="p">()</span>
+<span class="n">Application</span><span class="p">.</span><span class="n">Wait</span> <span class="s">&quot;09:30:00&quot;</span>
+<span class="k">End</span> <span class="k">Sub</span></pre></figure>
+  </body>
+</html>

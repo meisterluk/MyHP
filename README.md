@@ -1,4 +1,0 @@
-MyHP
-====
-
-My personal homepage

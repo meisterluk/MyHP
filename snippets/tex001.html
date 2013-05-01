@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>TeX 001</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>TeX 001 Iteration in plain TeX</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>10th of Feb 2012</dd>
+        <dt>Tags</dt>
+          <dd>TeX loop iteration iterator variable counter</dd>
+        <dt>Tested with</dt>
+          <dd>TeX 3.1415926 (TeX Live 2012)</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax tex"><pre><span class="c">% debugging</span>
+<span class="k">\def\printvar</span>#1<span class="nb">{</span>
+<span class="k">\iftrue</span> <span class="c">% change to false, </span>
+  <span class="nb">{</span>Variable is set to <span class="k">\number</span>#1.<span class="nb">}</span>
+<span class="k">\else</span>
+  <span class="k">\ifcase\iterations</span>
+    <span class="k">\char</span>51<span class="nb">{</span>Variable is 3.<span class="nb">}</span><span class="k">\or</span>
+    <span class="k">\char</span>50<span class="nb">{</span>Variable is 2.<span class="nb">}</span><span class="k">\or</span>
+    <span class="k">\char</span>49<span class="nb">{</span>Variable is 1.<span class="nb">}</span><span class="k">\or</span>
+    <span class="k">\char</span>48<span class="nb">{</span>Variable is zero<span class="nb">}</span>
+    <span class="k">\else</span><span class="nb">{</span>Variable <span class="s">$</span><span class="nv">\notin</span><span class="nb"> </span><span class="o">[</span><span class="m">0</span><span class="nb">,</span><span class="m">3</span><span class="o">]</span><span class="s">$</span><span class="nb">}</span>
+  <span class="k">\fi</span>
+<span class="k">\fi</span>
+<span class="nb">}</span>
+
+<span class="c">% basic conditionals with numbers</span>
+<span class="k">\newcount\randomnumber</span>
+<span class="k">\randomnumber</span>=11
+<span class="k">\ifnum\randomnumber</span>=10
+  Hello World!<span class="k">\par</span>
+<span class="k">\else</span>
+  Hallo Welt!<span class="k">\par</span>
+<span class="k">\fi</span>
+
+<span class="c">% recursion simulated</span>
+<span class="k">\newcount\iterations</span>
+<span class="c">%\iterations=10</span>
+<span class="c">%\global\advance\iterations by -1</span>
+<span class="c">%\printvar{\iterations}</span>
+
+<span class="k">\def\looping</span>#1#2<span class="nb">{</span>
+    <span class="k">\global\iterations</span>=0<span class="k">\iterations</span>=#1
+    <span class="k">\loop</span>
+        <span class="k">\global\advance\iterations</span> by -1
+        #2
+    <span class="k">\ifnum\iterations</span>&gt;0 <span class="k">\repeat</span>
+<span class="nb">}</span>
+
+<span class="k">\looping</span>5<span class="nb">{</span>Foobar! <span class="nb">}</span>
+<span class="k">\looping</span>6<span class="nb">{</span>Baz! <span class="nb">}</span>
+
+<span class="k">\bye</span>
+</pre></figure>
+
+  </body>
+</html>

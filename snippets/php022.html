@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 022</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 022 class properties</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>25th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP OOP class object attributes static constant</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+        <dt>thanks to</dt>
+          <dd>Martin; for thinking about the ORM usecase</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="k">class</span> <span class="nc">UInt</span> <span class="p">{}</span>
+
+    <span class="c1">// I would like to define one attribute of a class,</span>
+    <span class="c1">// which is globally available for all instances.</span>
+    <span class="c1">// Therefore I would like to create 1 (!) instance,</span>
+    <span class="c1">// which is bound to the attribute at class definition</span>
+    <span class="c1">// time.</span>
+
+    <span class="k">class</span> <span class="nc">Number</span> <span class="p">{</span>
+        <span class="k">protected</span> <span class="nv">$id</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">UInt</span><span class="p">();</span>
+        <span class="k">protected</span> <span class="nv">$_name</span> <span class="o">=</span> <span class="s1">&#39;tbl&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Alright, this is not possible. As far as I know,</span>
+    <span class="c1">// the const and static keywords are given for this</span>
+    <span class="c1">// purpose.</span>
+
+    <span class="k">class</span> <span class="nc">Number1</span> <span class="p">{</span>
+        <span class="k">protected</span> <span class="nx">const</span> <span class="nv">$id</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">UInt</span><span class="p">();</span>
+        <span class="k">protected</span> <span class="nx">const</span> <span class="nv">$_name</span> <span class="o">=</span> <span class="s1">&#39;tbl&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Beside the fact, that constants cannot store objects</span>
+    <span class="c1">// (y?), constants can also not be defined with a visibility.</span>
+
+    <span class="c1">// So I will try the static approach.</span>
+
+    <span class="k">class</span> <span class="nc">Number2</span> <span class="p">{</span>
+        <span class="k">static</span> <span class="k">protected</span> <span class="nv">$id</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">UInt</span><span class="p">();</span>
+        <span class="k">static</span> <span class="k">protected</span> <span class="nv">$_name</span> <span class="o">=</span> <span class="s1">&#39;tbl&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// unexpected new? I really don&#39;t understand why. The static</span>
+    <span class="c1">// keyword limits the declaration to constants and literals.</span>
+    <span class="c1">// No expressions.</span>
+
+    <span class="c1">// So I don&#39;t really have any idea how to design the following:</span>
+    <span class="c1">// You have an ORM and want the user to declare an attribute</span>
+    <span class="c1">// of the class the column&#39;s type is of for each column.</span>
+
+    <span class="c1">// PHP skilled people will tell you to take the first version,</span>
+    <span class="c1">// but put the code into the constructor. They probably don&#39;t</span>
+    <span class="c1">// understand the difference between class attribute and object</span>
+    <span class="c1">// attribute. static is more seen like something &quot;a reuseable</span>
+    <span class="c1">// function in a class&quot;.</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax php"><pre class="err"><b>Parse error:</b> syntax error, unexpected T_NEW in <b>test.php</b> on line <b>10</b></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#pro01-ref" id="pro01">[pro01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Properties", <br>
+        <a href="http://www.php.net/manual/en/language.oop5.properties.php">http://www.php.net/manual/en/language.oop5.properties.php</a>
+        [accessed 25th Aug 2011].
+      </dd>
+
+      <dt class="index">
+        <a href="#con01-ref" id="con01">[con01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Class Constants", <br>
+        <a href="http://www.php.net/manual/en/language.oop5.constants.php">http://www.php.net/manual/en/language.oop5.constants.php</a>
+        [accessed 25th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

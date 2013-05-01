@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+   <title>PHP 047</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 047 Indexed iteration in PHP</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Dec 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP iteration indices</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <p>
+      The key in each step of the iteration will be assigned to
+      <code>$key</code>. Please be aware, that not each key has
+      to be declared explicitly when creating the array.
+    </p>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+  <span class="nv">$seq</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="mf">3.14159</span><span class="p">,</span> <span class="mf">2.71828</span><span class="p">);</span>
+
+  <span class="k">foreach</span> <span class="p">(</span><span class="nv">$seq</span> <span class="k">as</span> <span class="nv">$value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="nv">$value</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="c1">// prints &quot;42&quot;, &quot;3.14159&quot; and &quot;2.71828&quot; on each line</span>
+  
+  <span class="k">foreach</span> <span class="p">(</span><span class="nv">$seq</span> <span class="k">as</span> <span class="nv">$key</span> <span class="o">=&gt;</span> <span class="nv">$value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="nv">$key</span><span class="o">.</span><span class="s1">&#39;: &#39;</span><span class="p">,</span> <span class="nv">$value</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="c1">// prints &quot;0: 42&quot;, &quot;1: 3.14159&quot; and &quot;2: 2.71828&quot; on each line</span>
+<span class="cp">?&gt;</span></pre></figure>
+  </body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>General 003</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>General 003 Accessing last array item</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>3rd of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>accessing array last item list length</dd>
+        <dt>Tested with</dt>
+          <dd>Algol 68 Genie 2.2.0, clojure 1.2.1, gcc 4.5.1, javac 1.6.0_20, Mozilla Firefox 6, Free Pascal Compiler 2.4.2, PHP 5.2, perl 5.12.3, Python 2.7, ruby 1.8.7, Scala 2.8.1.final, bash 4.1.7(1)-release</dd>
+      </dl>
+    </aside>
+
+    <p>
+        The following code snippets wants to demonstrate accessing the
+        last item of an array/list in various programming languages.
+    </p>
+
+    <h2 id="algol">
+        Algol
+    </h2>
+
+    <figure class="syntax algol"><pre><span class="p">[]</span> <span class="kt">INT</span> <span class="n">array</span> = (<span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span>);
+<span class="nb">print</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="nb">UPB</span> <span class="n">array</span><span class="p">])</span></pre></figure>
+
+    <h2 id="bash">
+        Bash
+    </h2>
+
+    <figure class="syntax bash sh"><pre><span class="nv">ARRAY</span><span class="o">=(</span>1 2 3<span class="o">)</span>
+<span class="nb">echo</span> <span class="nv">$ARRAY</span><span class="o">[</span>-1<span class="o">]</span></pre></figure>
+
+    <h2 id="clojure">
+        Clojure
+    </h2>
+
+    <figure class="syntax clojure"><pre><span class="p">(</span><span class="k">def </span><span class="nv">a</span> <span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">))</span>
+<span class="p">(</span><span class="nb">println </span><span class="p">(</span><span class="nb">last </span><span class="nv">a</span><span class="p">))</span></pre></figure>
+
+    <h2 id="cpp">
+        C++
+    </h2>
+
+    <figure class="syntax cpp"><pre><span class="cp">#include &lt;iostream&gt;</span>
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">};</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="p">[(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span></pre></figure>
+
+    <h2 id="c">
+        C
+    </h2>
+
+    <figure class="syntax c"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">array</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">};</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">[</span><span class="k">sizeof</span><span class="p">(</span><span class="n">array</span><span class="p">)</span> <span class="o">/</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]);</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span></pre></figure>
+
+    <h2 id="java">
+        Java
+    </h2>
+
+    <figure class="syntax java"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainClass</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kt">int</span><span class="o">[]</span> <span class="n">array</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[]{</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">};</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">array</span><span class="o">[</span><span class="n">array</span><span class="o">.</span><span class="na">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">]);</span>
+  <span class="o">}</span>
+<span class="o">}</span></pre></figure>
+
+    <h2 id="js">
+        Javascript
+    </h2>
+
+    <figure class="syntax javascript js"><pre><span class="nx">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">];</span>
+<span class="nx">alert</span><span class="p">(</span><span class="nx">a</span><span class="p">[</span><span class="nx">a</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]);</span></pre></figure>
+
+    <h2 id="lua">
+        Lua
+    </h2>
+
+    <figure class="syntax lua"><pre><span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="o">#</span><span class="n">a</span><span class="p">])</span></pre></figure>
+
+    <h2 id="pascal">
+        Pascal
+    </h2>
+
+    <figure class="syntax pascal"><pre><span class="k">program</span> <span class="n">main</span><span class="o">;</span>
+<span class="k">var</span>
+    <span class="n">i</span>   <span class="o">:</span> <span class="kt">Integer</span><span class="o">;</span>
+    <span class="n">list</span><span class="o">:</span> <span class="k">Array</span><span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="mi">2</span><span class="p">]</span> <span class="k">of</span> <span class="kt">Integer</span><span class="o">;</span>
+
+<span class="k">begin</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="mi">0</span> <span class="k">to</span> <span class="mi">2</span> <span class="k">do</span>
+      <span class="k">begin</span>
+        <span class="n">list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">:=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+      <span class="k">end</span><span class="o">;</span>
+    <span class="nb">Write</span><span class="p">(</span><span class="n">list</span><span class="p">[</span><span class="nb">length</span><span class="p">(</span><span class="n">list</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span><span class="o">;</span>
+<span class="k">end</span><span class="o">.</span></pre></figure>
+
+    <h2 id="php">
+        PHP
+    </h2>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nv">$array</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
+    <span class="k">echo</span> <span class="nv">$array</span><span class="p">[</span><span class="nb">count</span><span class="p">(</span><span class="nv">$array</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h2 id="perl">
+        Perl
+    </h2>
+
+    <figure class="syntax perl"><pre><span class="nv">@array</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
+<span class="k">print</span> <span class="nv">@array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>
+<span class="c1">#print @array[$#array];</span></pre></figure>
+
+    <h2 id="python">
+        Python
+    </h2>
+
+    <figure class="syntax python"><pre><span class="n">array</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></pre></figure>
+
+    <h2 id="ruby">
+        Ruby
+    </h2>
+
+    <figure class="syntax ruby"><pre><span class="n">a</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="o">[</span><span class="o">]</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nb">puts</span> <span class="n">a</span><span class="o">.</span><span class="n">last</span>
+<span class="c1">#puts a[-1]</span></pre></figure>
+
+    <h2 id="scala">
+        Scala
+    </h2>
+
+    <figure class="syntax scala"><pre><span class="n">println</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">).</span><span class="n">last</span><span class="o">);</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#arr01-ref" id="arr01">[arr01]</a>
+      </dt>
+      <dd>Wikipedia, "Array data structure", <br>
+        <a href="http://en.wikipedia.org/wiki/Array_data_structure">http://en.wikipedia.org/wiki/Array_data_structure</a>
+        [accessed 3rd Sep 2011].
+      </dd>
+
+      <dt class="index">
+        <a href="#com01-ref" id="com01">[com01]</a>
+      </dt>
+      <dd>Wikipedia, "Comparison of programming languages (array)", <br>
+        <a href="http://en.wikipedia.org/wiki/Comparison_of_programming_languages_(array)">http://en.wikipedia.org/wiki/Comparison_of_programming_languages_(array)</a>
+        [accessed 3rd Sep 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 017</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 017 references implementation fail</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>18th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP references implementation fail</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nv">$a</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="nv">$b</span> <span class="o">=</span> <span class="nv">$a</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">];</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nv">$a</span><span class="p">);</span>
+
+    <span class="nv">$c</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="nv">$d</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$c</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">];</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nv">$c</span><span class="p">);</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="x">array(0) {
+}
+array(1) {
+  ["c"]=&gt;
+  &amp;NULL
+}
+</span></pre></figure>
+
+    <h3 id="output">
+        Expected Output
+    </h3>
+
+    <figure class="syntax php"><pre><span class="x">array(0) {
+}
+array(0) {
+}</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#ref01-ref" id="ref01">[ref01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: References explained", <br>
+        <a href="http://php.net/manual/en/language.references.php">http://php.net/manual/en/language.references.php</a>
+        [accessed 18th Aug 2011].
+      </dd>
+
+    </dl>
+  </body>
+</html>

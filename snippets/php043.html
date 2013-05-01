@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 043</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 043 NULL is not set</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>25th of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP NULL isset object attribute</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.3.8 on Fedora 14</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="k">class</span> <span class="nc">Foo</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="nv">$foobar</span> <span class="o">=</span> <span class="k">NULL</span><span class="p">;</span>
+
+        <span class="k">function</span> <span class="nf">test</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">foobar</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nv">$f</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Foo</span><span class="p">();</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nv">$f</span><span class="o">-&gt;</span><span class="na">test</span><span class="p">());</span>
+
+    <span class="c1">// hack</span>
+    <span class="nv">$attrs</span> <span class="o">=</span> <span class="nb">array_keys</span><span class="p">(</span><span class="nb">get_class_vars</span><span class="p">(</span><span class="s1">&#39;Foo&#39;</span><span class="p">));</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nb">in_array</span><span class="p">(</span><span class="s1">&#39;foobar&#39;</span><span class="p">,</span> <span class="nv">$attrs</span><span class="p">));</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">bool(false)
+bool(true)</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#iss01-ref" id="iss01">[iss01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: isset",
+        <a href="http://us.php.net/isset">http://us.php.net/isset</a>
+        [accessed 25th Sep 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

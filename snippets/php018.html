@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 018</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 018 Callbacks</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>22nd of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP callbacks</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nv">$lists</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="mi">1337</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">),</span> <span class="k">array</span><span class="p">(</span><span class="mf">2.7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">));</span>
+
+    <span class="c1">// Function callback</span>
+    <span class="k">function</span> <span class="nf">sorted</span><span class="p">(</span><span class="nv">$array</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nb">sort</span><span class="p">(</span><span class="nv">$array</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nv">$array</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nb">array_map</span><span class="p">(</span><span class="s1">&#39;sorted&#39;</span><span class="p">,</span> <span class="nv">$lists</span><span class="p">));</span>
+
+    <span class="c1">// Method callback</span>
+    <span class="k">class</span> <span class="nc">Foo</span> <span class="p">{</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">sorted</span><span class="p">(</span><span class="nv">$array</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nb">sort</span><span class="p">(</span><span class="nv">$array</span><span class="p">);</span>
+            <span class="k">return</span> <span class="nv">$array</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nv">$foo</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Foo</span><span class="p">();</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nb">array_map</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$foo</span><span class="p">,</span> <span class="s1">&#39;sorted&#39;</span><span class="p">),</span> <span class="nv">$lists</span><span class="p">));</span>
+    <span class="c1">// PHP4 requires a reference. PHP5 doesn&#39;t.</span>
+
+    <span class="c1">// Static method callback</span>
+    <span class="k">class</span> <span class="nc">Bar</span> <span class="p">{</span>
+        <span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">sorted</span><span class="p">(</span><span class="nv">$array</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nb">sort</span><span class="p">(</span><span class="nv">$array</span><span class="p">);</span>
+            <span class="k">return</span> <span class="nv">$array</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nb">array_map</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="s1">&#39;Bar&#39;</span><span class="p">,</span> <span class="s1">&#39;sorted&#39;</span><span class="p">),</span> <span class="nv">$lists</span><span class="p">));</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nb">array_map</span><span class="p">(</span><span class="s1">&#39;Bar::sorted&#39;</span><span class="p">,</span> <span class="nv">$lists</span><span class="p">));</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">array(2) {
+  [0]=&gt;
+  array(3) {
+    [0]=&gt;
+    float(3.14)
+    [1]=&gt;
+    int(42)
+    [2]=&gt;
+    int(1337)
+  }
+  [1]=&gt;
+  array(4) {
+    [0]=&gt;
+    int(1)
+    [1]=&gt;
+    int(2)
+    [2]=&gt;
+    float(2.7)
+    [3]=&gt;
+    int(4)
+  }
+}
+array(2) {
+  [0]=&gt;
+  array(3) {
+    [0]=&gt;
+    float(3.14)
+    [1]=&gt;
+    int(42)
+    [2]=&gt;
+    int(1337)
+  }
+  [1]=&gt;
+  array(4) {
+    [0]=&gt;
+    int(1)
+    [1]=&gt;
+    int(2)
+    [2]=&gt;
+    float(2.7)
+    [3]=&gt;
+    int(4)
+  }
+}
+array(2) {
+  [0]=&gt;
+  array(3) {
+    [0]=&gt;
+    float(3.14)
+    [1]=&gt;
+    int(42)
+    [2]=&gt;
+    int(1337)
+  }
+  [1]=&gt;
+  array(4) {
+    [0]=&gt;
+    int(1)
+    [1]=&gt;
+    int(2)
+    [2]=&gt;
+    float(2.7)
+    [3]=&gt;
+    int(4)
+  }
+}
+array(2) {
+  [0]=&gt;
+  array(3) {
+    [0]=&gt;
+    float(3.14)
+    [1]=&gt;
+    int(42)
+    [2]=&gt;
+    int(1337)
+  }
+  [1]=&gt;
+  array(4) {
+    [0]=&gt;
+    int(1)
+    [1]=&gt;
+    int(2)
+    [2]=&gt;
+    float(2.7)
+    [3]=&gt;
+    int(4)
+  }
+}</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#cal01-ref" id="cal01">[cal01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Pseudo-types and variables used in this documentation", <br>
+        <a href="http://www.php.net/manual/en/language.pseudo-types.php#language.types.callback">http://www.php.net/manual/en/language.pseudo-types.php#language.types.callback</a>
+        [accessed 22nd Aug 2011].
+      </dd>
+
+    </dl>
+  </body>
+</html>

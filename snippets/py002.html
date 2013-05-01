@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>Python 002</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Python 002 redefining True and False</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>14th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>Python redefine boolean values py3k python 2.7 names</dd>
+        <dt>Tested with</dt>
+          <dd>Python 2.7 and 3.1.2</dd>
+      </dl>
+    </aside>
+
+    <h2 id="input">
+        Input
+    </h2>
+
+    <figure class="syntax python"><pre><span class="c"># python 2.7</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">False</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">True</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+<span class="o">...</span>     <span class="k">print</span> <span class="s">&#39;Hello World&#39;</span>
+<span class="o">...</span> 
+<span class="n">Hello</span> <span class="n">World</span>
+<span class="o">&gt;&gt;&gt;</span>
+
+<span class="c"># python 3k</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">False</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">True</span>
+  <span class="n">File</span> <span class="s">&quot;&lt;console&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span>
+<span class="ne">SyntaxError</span><span class="p">:</span> <span class="n">assignment</span> <span class="n">to</span> <span class="n">keyword</span>
+<span class="o">&gt;&gt;&gt;</span></pre></figure>
+  </body>
+</html>

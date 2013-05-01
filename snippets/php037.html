@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 037</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 037 Generate an alnum password</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP alphanumeric password generator</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="c1">//</span>
+    <span class="c1">// Generate an alphanumeric password.</span>
+    <span class="c1">//</span>
+    <span class="c1">// Take a length and create an alphanumeric string.</span>
+    <span class="c1">//</span>
+    <span class="c1">//  :author:            meisterluk</span>
+    <span class="c1">//  :date:              2011.07</span>
+    <span class="c1">//  :license:           Public Domain</span>
+    <span class="c1">//  :original source:   anxiface</span>
+    <span class="c1">//</span>
+    <span class="k">function</span> <span class="nf">generate_password</span><span class="p">(</span><span class="nv">$length</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$pwd</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="nv">$length</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">// size(lowercase, uppercase, digits)</span>
+            <span class="nv">$set</span> <span class="o">=</span> <span class="mi">26</span> <span class="o">+</span> <span class="mi">26</span> <span class="o">+</span> <span class="mi">10</span><span class="p">;</span>
+            <span class="nv">$rand</span> <span class="o">=</span> <span class="nb">mt_rand</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nv">$set</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="nv">$rand</span> <span class="o">&amp;&amp;</span> <span class="nv">$rand</span> <span class="o">&lt;=</span> <span class="mi">25</span><span class="p">)</span>
+                <span class="nv">$pwd</span> <span class="o">.=</span> <span class="nb">chr</span><span class="p">(</span><span class="nv">$rand</span> <span class="o">+</span> <span class="mi">65</span><span class="p">);</span>
+            <span class="k">elseif</span> <span class="p">(</span><span class="mi">26</span> <span class="o">&lt;=</span> <span class="nv">$rand</span> <span class="o">&amp;&amp;</span> <span class="nv">$rand</span> <span class="o">&lt;=</span> <span class="mi">51</span><span class="p">)</span>
+                <span class="nv">$pwd</span> <span class="o">.=</span> <span class="nb">chr</span><span class="p">(</span><span class="nv">$rand</span> <span class="o">+</span> <span class="mi">97</span> <span class="o">-</span> <span class="mi">26</span><span class="p">);</span>
+            <span class="k">elseif</span> <span class="p">(</span><span class="mi">52</span> <span class="o">&lt;=</span> <span class="nv">$rand</span> <span class="o">&amp;&amp;</span> <span class="nv">$rand</span> <span class="o">&lt;=</span> <span class="mi">62</span><span class="p">)</span>
+                <span class="nv">$pwd</span> <span class="o">.=</span> <span class="nb">chr</span><span class="p">(</span><span class="nv">$rand</span> <span class="o">+</span> <span class="mi">48</span> <span class="o">-</span> <span class="mi">52</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nv">$pwd</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// demonstration</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">)</span> <span class="k">as</span> <span class="nv">$length</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="nx">generate_password</span><span class="p">(</span><span class="nv">$length</span><span class="p">)</span><span class="o">.</span><span class="s1">&#39;&lt;br&gt;&#39;</span><span class="p">;</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        HTML Output
+    </h3>
+
+    <figure class="syntax"><pre>6
+pNV2P
+a5S8u7S7uQ
+ZL7hzvtIF10mkdo1jH1i
+2jLccaFSM0GFIdoEH2MT4ghBSKWKaT
+m2ibHUjaiJy9hLW7okl1AoEDX5WH7vOE15WSJO3Y
+X4NGqT9RJRSCPGzcEVyUzQZLdiVstpk0KPuMvYeJZYqsqbMKHk
+wOrNdPNZYE7t0ZmgzadUNj4RIjf7m222hFU0hgPYejthqAsY8zpsEUa7TCYY
+Q8U9Qp6Q0SpE6hVzGoEbMwhTT4c2JssRB6XrqZOt9KBzm0s2HRY2iypLDoEVT01mcmlV5s
+</pre></figure>
+  </body>
+</html>

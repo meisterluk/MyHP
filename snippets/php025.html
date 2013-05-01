@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 025</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 025 list() language construct</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP list language construct function behaviour swapping</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nv">$array</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+    <span class="k">list</span><span class="p">(</span><span class="nv">$a</span><span class="p">,</span> <span class="nv">$b</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$array</span><span class="p">;</span>
+    <span class="k">echo</span> <span class="s1">&#39;a=&#39;</span><span class="o">.</span><span class="nv">$a</span><span class="o">.</span><span class="s1">&#39; b=&#39;</span><span class="o">.</span><span class="nv">$b</span><span class="o">.</span><span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="c1">// assigning two variables at a time</span>
+    <span class="k">list</span><span class="p">(</span><span class="nv">$a</span><span class="p">,</span> <span class="nv">$b</span><span class="p">)</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+    <span class="k">echo</span> <span class="s1">&#39;a=&#39;</span><span class="o">.</span><span class="nv">$a</span><span class="o">.</span><span class="s1">&#39; b=&#39;</span><span class="o">.</span><span class="nv">$b</span><span class="o">.</span><span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="c1">// parallel assignment</span>
+    <span class="nv">$a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">list</span><span class="p">(</span><span class="nv">$a</span><span class="p">,</span> <span class="nv">$b</span><span class="p">)</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="nv">$a</span><span class="o">++</span><span class="p">,</span> <span class="nv">$a</span><span class="o">++</span><span class="p">);</span>
+    <span class="k">echo</span> <span class="s1">&#39;a=&#39;</span><span class="o">.</span><span class="nv">$a</span><span class="o">.</span><span class="s1">&#39; b=&#39;</span><span class="o">.</span><span class="nv">$b</span><span class="o">.</span><span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="c1">// Swapping</span>
+    <span class="k">list</span><span class="p">(</span><span class="nv">$a</span><span class="p">,</span> <span class="nv">$b</span><span class="p">)</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+    <span class="k">list</span><span class="p">(</span><span class="nv">$a</span><span class="p">,</span> <span class="nv">$b</span><span class="p">)</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="nv">$b</span><span class="p">,</span> <span class="nv">$a</span><span class="p">);</span>
+    <span class="k">echo</span> <span class="s1">&#39;a=&#39;</span><span class="o">.</span><span class="nv">$a</span><span class="o">.</span><span class="s1">&#39; b=&#39;</span><span class="o">.</span><span class="nv">$b</span><span class="o">.</span><span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        HTML Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">a=1 b=2
+a=1 b=2
+a=1 b=2
+a=2 b=1
+</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#lis01-ref" id="lis01">[lis01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: list", <br>
+        <a href="http://us2.php.net/list">http://us2.php.net/list</a>
+        [accessed 28th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

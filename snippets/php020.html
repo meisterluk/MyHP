@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 020</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 020 alternative syntax fail</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>22nd of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP elseif alternative syntax fail</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;num&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="s1">&#39;Greather than 10&#39;</span><span class="p">;</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;num&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="s1">&#39;Number equals 10&#39;</span><span class="p">;</span>
+    <span class="k">else</span>
+        <span class="k">echo</span> <span class="s1">&#39;Smaller than 10&#39;</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;num&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">echo</span> <span class="s1">&#39;Greather than 10&#39;</span><span class="p">;</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;num&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">10</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">echo</span> <span class="s1">&#39;Number equals 10&#39;</span><span class="p">;</span>
+    <span class="k">else</span><span class="o">:</span>
+        <span class="k">echo</span> <span class="s1">&#39;Smaller than 10&#39;</span><span class="p">;</span>
+<span class="cp">?&gt;</span><span class="x"></span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax php"><pre class="err"><b>Parse error:</b> syntax error, unexpected T_IF, expecting ':' in <b>test.php</b> on line <b>11</b></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#els01-ref" id="els01">[els01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: elseif/else if - Manual", <br>
+        <a href="http://php.net/manual/en/control-structures.elseif.php">http://php.net/manual/en/control-structures.elseif.php</a>
+        [accessed 22nd Aug 2011].
+      </dd>
+
+    </dl>
+  </body>
+</html>

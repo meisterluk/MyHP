@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 001</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 001 empty() behaviour</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>14th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP implementation fatal error trim empty</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nv">$a</span> <span class="o">=</span> <span class="s1">&#39;foobar &#39;</span><span class="p">;</span>
+    <span class="k">echo</span> <span class="k">empty</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="nv">$a</span><span class="p">));</span>
+<span class="cp">?&gt;</span><span class="x"></span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax php"><pre class="err"><strong>Fatal error: Can't use function return value in write context in test.php on line 3</strong></pre></figure>
+
+    <h3>
+        Expected Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">1</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#emp01-ref" id="emp01">[emp01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: The empty function documentation",
+        <a href="http://us.php.net/empty">http://us.php.net/empty</a>
+        [accessed 18th Aug 2011].
+      </dd>
+
+      <dt class="index">
+        <a href="#tri01-ref" id="tri01">[tri01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: The trim function documentation", <br>
+        <a href="http://us.php.net/trim">http://us.php.net/trim</a>
+        [accessed 18th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 019</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 019 Dandling else</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>22nd of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP dandling else C syntax parentheses</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nv">$foo</span> <span class="o">=</span> <span class="s1">&#39;Foo&#39;</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$foo</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="nv">$foo</span><span class="o">.</span><span class="s1">&#39;bar&#39;</span><span class="p">;</span>
+    <span class="k">else</span>
+        <span class="nv">$foo</span> <span class="o">=</span> <span class="s1">&#39;Foo&#39;</span><span class="p">;</span> <span class="k">die</span><span class="p">(</span><span class="nv">$foo</span><span class="p">);</span>
+<span class="cp">?&gt;</span><span class="x"></span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+    <figure class="syntax"><pre><span class="m">FoobarFoo</span></pre></figure>
+
+    <h3 id="output">
+        Someone might expect
+    </h3>
+    <figure class="syntax"><pre><span class="m">Foobar</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#wik01-ref" id="wik01">[wik01]</a>
+      </dt>
+      <dd>Wikipedia, "Dandling else - Wikipedia, the free encyclopedia", <br>
+        <a href="https://secure.wikimedia.org/wikipedia/en/wiki/Dangling_else">https://secure.wikimedia.org/wikipedia/en/wiki/Dangling_else</a>
+        [accessed 22nd Aug 2011].
+      </dd>
+
+    </dl>
+  </body>
+</html>

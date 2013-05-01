@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>General 004</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>General 004 JSON slashes can be backslashed optionally</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>28th of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>JSON backslash escape slash</dd>
+        <dt>Tested with</dt>
+          <dd>Mozilla Firefox 4, python 2.7, PHP 5.3.8</dd>
+      </dl>
+    </aside>
+
+    <p>
+        JSON <a href="#jso01" id="json-ref">[0]</a>
+        allows to escape slashes with a backslash optionally.
+        I thought I maybe could come up with an example using a difference in
+        the implementations (of various programming languages) to destroying the
+        original JSON string. In the end I failed. Even though PHP is the only
+        language using the optional backslash when stringifying JSON, the other
+        parsers read it correctly. Following snippet shows the JSON dumps.
+    </p>
+
+    <h2 id="inpu">
+        Input
+    </h2>
+
+    <figure class="syntax"><pre><span class="m">Input: { test : 'a/b' }
+JS:    {"test":'a/b' }
+py:    {"test":"a/b"}
+php:   {"test":"a\/b"}
+
+Input: { test : 'a\/b' }
+JS:    {"test":"a\\/b""}
+py:    {"test":"a\\/b"}
+php:   {"test":"a\\\/b"}
+
+Input: { test : 'a\\/b' }
+JS:    {"test":"a\\\\/b"}
+py:    {"test":"a\\\\/b"}
+php:   {"test":"a\\\\\/b"}</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#jso01-ref" id="jso01">[jso01]</a>
+      </dt>
+      <dd>Douglas Crockford, "JSON", <br>
+        <a href="http://json.org/">http://json.org/</a>
+        [accessed 28rd Sep 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

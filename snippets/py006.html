@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>Python 006</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+    <style type="text/css">
+    <!--
+      .syntax em { color: #600; }
+    -->
+    </style>
+  </head>
+
+  <body>
+    <h1>Python 006 Difference between not(==) and !=</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>07th of Jul 2012</dd>
+        <dt>Tags</dt>
+          <dd>Python equality operator not boolean special methods</dd>
+        <dt>Tested with</dt>
+          <dd>Python 2.7.2+ and Python 3.2.2</dd>
+      </dl>
+    </aside>
+
+    <p>
+      This snippet shows why the inequality operator <code>!=</code> and negated
+      equality operator <code>not (a == b)</code> don't have to behave the same
+      way. The snippet below show that different special methods are called.
+      Please note that this snippet calls the py3k interpreter in the shebang.
+    </p>
+    <p>
+      Furthermore also recognize that the equality test <code>Foo.__eq__</code>
+      returns a boolean. Therefore the not operator of Foo will never get called
+      because <code>bool.__nonzero__</code> gets called. Uncomment the source code
+      line to return a Foo instance with <code>__eq__</code>. <br>
+      However, it is not intuitive:
+      If you simply call <code>not obj</code> then <code>obj.__nonzero__</code>
+      will be invoked; <strong>not</strong> <code>obj.__not__</code> or <code>obj.not_</code>.
+      Guido discussed it at the mailing list <a href="#gui01-ref">[gui01]</a>.
+    </p>
+
+    <h2 id="input">
+        Input
+    </h2>
+
+    <figure class="syntax python"><pre><span class="c">#!/usr/bin/env python3</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="k">def</span> <span class="nf">p</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A simple print wrapper for calls&quot;&quot;&quot;</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  {} got called&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">r</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A simple print wrapper for method results&quot;&quot;&quot;</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  result: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+<span class="k">class</span> <span class="nc">Foo</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Proof of concept class implementing a!=b and not(a==b) differently.</span>
+
+<span class="sd">    Rich comparison operators relevant to boolean tests:</span>
+
+<span class="sd">    -x</span>
+<span class="sd">      calls x.__neg__()</span>
+<span class="sd">    ~x</span>
+<span class="sd">      calls x.__invert__()</span>
+<span class="sd">    x == y</span>
+<span class="sd">      calls x.__eq__(y)</span>
+<span class="sd">    x != y</span>
+<span class="sd">      calls x.__ne__(y)</span>
+<span class="sd">    x &lt;&gt; y</span>
+<span class="sd">      calls x.__ne__(y). python 2.x only.</span>
+<span class="sd">    bool(x)</span>
+<span class="sd">      calls x.__bool__(x)</span>
+<span class="sd">    len(x)</span>
+<span class="sd">      calls x.__len__(x)</span>
+<span class="sd">    if x:</span>
+<span class="sd">      calls x.__nonzero__(x)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="n">p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__eq__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="c">#return Foo(r(self.a == other.a))</span>
+        <span class="k">return</span> <span class="n">r</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="n">p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ne__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nonzero__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">__nonzero__</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bool__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">))</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;python &#39;</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">][:</span><span class="mi">3</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">cmds</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;f == g&quot;</span><span class="p">,</span> <span class="s">&quot;f != g&quot;</span><span class="p">,</span> <span class="s">&quot;not (f == g)&quot;</span><span class="p">,</span> <span class="s">&quot;not f and 1&quot;</span><span class="p">]</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">Foo</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">Foo</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">cmds</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="k">exec</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span></pre></figure>
+
+    <h2 id="output.py3k">
+        Output py3k
+    </h2>
+
+    <figure class="syntax"><pre>python 3.2.2
+
+f == g
+  __eq__ got called
+  result: False
+
+f != g
+  __ne__ got called
+  result: True
+
+not (f == g)
+  __eq__ got called
+  result: False
+
+not f and 1
+  __<em>bool</em>__ got called
+  result: True
+</pre></figure>
+
+    <h2 id="output-python2x">
+        Output python 2.x
+    </h2>
+
+    <figure class="syntax"><pre>python 2.7.2
+
+f == g
+  __eq__ got called
+  result: False
+
+f != g
+  __ne__ got called
+  result: True
+
+not (f == g)
+  __eq__ got called
+  result: False
+
+not f and 1
+  __<em>nonzero</em>__ got called
+  result: True
+</pre></figure>
+
+    <h2 id="difference">
+        Example where return value differs
+    </h2>
+
+    <figure class="syntax python"><pre><span class="c">#!/usr/bin/env python3</span>
+
+<span class="k">class</span> <span class="nc">Foo</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">a</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Foo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># invoked only by python 2.x</span>
+        <span class="k">return</span> <span class="bp">True</span>  <span class="c"># wrong implementation</span>
+
+    <span class="k">def</span> <span class="nf">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># invoked only by py3k</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">Foo</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">Foo</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span> <span class="o">!=</span> <span class="n">g</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="ow">not</span><span class="p">(</span><span class="n">f</span> <span class="o">==</span> <span class="n">g</span><span class="p">))</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#dat01-ref" id="dat01">[dat01]</a>
+      </dt>
+      <dd>Python Software Foundation, "3. Data model &mdash; Python v2.7.3 documentation", <br>
+        <a href="http://docs.python.org/reference/datamodel.html#specialnames">http://docs.python.org/reference/datamodel.html#specialnames</a>
+        [accessed 8th Jul 2012].
+      </dd>
+
+      <dt class="index">
+        <a href="#dat02-ref" id="dat02">[dat02]</a>
+      </dt>
+      <dd>Python Software Foundation, "3. Data model &mdash; Python v3.2 documentation", <br>
+        <a href="http://docs.python.org/release/3.2/reference/datamodel.html#special-method-names">http://docs.python.org/release/3.1/reference/datamodel.html#special-method-names</a>
+        [accessed 8th Jul 2012].
+      </dd>
+
+      <dt class="index">
+        <a href="#gui01-ref" id="gui01">[gui01]</a>
+      </dt>
+      <dd>Guido van Rossum, "[Python-Dev] the not operator (and the __not__ special method)", <br>
+        <a href="http://mail.python.org/pipermail/python-dev/2002-October/029124.html">http://mail.python.org/pipermail/python-dev/2002-October/029124.html</a>
+        [accessed 8th Jul 2012].
+      </dd>
+
+      <dt class="index">
+        <a href="#ope01-ref" id="ope01">[ope01]</a>
+      </dt>
+      <dd>Python Software Foundation, "9.9. operator — Standard operators as functions &mdash; Python v2.7.3 documentation", <br>
+        <a href="http://docs.python.org/library/operator.html">http://docs.python.org/library/operator.html</a>
+        [accessed 8th Jul 2012].
+      </dd>
+
+    </dl>
+  </body>
+</html>

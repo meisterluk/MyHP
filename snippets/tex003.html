@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>TeX 003</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>TeX 003 LuaTeX Hello World</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>29th of Feb 2012</dd>
+        <dt>Tags</dt>
+          <dd>LuaTeX Hello World Lua programming language TeX unstable</dd>
+        <dt>Tested with</dt>
+          <dd>LuaTeX-0.71.0</dd>
+        <dt>Compiled using</dt>
+          <dd>luatex tex003.tex</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax tex"><pre><span class="k">\directlua</span><span class="nb">{</span>
+  tex.print(&quot;Hello World&quot;)
+<span class="nb">}</span>
+
+<span class="k">\bye</span></pre></figure>
+
+    <h3 id="output">
+        PDF Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">Hello World</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#lua01-ref" id="lua01">[lua01]</a>
+      </dt>
+      <dd>LuaTeX, "LuaTeX Homepage", <br>
+        <a href="http://luatex.org/">http://luatex.org/</a>
+        [accessed 29th Feb 2012].
+      </dd>
+
+    </dl>
+  </body>
+</html>

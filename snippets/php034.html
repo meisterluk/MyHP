@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 034</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 034 Floating point numbers IEEE 754</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP IEEE 754 double precision float</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="c1">// http://us2.php.net/int#language.types.integer.casting.from-float</span>
+    <span class="k">echo</span> <span class="p">(</span><span class="nx">int</span><span class="p">)((</span><span class="mf">0.1</span> <span class="o">+</span> <span class="mf">0.7</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="p">);</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        HTML Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">7</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#int01-ref" id="int01">[int01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Integer", <br>
+        <a href="http://us2.php.net/int#language.types.integer.casting.from-float">http://us2.php.net/int#language.types.integer.casting.from-float</a>
+        [accessed 27th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

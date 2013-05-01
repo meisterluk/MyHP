@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 032</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 032 replace placeholder</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP replace placeholders sprintf</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="c1">//</span>
+    <span class="c1">// Replace placeholders</span>
+    <span class="c1">//</span>
+    <span class="c1">// Take a string with placeholders. The placeholders are built with</span>
+    <span class="c1">// &quot;?&lt;type&gt;&quot; where &lt;type&gt; might (eg.) &quot;s&quot; for String. So a formatstring</span>
+    <span class="c1">// &quot;Hello ?s!&quot; with arguments array(&#39;World&#39;) will return a string</span>
+    <span class="c1">// &quot;Hello World!&quot;. As far as this function implements a fallback to</span>
+    <span class="c1">// sprintf, please refer to the functions documentation for possible</span>
+    <span class="c1">// type specifier.</span>
+    <span class="c1">//</span>
+    <span class="c1">//     http://us2.php.net/sprintf</span>
+    <span class="c1">//</span>
+    <span class="c1">// Note. This implementation only allows 2-character-placeholders.</span>
+    <span class="c1">// Note. The implementation holds an arg_counter pointing to the next</span>
+    <span class="c1">//       argument to insert. A endless while loop always jumps to the</span>
+    <span class="c1">//       next position of a placeholder using strpos.</span>
+    <span class="c1">//</span>
+    <span class="c1">//  :author:            meisterluk</span>
+    <span class="c1">//  :date:              2011.07</span>
+    <span class="c1">//  :license:           Public Domain</span>
+    <span class="c1">//  :original source:   anxiface</span>
+    <span class="c1">//</span>
+
+    <span class="c1">//</span>
+    <span class="c1">// @param formatstring string  the string specifying the format</span>
+    <span class="c1">// @param arguments array  an array with arguments to replace</span>
+    <span class="c1">//                         placeholders with</span>
+    <span class="c1">// @return string the string with arguments instead of placeholders</span>
+    <span class="c1">// @throws Exception if more placeholders than arguments are given</span>
+    <span class="c1">//</span>
+    <span class="k">function</span> <span class="nf">replace_placeholders</span><span class="p">(</span><span class="nv">$formatstring</span><span class="p">,</span> <span class="nv">$arguments</span><span class="o">=</span><span class="k">NULL</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$arguments</span> <span class="o">===</span> <span class="k">NULL</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nv">$formatstring</span><span class="p">;</span>
+
+        <span class="nv">$iter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="nv">$arg_counter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">while</span> <span class="p">(</span><span class="k">true</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$iter</span> <span class="o">&gt;=</span> <span class="nb">mb_strlen</span><span class="p">(</span><span class="nv">$formatstring</span><span class="p">))</span>
+                <span class="k">break</span><span class="p">;</span>
+
+            <span class="nv">$iter</span> <span class="o">=</span> <span class="nb">strpos</span><span class="p">(</span><span class="nv">$formatstring</span><span class="p">,</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="nv">$iter</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$iter</span> <span class="o">===</span> <span class="k">false</span><span class="p">)</span>
+                <span class="k">break</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$arg_counter</span> <span class="o">&gt;=</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$arguments</span><span class="p">))</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nx">Exception</span><span class="p">(</span><span class="s1">&#39;More placeholders than arguments&#39;</span><span class="p">);</span>
+
+            <span class="nv">$formatstring</span> <span class="o">=</span> <span class="nb">substr</span><span class="p">(</span><span class="nv">$formatstring</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">$iter</span><span class="p">)</span><span class="o">.</span>
+                <span class="nb">sprintf</span><span class="p">(</span>
+                    <span class="nb">str_replace</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="s1">&#39;%&#39;</span><span class="p">,</span> <span class="nb">substr</span><span class="p">(</span><span class="nv">$formatstring</span><span class="p">,</span> <span class="nv">$iter</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+                    <span class="nv">$arguments</span><span class="p">[</span><span class="nv">$arg_counter</span><span class="o">++</span><span class="p">]</span>
+                <span class="p">)</span><span class="o">.</span><span class="nb">substr</span><span class="p">(</span><span class="nv">$formatstring</span><span class="p">,</span> <span class="nv">$iter</span><span class="o">+</span><span class="mi">2</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nv">$formatstring</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nv">$format</span> <span class="o">=</span> <span class="s1">&#39;abc ?d?d def ?s ghi ?f asd ?f&#39;</span><span class="p">;</span>
+    <span class="nv">$args</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;asd&#39;</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">,</span> <span class="mf">5.3</span><span class="p">);</span>
+
+    <span class="k">echo</span> <span class="nx">replace_placeholders</span><span class="p">(</span><span class="nv">$format</span><span class="p">,</span> <span class="nv">$args</span><span class="p">);</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">abc 45 def asd ghi 4.300000 asd 5.300000</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#spr01-ref" id="spr01">[spr01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: sprintf", <br>
+        <a href="http://us2.php.net/sprintf">http://us2.php.net/sprintf</a>
+        [accessed 27th Aug 2011].
+      </dd>
+
+    </dl>
+  </body>
+</html>

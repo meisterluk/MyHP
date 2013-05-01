@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>Python 009</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Python 009 Cyclic, binary patterns</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Dec 2012</dd>
+        <dt>Tags</dt>
+          <dd>Python cycle cyclic binary strings patterns</dd>
+        <dt>Tested with</dt>
+          <dd>Python 2.7.2</dd>
+      </dl>
+    </aside>
+
+    <h2 id="input">
+        Input
+    </h2>
+
+    <figure class="syntax python"><pre><span class="c">#!/usr/bin/env python</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cyclic</span>
+<span class="sd">    ======</span>
+
+<span class="sd">    Program to generate cyclic patterns.</span>
+<span class="sd">    *Cyclic patterns of length N* are defined to be strings where any</span>
+<span class="sd">    binary substring (beginning and end are connected; like a cycle)</span>
+<span class="sd">    of length *N* can be derived.</span>
+
+<span class="sd">    &gt;&gt;&gt; is_cyclic(&quot;00000000&quot;, 3)</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; # False because, eg. &quot;001&quot; cannot be derived</span>
+<span class="sd">    &gt;&gt;&gt; is_cyclic(&quot;01110100&quot;, 3)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    (C) 2012, meisterluk</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="n">CYCLE</span> <span class="o">=</span> <span class="s">&quot;01110100&quot;</span>
+<span class="n">CYCLE2</span> <span class="o">=</span> <span class="s">&quot;10001011&quot;</span>
+
+<span class="k">def</span> <span class="nf">generate_all_substrings</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generate all substrings of length `length` in `pattern`.&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">length</span>
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">)):</span>
+        <span class="n">substring</span> <span class="o">=</span> <span class="n">pattern</span><span class="p">[</span><span class="n">index</span><span class="p">:</span><span class="n">index</span><span class="o">+</span><span class="n">length</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">substring</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">length</span><span class="p">:</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="n">length</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">substring</span><span class="p">)</span>
+            <span class="n">substring</span> <span class="o">+=</span> <span class="n">pattern</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">diff</span><span class="p">]</span>
+        <span class="k">yield</span> <span class="n">substring</span>
+
+<span class="k">def</span> <span class="nf">is_cyclic</span><span class="p">(</span><span class="n">cycle</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test cyclic property of a string with a given `length`.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">bitlist</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="s">&quot;01&quot;</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">bitstr</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bitlist</span><span class="p">)</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">substring</span> <span class="ow">in</span> <span class="n">generate_all_substrings</span><span class="p">(</span><span class="n">cycle</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">substring</span> <span class="o">==</span> <span class="n">bitstr</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c"># short unittesting</span>
+    <span class="k">assert</span> <span class="n">is_cyclic</span><span class="p">(</span><span class="n">CYCLE</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">is_cyclic</span><span class="p">(</span><span class="n">CYCLE2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">is_cyclic</span><span class="p">(</span><span class="s">&quot;00000000&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="c"># generate cyclic patterns</span>
+    <span class="k">for</span> <span class="n">bits</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="s">&quot;01&quot;</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">CYCLE</span><span class="p">)):</span>
+        <span class="n">bitstring</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bits</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_cyclic</span><span class="p">(</span><span class="n">bitstring</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Is a complete, cyclic pattern: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bitstring</span><span class="p">))</span>
+        <span class="c">#else:</span>
+        <span class="c">#    print(&quot;No complete pattern.&quot;)</span></pre></figure>
+
+    <h2 id="output">
+        Output
+    </h2>
+
+    <figure class="syntax"><pre><span class="m">Is a complete, cyclic pattern: 00010111
+Is a complete, cyclic pattern: 00011101
+Is a complete, cyclic pattern: 00101110
+Is a complete, cyclic pattern: 00111010
+Is a complete, cyclic pattern: 01000111
+Is a complete, cyclic pattern: 01011100
+Is a complete, cyclic pattern: 01110001
+Is a complete, cyclic pattern: 01110100
+Is a complete, cyclic pattern: 10001011
+Is a complete, cyclic pattern: 10001110
+Is a complete, cyclic pattern: 10100011
+Is a complete, cyclic pattern: 10111000
+Is a complete, cyclic pattern: 11000101
+Is a complete, cyclic pattern: 11010001
+Is a complete, cyclic pattern: 11100010
+Is a complete, cyclic pattern: 11101000</span></pre></figure>
+  </body>
+</html>

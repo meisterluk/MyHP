@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>TeX 002</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>TeX 004 LuaLaTeX Unicode Incapability</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>29th of Feb 2012</dd>
+        <dt>Tags</dt>
+          <dd>LuaLaTeX Lua Unicode characters onebyte code points german umlaut</dd>
+        <dt>Tested with</dt>
+          <dd>LuaTeX-0.71.0</dd>
+        <dt>Compiled using</dt>
+          <dd>lualatex tex001.tex</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax tex"><pre><span class="k">\documentclass</span><span class="nb">{</span>article<span class="nb">}</span>
+
+<span class="k">\begin</span><span class="nb">{</span>document<span class="nb">}</span>
+<span class="k">\directlua</span><span class="nb">{</span>
+<span class="c1">-- Lua is incapable of understanding Unicode</span>
+str = &quot;Umläut&quot;
+tex.print(string.len(str))
+<span class="nb">}</span>
+<span class="k">\end</span><span class="nb">{</span>document<span class="nb">}</span></pre></figure>
+
+    <h3 id="output">
+        PDF Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">7</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#lua01-ref" id="lua01">[lua01]</a>
+      </dt>
+      <dd>Roberto Ierusalimschy, Luiz Henrique de Figueiredo, Waldemar Celes, "Lua 5.1 Reference Manual&mdash;The Length Operator", <br>
+        <a href="http://www.lua.org/manual/5.1/manual.html#2.5.5">http://www.lua.org/manual/5.1/manual.html#2.5.5</a>
+        [accessed 29th Feb 2012].
+      </dd>
+    </dl>
+  </body>
+</html>

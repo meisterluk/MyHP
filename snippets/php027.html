@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 027</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 027 Named parameters</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>5th of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP default named parameters api design</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="c1">// The usecase in this example says,</span>
+    <span class="c1">//</span>
+    <span class="c1">// I want to be implementation independent. Therefore I want to use the</span>
+    <span class="c1">// default parameter for the first argument of the constructor. But I</span>
+    <span class="c1">// want to overwrite the second parameter.</span>
+
+    <span class="k">class</span> <span class="nc">Subnetmask</span> <span class="p">{</span>
+        <span class="k">protected</span> <span class="nv">$subnetmask</span><span class="p">;</span>
+        <span class="k">protected</span> <span class="nv">$format</span><span class="p">;</span>
+
+        <span class="k">const</span> <span class="no">MASK_FIRST_OCTET</span>  <span class="o">=</span> <span class="o">-</span><span class="mi">16777216</span><span class="p">;</span> <span class="c1">// 255.0.0.0 numeric</span>
+        <span class="k">const</span> <span class="no">MASK_SECOND_OCTET</span> <span class="o">=</span> <span class="mi">16711680</span><span class="p">;</span>  <span class="c1">// 0.255.0.0 numeric</span>
+        <span class="k">const</span> <span class="no">MASK_THIRD_OCTET</span>  <span class="o">=</span> <span class="mi">65280</span><span class="p">;</span>     <span class="c1">// 0.0.255.0 numeric</span>
+        <span class="k">const</span> <span class="no">MASK_FOURTH_OCTET</span> <span class="o">=</span> <span class="mi">255</span><span class="p">;</span>       <span class="c1">// 0.0.0.255 numeric</span>
+
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nv">$bitmask</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="nv">$output_format</span><span class="o">=</span><span class="s1">&#39;cidr&#39;</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">subnetmask</span> <span class="o">=</span> <span class="nv">$bitmask</span><span class="p">;</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">format</span> <span class="o">=</span> <span class="nv">$output_format</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Basic usage examples</span>
+    <span class="nv">$s</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Subnetmask</span><span class="p">(</span><span class="nx">Subnetmask</span><span class="o">::</span><span class="na">MASK_FIRST_OCTET</span><span class="p">);</span>
+    <span class="nv">$s</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Subnetmask</span><span class="p">(</span><span class="nx">Subnetmask</span><span class="o">::</span><span class="na">MASK_FIRST_OCTET</span>
+        <span class="o">|</span><span class="nx">Subnetmask</span><span class="o">::</span><span class="na">MASK_SECOND_OCTET</span><span class="p">,</span> <span class="s1">&#39;dotted&#39;</span><span class="p">);</span>
+
+    <span class="c1">// Now, I want to do what is mentioned above.</span>
+
+    <span class="c1">// Parse error</span>
+    <span class="c1">#$s = new Subnetmask(, &#39;cidr&#39;);</span>
+
+    <span class="c1">// Named parameters?</span>
+    <span class="nv">$s</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Subnetmask</span><span class="p">(</span><span class="nv">$output_format</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">);</span>
+    <span class="c1">// No, it does not work. $output_format got defined in the local scope.</span>
+
+    <span class="cm">/*</span>
+<span class="cm">        So, solving this usecase is impossible and</span>
+<span class="cm">        beautiful API design cannot be done in PHP.</span>
+<span class="cm">        Setters and getters for each constructor parameter</span>
+<span class="cm">        must be given which bothers object-oriented design.</span>
+<span class="cm">    */</span>
+<span class="cp">?&gt;</span></pre></figure>
+  </body>
+</html>

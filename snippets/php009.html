@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 009</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 009 nested ternary operator</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>14th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP ternary operator nested right to left precedence evaluation</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="k">echo</span> <span class="p">(</span><span class="k">true</span><span class="p">)</span> <span class="o">?</span> <span class="mi">1</span> <span class="o">:</span> <span class="p">(</span><span class="k">false</span><span class="p">)</span> <span class="o">?</span> <span class="mi">2</span> <span class="o">:</span> <span class="mi">3</span><span class="p">;</span>
+    <span class="k">echo</span> <span class="p">(</span><span class="k">true</span><span class="p">)</span> <span class="o">?</span> <span class="mi">1</span> <span class="o">:</span> <span class="p">((</span><span class="k">false</span><span class="p">)</span> <span class="o">?</span> <span class="mi">2</span> <span class="o">:</span> <span class="mi">3</span><span class="p">);</span>
+<span class="cp">?&gt;</span><span class="x"></span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">21</span></pre></figure>
+
+    <h3 id="output">
+        Expected Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">11</span></pre></figure>
+
+    <aside class="related">
+      <ul>
+      </ul>
+    </aside>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#ter01-ref" id="ter01">[ter01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Comparison operators &mdash; Ternary Operator", <br>
+        <a href="http://php.net/manual/en/language.operators.comparison.php#language.operators.comparison.ternary">http://php.net/manual/en/language.operators.comparison.php#language.operators.comparison.ternary</a>
+        [accessed 14th Aug 2011].
+      </dd>
+
+      <dt class="index">
+        <a href="#nes01-ref" id="nes01">[nes01]</a>
+      </dt>
+      <dd>meisterluk, "C 001 Nested ternary operator", <br>
+        <a href="http://lukas-prokop.at/proj/snippets/c001.html">http://lukas-prokop.at/proj/snippets/c001.html</a>
+        [accessed 28th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

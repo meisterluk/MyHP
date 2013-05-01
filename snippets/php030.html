@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 030</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 030 special character input parsing</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP tab newline user input parsing</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="c1">//</span>
+    <span class="c1">// Special character parsing</span>
+    <span class="c1">//</span>
+    <span class="c1">// This small function allows the user ($delim) to specify</span>
+    <span class="c1">// a string with escaping characters (\n, \t, \r). The return</span>
+    <span class="c1">// value will then contain the corresponding whitespace.</span>
+    <span class="c1">// This function solve the problem of the user to input</span>
+    <span class="c1">// those 3 special characters. On the other hand if the user</span>
+    <span class="c1">// wants to write \n (as a string), he is asked to prepend an</span>
+    <span class="c1">// additional backslash.</span>
+    <span class="c1">//</span>
+    <span class="c1">// The encode function does the opposite of decode().</span>
+    <span class="c1">//</span>
+    <span class="c1">//  :author:               meisterluk</span>
+    <span class="c1">//  :date:                 2011.07</span>
+    <span class="c1">//  :license:              Public Domain</span>
+    <span class="c1">//  :original source:      proj datamaps</span>
+    <span class="c1">//</span>
+    <span class="k">function</span> <span class="nf">decode</span><span class="p">(</span><span class="nv">$delim</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$inside</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+        <span class="nv">$iter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="p">(</span><span class="k">true</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nv">$is_backslash</span> <span class="o">=</span> <span class="p">(</span><span class="nv">$delim</span><span class="p">[</span><span class="nv">$iter</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;\\&#39;</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$iter</span> <span class="o">&gt;=</span> <span class="nb">mb_strlen</span><span class="p">(</span><span class="nv">$delim</span><span class="p">))</span>
+                <span class="k">break</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$inside</span> <span class="o">===</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nv">$is_backslash</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">switch</span> <span class="p">(</span><span class="nv">$delim</span><span class="p">[</span><span class="nv">$iter</span><span class="p">])</span>
+                <span class="p">{</span>
+                    <span class="k">case</span> <span class="s1">&#39;t&#39;</span><span class="o">:</span>
+                        <span class="nv">$seq</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">;</span>
+                        <span class="k">break</span><span class="p">;</span>
+                    <span class="k">case</span> <span class="s1">&#39;n&#39;</span><span class="o">:</span>
+                        <span class="nv">$seq</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+                        <span class="k">break</span><span class="p">;</span>
+                    <span class="k">case</span> <span class="s1">&#39;r&#39;</span><span class="o">:</span>
+                        <span class="nv">$seq</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="nb">substr</span><span class="p">(</span><span class="nv">$delim</span><span class="p">,</span> <span class="nv">$iter</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">===</span> <span class="s1">&#39;\n&#39;</span><span class="p">)</span>
+                            <span class="nv">$delim</span> <span class="o">=</span> <span class="nb">substr</span><span class="p">(</span><span class="nv">$delim</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">$iter</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                                <span class="o">.</span><span class="nb">substr</span><span class="p">(</span><span class="nv">$delim</span><span class="p">,</span> <span class="nv">$iter</span><span class="o">+</span><span class="mi">3</span><span class="p">);</span>
+                        <span class="k">break</span><span class="p">;</span>
+                    <span class="k">default</span><span class="o">:</span>
+                        <span class="nv">$seq</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+                <span class="p">}</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nv">$seq</span><span class="p">)</span>
+                    <span class="nv">$delim</span> <span class="o">=</span> <span class="nb">substr</span><span class="p">(</span><span class="nv">$delim</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">$iter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="nv">$seq</span>
+                        <span class="o">.</span><span class="nb">substr</span><span class="p">(</span><span class="nv">$delim</span><span class="p">,</span> <span class="nv">$iter</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+                <span class="nv">$inside</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+                <span class="nv">$iter</span><span class="o">--</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">elseif</span> <span class="p">(</span><span class="nv">$inside</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nv">$is_backslash</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="nv">$delim</span> <span class="o">=</span> <span class="nb">substr</span><span class="p">(</span><span class="nv">$delim</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">$iter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span>
+                    <span class="nb">substr</span><span class="p">(</span><span class="nv">$delim</span><span class="p">,</span> <span class="nv">$iter</span><span class="p">);</span>
+                <span class="nv">$inside</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">else</span>
+            <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nv">$is_backslash</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nv">$inside</span> <span class="o">===</span> <span class="k">false</span><span class="p">)</span>
+                        <span class="nv">$inside</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+                    <span class="k">else</span>
+                        <span class="nv">$inside</span><span class="o">++</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="nv">$iter</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nv">$delim</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">encode</span><span class="p">(</span><span class="nv">$delim</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$delim</span> <span class="o">=</span> <span class="nb">preg_replace</span><span class="p">(</span><span class="s1">&#39;/([\\\\]+)/&#39;</span><span class="p">,</span> <span class="s1">&#39;\\\\$1&#39;</span><span class="p">,</span> <span class="nv">$delim</span><span class="p">);</span>
+        <span class="nv">$delim</span> <span class="o">=</span> <span class="nb">str_replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s1">&#39;\n&#39;</span><span class="p">,</span> <span class="nv">$delim</span><span class="p">);</span>
+        <span class="nv">$delim</span> <span class="o">=</span> <span class="nb">str_replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s1">&#39;\n&#39;</span><span class="p">,</span> <span class="nv">$delim</span><span class="p">);</span>
+        <span class="nv">$delim</span> <span class="o">=</span> <span class="nb">str_replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s1">&#39;\n&#39;</span><span class="p">,</span> <span class="nv">$delim</span><span class="p">);</span>
+        <span class="nv">$delim</span> <span class="o">=</span> <span class="nb">str_replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s1">&#39;\t&#39;</span><span class="p">,</span> <span class="nv">$delim</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="nv">$delim</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Test suite</span>
+    <span class="nb">header</span><span class="p">(</span><span class="s1">&#39;Content-type: text/plain&#39;</span><span class="p">);</span>
+
+    <span class="nv">$testsuite_d</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
+        <span class="s1">&#39;a\n b&#39;</span> <span class="o">=&gt;</span> <span class="s2">&quot;a</span><span class="se">\n</span><span class="s2"> b&quot;</span><span class="p">,</span>
+        <span class="s1">&#39;\n&#39;</span> <span class="o">=&gt;</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s1">&#39;\r&#39;</span> <span class="o">=&gt;</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s1">&#39;\r\n&#39;</span> <span class="o">=&gt;</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s1">&#39;\t&#39;</span> <span class="o">=&gt;</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s1">&#39;\t\t&#39;</span> <span class="o">=&gt;</span> <span class="s2">&quot;</span><span class="se">\t\t</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s1">&#39;  \t\t b&#39;</span> <span class="o">=&gt;</span> <span class="s2">&quot;  </span><span class="se">\t\t</span><span class="s2"> b&quot;</span><span class="p">,</span>
+        <span class="s1">&#39;\\\\n&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;\\n&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;\\\\\\n&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;\\\\n&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;\\\\\\\\t&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;\\\\\\t&#39;</span>
+    <span class="p">);</span>
+    <span class="nv">$testsuite_e</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
+        <span class="s2">&quot;a</span><span class="se">\n</span><span class="s2"> b&quot;</span> <span class="o">=&gt;</span> <span class="s1">&#39;a\n b&#39;</span><span class="p">,</span>
+        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">=&gt;</span> <span class="s1">&#39;\n&#39;</span><span class="p">,</span>
+        <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">=&gt;</span> <span class="s1">&#39;\t&#39;</span><span class="p">,</span>
+        <span class="s2">&quot;</span><span class="se">\t\t</span><span class="s2">&quot;</span> <span class="o">=&gt;</span> <span class="s1">&#39;\t\t&#39;</span><span class="p">,</span>
+        <span class="s2">&quot;  </span><span class="se">\t\t</span><span class="s2"> b&quot;</span> <span class="o">=&gt;</span> <span class="s1">&#39;  \t\t b&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;\\n&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;\\\\n&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;\\\\n&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;\\\\\\n&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;\\\\\\t&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;\\\\\\\\t&#39;</span>
+    <span class="p">);</span>
+
+
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$testsuite_d</span> <span class="k">as</span> <span class="nv">$test</span> <span class="o">=&gt;</span> <span class="nv">$result</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">decode</span><span class="p">(</span><span class="nv">$test</span><span class="p">)</span> <span class="o">===</span> <span class="nv">$result</span><span class="p">)</span>
+            <span class="k">echo</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">&quot;PASS %s </span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nv">$result</span><span class="p">);</span>
+        <span class="k">else</span>
+            <span class="k">echo</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">&quot;FAIL %s != %s </span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nx">d</span><span class="p">(</span><span class="nv">$test</span><span class="p">),</span> <span class="nv">$result</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n\n\n\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$testsuite_e</span> <span class="k">as</span> <span class="nv">$test</span> <span class="o">=&gt;</span> <span class="nv">$result</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">encode</span><span class="p">(</span><span class="nv">$test</span><span class="p">)</span> <span class="o">===</span> <span class="nv">$result</span><span class="p">)</span>
+            <span class="k">echo</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">&quot;PASS %s </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nv">$test</span><span class="p">);</span>
+        <span class="k">else</span>
+            <span class="k">echo</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">&quot;FAIL %s != %s </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nv">$test</span><span class="p">,</span> <span class="nx">e</span><span class="p">(</span><span class="nv">$result</span><span class="p">));</span>
+    <span class="p">}</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">PASS a
+ b 
+
+PASS 
+ 
+
+PASS 
+ 
+
+PASS 
+ 
+
+PASS     
+
+PASS         
+
+PASS         b 
+
+PASS \n 
+
+PASS \\n 
+
+PASS \\\t 
+
+
+
+
+
+PASS a
+ b 
+PASS 
+ 
+PASS     
+PASS         
+PASS         b 
+PASS \n 
+PASS \\n 
+PASS \\\t </span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#git01-ref" id="git01">[git01]</a>
+      </dt>
+      <dd>meisterluk, "proj datamaps &rarr; UserInterface.php", <br>
+        <a href="https://github.com/meisterluk/datenlandkarte/blob/master/lib/ui.php#L1098">https://github.com/meisterluk/datenlandkarte/blob/master/lib/ui.php#L1098</a>
+        [accessed 27th Aug 2011].
+      </dd>
+
+    </dl>
+  </body>
+</html>

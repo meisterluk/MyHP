@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 038</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 038 Humanreadable byte representation</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP human readable representation byte KB GB TB SI prefix</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="c1">//</span>
+    <span class="c1">// Create a human readable representation for a number of bytes</span>
+    <span class="c1">//</span>
+    <span class="c1">// Note. Supports the range of bytes to PB.</span>
+    <span class="c1">//</span>
+    <span class="c1">//  :author:            meisterluk</span>
+    <span class="c1">//  :date:              2011.08</span>
+    <span class="c1">//  :license:           Public Domain</span>
+    <span class="c1">//  :original source:   anxiface2</span>
+    <span class="c1">// </span>
+    <span class="c1">// @param bytes integer the number of bytes</span>
+    <span class="c1">// @param decimals integer the number of decimals to show</span>
+    <span class="c1">//                         for floats (default: 1)</span>
+    <span class="c1">// @return string a representation of the number of bytes</span>
+    <span class="c1">//</span>
+    <span class="k">function</span> <span class="nf">humanreadable_bytes</span><span class="p">(</span><span class="nv">$bytes</span><span class="p">,</span> <span class="nv">$decimals</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$bytes</span> <span class="o">&lt;</span> <span class="mi">1024</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$bytes</span> <span class="o">===</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="nx">string</span><span class="p">)</span><span class="nv">$bytes</span><span class="o">.</span><span class="s1">&#39; Byte&#39;</span><span class="p">;</span>
+            <span class="k">else</span>
+                <span class="k">return</span> <span class="p">(</span><span class="nx">string</span><span class="p">)</span><span class="nv">$bytes</span><span class="o">.</span><span class="s1">&#39; Bytes&#39;</span><span class="p">;</span>
+
+        <span class="nv">$units</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;KB&#39;</span><span class="p">,</span> <span class="s1">&#39;MB&#39;</span><span class="p">,</span> <span class="s1">&#39;GB&#39;</span><span class="p">,</span> <span class="s1">&#39;TB&#39;</span><span class="p">,</span> <span class="s1">&#39;PB&#39;</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span> <span class="nv">$i</span><span class="o">&lt;</span><span class="mi">6</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$bytes</span> <span class="o">&lt;</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="nv">$i</span><span class="p">))</span>
+            <span class="p">{</span>
+                <span class="nv">$bytes</span> <span class="o">=</span> <span class="nv">$bytes</span> <span class="o">/</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="nv">$i</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+                <span class="nv">$nb</span> <span class="o">=</span> <span class="nb">number_format</span><span class="p">(</span><span class="nv">$bytes</span><span class="p">,</span> <span class="nv">$decimals</span><span class="p">);</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">substr</span><span class="p">(</span><span class="nv">$nb</span><span class="p">,</span> <span class="o">-</span><span class="nv">$decimals</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nv">$decimals</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="p">((</span><span class="nx">int</span><span class="p">)</span><span class="nv">$bytes</span><span class="p">)</span><span class="o">.</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="nv">$units</span><span class="p">[</span><span class="nv">$i</span><span class="p">];</span>
+                <span class="k">else</span>
+                    <span class="k">return</span> <span class="nv">$nb</span><span class="o">.</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="nv">$units</span><span class="p">[</span><span class="nv">$i</span><span class="p">];</span>
+           <span class="p">}</span>
+
+        <span class="nv">$bytes</span> <span class="o">=</span> <span class="nv">$bytes</span> <span class="o">/</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">6</span><span class="p">);</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nx">int</span><span class="p">)</span><span class="nv">$bytes</span><span class="o">.</span><span class="s1">&#39; PB&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Demonstration</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1090</span><span class="p">,</span> <span class="mf">1024.56</span><span class="o">*</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span><span class="o">+</span><span class="mi">874</span><span class="p">,</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span> <span class="k">as</span> <span class="nv">$val</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="nv">$val</span><span class="o">.</span><span class="s1">&#39; → &#39;</span><span class="o">.</span><span class="nx">humanreadable_bytes</span><span class="p">(</span><span class="nv">$val</span><span class="p">)</span><span class="o">.</span><span class="s1">&#39;&lt;br&gt;&#39;</span><span class="p">;</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        HTML Output
+    </h3>
+
+    <figure class="syntax"><pre>2 → 2 Bytes
+1090 → 1.1 KB
+3073.68 → 3 KB
+1049450 → 1 MB
+1099511627780 → 1 TB</pre></figure>
+  </body>
+</html>

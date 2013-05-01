@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 040</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 040 Positional insertion</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP positional insertion substring insert</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="c1">//</span>
+    <span class="c1">// Positional insertion</span>
+    <span class="c1">//</span>
+    <span class="c1">// Take some positions and if the input string reaches the length</span>
+    <span class="c1">// of the given position(s), insert the (corresponding) symbol(s).</span>
+    <span class="c1">//</span>
+    <span class="c1">// Note. If no multibyte support is enabled, use substr() and strlen().</span>
+    <span class="c1">// Note. Symbol can be of arbitrary length.</span>
+    <span class="c1">//</span>
+    <span class="c1">// Eg. positional_insertion(&#39;abc&#39;, array(1, 2), &#39;-&#39;)</span>
+    <span class="c1">//           =&gt; &#39;a-b-c&#39;</span>
+    <span class="c1">//</span>
+    <span class="c1">// @param input string the input string</span>
+    <span class="c1">// @param positions array a list of positions where to insert symbol(s)</span>
+    <span class="c1">// @param symbols array|int a list (with length(symbols) = length(positions))</span>
+    <span class="c1">//                          of symbols to insert</span>
+    <span class="c1">//                          or a single symbol to use always</span>
+    <span class="c1">// @return string the input string with characters inserted</span>
+    <span class="c1">//</span>
+    <span class="k">function</span> <span class="nf">positional_insertion</span><span class="p">(</span><span class="nv">$input</span><span class="p">,</span> <span class="nv">$positions</span><span class="p">,</span> <span class="nv">$symbols</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$added</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="nv">$counter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="nv">$positions</span> <span class="k">as</span> <span class="nv">$pos</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">((</span><span class="nb">mb_strlen</span><span class="p">(</span><span class="nv">$input</span><span class="p">)</span> <span class="o">-</span> <span class="nv">$added</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nv">$pos</span><span class="p">)</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$symbols</span><span class="p">))</span>
+                <span class="nv">$symbol</span> <span class="o">=</span> <span class="nv">$symbols</span><span class="p">[</span><span class="nv">$counter</span><span class="o">++</span><span class="p">];</span>
+            <span class="k">else</span>
+                <span class="nv">$symbol</span> <span class="o">=</span> <span class="nv">$symbols</span><span class="p">;</span>
+
+            <span class="nv">$input</span> <span class="o">=</span> <span class="nb">mb_substr</span><span class="p">(</span><span class="nv">$input</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">$pos</span><span class="o">+</span><span class="nv">$added</span><span class="p">)</span>
+                <span class="o">.</span><span class="nv">$symbol</span><span class="o">.</span><span class="nb">mb_substr</span><span class="p">(</span><span class="nv">$input</span><span class="p">,</span> <span class="nv">$pos</span><span class="o">+</span><span class="nv">$added</span><span class="p">);</span>
+            <span class="nv">$added</span> <span class="o">+=</span> <span class="nb">mb_strlen</span><span class="p">(</span><span class="nv">$symbol</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nv">$input</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// demonstration</span>
+    <span class="k">echo</span> <span class="nx">positional_insertion</span><span class="p">(</span><span class="s1">&#39;abc&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="s1">&#39;!&#39;</span><span class="p">));</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        HTML Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">a--b!c</span></pre></figure>
+  </body>
+</html>

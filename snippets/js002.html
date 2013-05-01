@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>JS 002</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>JS 002 Indexing operator in object</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>28th of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>Javascript object JSON index operator bracket loss</dd>
+        <dt>Tested with</dt>
+          <dd>Mozilla Firefox 4.0.1</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax js"><pre><span class="o">&gt;&gt;&gt;</span> <span class="nx">a</span> <span class="o">=</span> <span class="s2">&quot;a[0]&quot;</span><span class="p">;</span>
+<span class="s">"a[0]"</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nx">b</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span><span class="p">;</span>
+<span class="s">"test"</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nx">c</span> <span class="o">=</span> <span class="p">{</span><span class="nx">a</span><span class="o">:</span><span class="nx">b</span><span class="p">};</span>
+<span class="m">Object { a="test" }</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">c</span><span class="p">);</span>
+<span class="s">"{"a":"test"}"</span></pre></figure>
+
+    <p>
+        I thought this was a design fault, because the content of the square
+        brackets inside the key gets lost. I was totally wrong and just did
+        not see, that Javascript does not allow variables as key in object
+        definitions. So this sequence is actually intuitive. To notate brackets
+        in keys, you have to initialize an empty object and set the property
+        later. The following snippet actually shows how it works. But of course
+        the key with the brackets cannot be accessed using the object.key
+        notation:
+    </p>
+
+    <h3 id="input">
+        Fixed example
+    </h3>
+
+    <figure class="syntax js"><pre><span class="o">&gt;&gt;&gt;</span> <span class="nx">a</span> <span class="o">=</span> <span class="s2">&quot;a[0]&quot;</span><span class="p">;</span>
+<span class="s">"a[0]"</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nx">b</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span><span class="p">;</span>
+<span class="s">"test"</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nx">c</span> <span class="o">=</span> <span class="p">{</span><span class="p">};</span>
+<span class="m">Object { }</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nx">c</span><span class="o">[</span><span class="nx">a</span><span class="o">]</span> <span class="o">=</span> <span class="nx">b</span><span class="p">;</span>
+<span class="s2">"test"</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nx">c</span>
+<span class="m">Object { a[0]="test" }</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">c</span><span class="p">);</span>
+<span class="s">"{"a[0]":"test"}"</span></pre></figure>
+  </body>
+</html>

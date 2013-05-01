@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 045</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 045 Octal notation fail omits digits</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>meisterluk, uli</dd>
+        <dt>Date</dt>
+          <dd>2nd of Oct 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP octal hexadecimal notation</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.3.8 on Fedora 14</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        PHP Source code
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="m">0</span><span class="nx">x99</span> <span class="o">===</span> <span class="m">153</span><span class="p">);</span> <span class="c">// bool(true)</span>
+    <span class="nb">var_dump</span><span class="p">(</span> <span class="m">033</span> <span class="o">===</span> <span class="m">27</span><span class="p">);</span> <span class="c">// bool(false)</span>
+
+    <span class="c">// invalid octal definition</span>
+    <span class="nb">var_dump</span><span class="p">(</span>  <span class="m">09</span> <span class="o">===</span> <span class="m">0</span><span class="p">);</span> <span class="c">// bool(true)</span>
+
+    <span class="c">// invalid hexdec definition</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="m">0</span><span class="nx">xGG</span> <span class="o">===</span> <span class="m">0</span><span class="p">);</span> <span class="c">// PHP Parse error:  syntax error, unexpected T_STRING in test.php on line 9</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#int01-ref" id="int01">[int01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Integers", <br>
+        <a href="http://us2.php.net/manual/en/language.types.integer.php">http://us2.php.net/manual/en/language.types.integer.php</a>
+        [accessed 2nd Oct 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

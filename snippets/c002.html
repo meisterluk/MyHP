@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>C 002</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>C 002 scope dependency of sizeof</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>7th of Dec 2011</dd>
+        <dt>Tags</dt>
+          <dd>C scope sizeof int char operator</dd>
+        <dt>Tested with</dt>
+          <dd>gcc version 4.5.1 (RedHat), 64-bit system</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax c"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+
+<span class="kt">void</span> <span class="nf">other_scope</span><span class="p">(</span><span class="kt">int</span> <span class="n">array</span><span class="p">[])</span>
+<span class="p">{</span>
+  <span class="c1">// returns 8 here: 1 pointer on amd64 system in bytes</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Size2: %lu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">array</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">digits</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">0</span><span class="p">};</span>
+  <span class="c1">// returns 40 here: 4 bytes per integer * 10 integers</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Size1: %lu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">digits</span><span class="p">));</span>
+  <span class="n">other_scope</span><span class="p">(</span><span class="n">digits</span><span class="p">);</span>
+
+  <span class="c1">// Some C guys might argue, that an explicit conversion of</span>
+  <span class="c1">// &quot;digits[]&quot; to &quot;*digits&quot; is given. True, but receiving an</span>
+  <span class="c1">// array[] with brackets as parameter is not part of every</span>
+  <span class="c1">// C standard; afaik. And even though we defined the parameter</span>
+  <span class="c1">// as array, the size does not change. In the end, I don&#39;t get</span>
+  <span class="c1">// it at all and consider this to be an inconsistency.</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">Size1: 40
+Size2: 8</span></pre></figure>
+  </body>
+</html>

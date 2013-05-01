@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>Python 007</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Python 007 Pick random items from python set</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>22nd of Dec 2012</dd>
+        <dt>Tags</dt>
+          <dd>Python random pick set getitem indexing TypeError</dd>
+        <dt>Tested with</dt>
+          <dd>Python 2.7.2+ and Python 3.2.2</dd>
+      </dl>
+    </aside>
+
+    <p>
+      I think picking a random item from a <code>set</code> is a valid usecase whereas
+      <code>random.choice</code> uses indexing which is not supported by the
+      <code>set</code> data type. You have to use the <code>random.sample</code>
+      function.
+    </p>
+    <p>
+      This affects python 2.x and py3k.
+    </p>
+
+    <h2 id="input">
+        Input
+    </h2>
+
+    <figure class="syntax python"><pre><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">random</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">langs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span><span class="s">&quot;python&quot;</span><span class="p">,</span> <span class="s">&quot;Clojure&quot;</span><span class="p">,</span> <span class="s">&quot;ruby&quot;</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">langs</span><span class="p">)</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s">&quot;&lt;stdin&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+  <span class="n">File</span> <span class="s">&quot;/usr/lib/python2.7/random.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">274</span><span class="p">,</span> <span class="ow">in</span> <span class="n">choice</span>
+    <span class="k">return</span> <span class="n">seq</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">))]</span>  <span class="c"># raises IndexError if seq is empty</span>
+<span class="ne">TypeError</span><span class="p">:</span> <span class="s">&#39;set&#39;</span> <span class="nb">object</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">support</span> <span class="n">indexing</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">langs</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">[</span><span class="s">&#39;python&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">langs</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">[</span><span class="s">&#39;ruby&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#dat01-ref" id="dat01">[dat01]</a>
+      </dt>
+      <dd>Python Software Foundation, "9.6 random &mdash; Generate pseudo-random numbers &mdash; Python v2.7.3 documentation", <br>
+        <a href="http://docs.python.org/2/library/random.html">http://docs.python.org/2/library/random.html</a>
+        [accessed 22nd Dec 2012].
+      </dd>
+    </dl>
+  </body>
+</html>

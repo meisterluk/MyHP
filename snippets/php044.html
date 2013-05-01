@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 044</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 044 Precedence of bitwise operations</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>25th of Sep 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP bitwise and precedence</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.3.8 on Fedora 14</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nv">$a</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="c1">// 0b0010</span>
+    <span class="nv">$b</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span> <span class="c1">// 0b0011</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="nv">$a</span> <span class="o">&amp;</span> <span class="nv">$b</span> <span class="o">===</span> <span class="mi">2</span><span class="p">);</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">int(0)</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#pre01-ref" id="pre01">[pre01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Operator precedence",
+        <a href="http://www.php.net/manual/en/language.operators.precedence.php">http://www.php.net/manual/en/language.operators.precedence.php</a>
+        [accessed 25th Sep 2011].
+      </dd>
+
+      <dt class="index">
+        <a href="#bit01-ref" id="bit01">[bit01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Bitwise Operators",
+        <a href="http://php.net/manual/en/language.operators.bitwise.php">http://php.net/manual/en/language.operators.bitwise.php</a>
+        [accessed 25th Sep 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

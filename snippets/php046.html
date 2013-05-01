@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 046</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 046 Redefine $this</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>6nd of Oct 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP $this Fatal error</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="k">class</span> <span class="nc">X</span> <span class="p">{</span>
+        <span class="k">function</span> <span class="nf">bar</span><span class="p">()</span> <span class="p">{</span>
+            <span class="c1">#$this = 42; // PHP Fatal error:  </span>
+                         <span class="c1">// Cannot re-assign $this in test.php on line 4</span>
+            <span class="nv">$x</span> <span class="o">=</span> <span class="s1">&#39;this&#39;</span><span class="p">;</span>
+            <span class="nv">$$x</span> <span class="o">=</span> <span class="mi">42</span><span class="p">;</span>
+            <span class="nb">var_dump</span><span class="p">(</span><span class="nv">$this</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nv">$x</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">X</span><span class="p">();</span>
+    <span class="nv">$x</span><span class="o">-&gt;</span><span class="na">bar</span><span class="p">();</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">int(42)</span></pre></figure>
+  </body>
+</html>

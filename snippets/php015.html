@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 015</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 015 empty constant (string)</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>18th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP empty function constant disallowed</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="nb">var_dump</span><span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">));</span>
+<span class="cp">?&gt;</span><span class="x"></span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax php"><pre class="err"><b>Parse error:</b> syntax error, unexpected T_CONSTANT_ENCAPSED_STRING, expecting T_STRING
+or T_VARIABLE or '$' in <b>test.php</b> on line <b>2</b></pre></figure>
+
+    <h3 id="output">
+        Expected Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="x">bool(false)</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#emp04-ref" id="emp04">[emp04]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: The empty function documentation", <br>
+        <a href="http://us.php.net/empty">http://us.php.net/empty</a>
+        [accessed 18th Aug 2011].
+      </dd>
+
+    </dl>
+  </body>
+</html>

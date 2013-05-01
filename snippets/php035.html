@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 035</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 035 Spliting a bitfield</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP splitting bitfield bitwise each value bit</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="c1">//</span>
+    <span class="c1">// Split a bitfield</span>
+    <span class="c1">//</span>
+    <span class="c1">// Take a bitfield and split each value from the bitfield</span>
+    <span class="c1">// and put it in an array.</span>
+    <span class="c1">//</span>
+    <span class="c1">// Note. The result is ordered ascending in this implementation.</span>
+    <span class="c1">// Example: 65 = 64 + 1</span>
+    <span class="c1">//     split_bitfield(65) === array(1, 64)</span>
+    <span class="c1">//</span>
+    <span class="c1">//  :author:            meisterluk</span>
+    <span class="c1">//  :date:              2011.08</span>
+    <span class="c1">//  :license:           Public Domain</span>
+    <span class="c1">//  :original source:   anxiface2</span>
+    <span class="c1">//</span>
+    <span class="k">function</span> <span class="nf">split_bitfield</span><span class="p">(</span><span class="nv">$input</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$split</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+        <span class="nv">$base</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">while</span> <span class="p">(</span><span class="nv">$input</span> <span class="o">!==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$input</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="nv">$split</span><span class="p">[]</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nv">$base</span><span class="p">);</span>
+            <span class="nv">$input</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="nv">$base</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nv">$split</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// test suite</span>
+    <span class="k">echo</span> <span class="nx">split_bitfield</span><span class="p">(</span><span class="mh">0x1100</span><span class="p">)</span> <span class="o">===</span> <span class="k">array</span><span class="p">(</span><span class="mh">0x100</span><span class="p">,</span> <span class="mh">0x1000</span><span class="p">);</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        HTML Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">1</span></pre></figure>
+  </body>
+</html>

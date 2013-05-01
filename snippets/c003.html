@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>C 003</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>C 003 Read string from file</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>10th of Feb 2011</dd>
+        <dt>Tags</dt>
+          <dd>C read string file pointer blockwise fopen dynamic memory allocation</dd>
+        <dt>Tested with</dt>
+          <dd>gcc version 4.6.2</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax c"><pre><span class="c1">//------------------------------------------------------------------------------</span>
+<span class="c1">///</span>
+<span class="c1">/// Read content of file at `fileptr` to `string`.</span>
+<span class="c1">///</span>
+<span class="c1">/// @param fileptr an open file pointer to read data from.</span>
+<span class="c1">/// @param string string to store data in. Dynamic memory allocation, if NULL.</span>
+<span class="c1">///</span>
+<span class="c1">/// @return int error number</span>
+<span class="c1">//</span>
+<span class="kt">int</span> <span class="nf">readStringFromFile</span><span class="p">(</span><span class="kt">FILE</span> <span class="o">*</span><span class="n">fileptr</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">string</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">status</span> <span class="o">=</span> <span class="n">ERROR_NONE</span><span class="p">;</span>
+  <span class="kt">size_t</span> <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">chars_read</span><span class="p">;</span>
+  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">block_id</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="n">BUFFERSIZE</span><span class="p">];</span>
+  <span class="kt">char</span> <span class="o">*</span><span class="n">tmp</span><span class="p">;</span>
+
+  <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">feof</span><span class="p">(</span><span class="n">fileptr</span><span class="p">))</span>
+  <span class="p">{</span>
+    <span class="n">chars_read</span> <span class="o">=</span> <span class="n">fread</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">),</span> <span class="n">BUFFERSIZE</span><span class="p">,</span> <span class="n">fileptr</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">chars_read</span> <span class="o">&lt;</span> <span class="n">BUFFERSIZE</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="n">buffer</span><span class="p">[</span><span class="n">chars_read</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">feof</span><span class="p">(</span><span class="n">fileptr</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">chars_read</span> <span class="o">!=</span> <span class="n">BUFFERSIZE</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="n">free</span><span class="p">(</span><span class="o">*</span><span class="n">string</span><span class="p">);</span>
+      <span class="k">return</span> <span class="n">ERROR_FILE</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">block_id</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="n">tmp</span> <span class="o">=</span> <span class="n">calloc</span><span class="p">(</span><span class="n">BUFFERSIZE</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">));</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">tmp</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ERROR_OUTOFMEMORY</span><span class="p">;</span>
+
+      <span class="n">free</span><span class="p">(</span><span class="o">*</span><span class="n">string</span><span class="p">);</span>
+      <span class="p">(</span><span class="o">*</span><span class="n">string</span><span class="p">)</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="n">total</span> <span class="o">=</span> <span class="p">(</span><span class="n">BUFFERSIZE</span> <span class="o">*</span> <span class="n">block_id</span><span class="p">)</span> <span class="o">+</span> <span class="n">chars_read</span><span class="p">;</span>
+      <span class="n">tmp</span> <span class="o">=</span> <span class="n">realloc</span><span class="p">(</span><span class="o">*</span><span class="n">string</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="n">total</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">tmp</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+      <span class="p">{</span>
+        <span class="k">return</span> <span class="n">ERROR_OUTOFMEMORY</span><span class="p">;</span>
+      <span class="p">}</span>
+      <span class="p">(</span><span class="o">*</span><span class="n">string</span><span class="p">)</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">memcpy</span><span class="p">((</span><span class="o">*</span><span class="n">string</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">BUFFERSIZE</span> <span class="o">*</span> <span class="n">block_id</span><span class="p">),</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">chars_read</span><span class="p">);</span>
+    <span class="n">block_id</span><span class="o">++</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="n">status</span><span class="p">;</span>
+<span class="p">}</span></pre></figure>
+  </body>
+</html>

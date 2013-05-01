@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 033</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 033 Integer overflow</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP integer overflow long float</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="c1">// Integer overflow in PHP.</span>
+    <span class="c1">//</span>
+    <span class="c1">// The PHP documentation states,</span>
+    <span class="c1">//</span>
+    <span class="c1">//     The size of an integer is platform-dependent, although a maximum</span>
+    <span class="c1">//     value of about two billion is the usual value (that&#39;s 32 bits</span>
+    <span class="c1">//     signed). 64-bit platforms usually have a maximum value of about</span>
+    <span class="c1">//     9E18. PHP does not support unsigned integers. Integer size can</span>
+    <span class="c1">//     be determined using the constant PHP_INT_SIZE, and maximum value</span>
+    <span class="c1">//     using the constant PHP_INT_MAX since PHP 4.4.0 and PHP 5.0.5.</span>
+    <span class="c1">//</span>
+    <span class="c1">// http://us2.php.net/manual/en/language.types.integer.php</span>
+    <span class="c1">//</span>
+
+    <span class="k">echo</span> <span class="p">(</span><span class="nx">int</span><span class="p">)</span><span class="mi">2147483647</span><span class="p">;</span> <span class="c1">// 2**31</span>
+    <span class="k">echo</span> <span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="k">echo</span> <span class="p">(</span><span class="nx">int</span><span class="p">)</span><span class="mi">2147483648</span><span class="p">;</span> <span class="c1">// -2**31</span>
+    <span class="k">echo</span> <span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="k">echo</span> <span class="p">(</span><span class="nx">int</span><span class="p">)</span><span class="mi">4294967295</span><span class="p">;</span> <span class="c1">// -1</span>
+    <span class="k">echo</span> <span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="k">echo</span> <span class="p">(</span><span class="nx">int</span><span class="p">)</span><span class="mi">4294967296</span><span class="p">;</span> <span class="c1">// 0</span>
+    <span class="k">echo</span> <span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="c1">// However, PHP keeps on confusing people by naming the existence of</span>
+    <span class="c1">// a long data type:</span>
+    <span class="c1">//</span>
+    <span class="c1">// http://us2.php.net/ip2long</span>
+    <span class="c1">// http://us2.php.net/is_long</span>
+
+    <span class="k">echo</span> <span class="nb">ip2long</span><span class="p">(</span><span class="s1">&#39;255.255.255.255&#39;</span><span class="p">);</span>
+    <span class="k">echo</span> <span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="c1">//echo (long)1; // Syntax Error</span>
+
+    <span class="c1">// In reality, there is only the signed integer and whenever an overflow</span>
+    <span class="c1">// is detected, the value is converted to a floating point value.</span>
+
+    <span class="nb">var_dump</span><span class="p">(</span><span class="mi">2147483647</span><span class="p">);</span> <span class="c1">// 2**31 - 1</span>
+    <span class="k">echo</span> <span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="nb">var_dump</span><span class="p">(</span><span class="mi">2147483648</span><span class="p">);</span> <span class="c1">// 2**32</span>
+    <span class="k">echo</span> <span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        HTML Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">2147483647
+-2147483648
+-1
+0
+-1
+int(2147483647)
+float(2147483648)</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#int01-ref" id="int">[int01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: Integers",
+        <a href="http://us2.php.net/manual/en/language.types.integer.php">http://us2.php.net/manual/en/language.types.integer.php</a>
+        [accessed 27th Aug 2011].
+      </dd>
+
+      <dt class="index">
+        <a href="#ipl01-ref" id="ipl01">[ipl01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: ip2long",
+        <a href="http://us2.php.net/ip2long">http://us2.php.net/ip2long</a>
+        [accessed 27th Aug 2011].
+      </dd>
+
+      <dt class="index">
+        <a href="#isl01-ref" id="isl01">[isl01]</a>
+      </dt>
+      <dd>The PHP Group, "PHP: is_long", <br>
+        <a href="http://us2.php.net/is_long">http://us2.php.net/is_long</a>
+        [accessed 27th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

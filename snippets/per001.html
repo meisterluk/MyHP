@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>Perl 001</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Perl 001 Using references in perl</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27nd of Dec 2012</dd>
+        <dt>Tags</dt>
+          <dd>Perl reference prepend function</dd>
+        <dt>Tested with</dt>
+          <dd>perl 5.14.2</dd>
+      </dl>
+    </aside>
+
+    <h2 id="input">
+        Input
+    </h2>
+
+    <figure class="syntax perl"><pre><span class="c1">#!/usr/bin/perl -wT</span>
+
+<span class="k">use</span> <span class="nn">Data::</span><span class="n">Dumper</span><span class="p">;</span>
+
+<span class="k">sub </span><span class="nf">prepend</span> <span class="p">{</span>
+    <span class="k">my</span> <span class="nv">$names_</span> <span class="o">=</span> <span class="nb">shift</span><span class="p">;</span>
+    <span class="k">my</span> <span class="nv">@names</span> <span class="o">=</span> <span class="nv">@$names_</span><span class="p">;</span>
+    <span class="k">my</span> <span class="nv">$owner</span> <span class="o">=</span> <span class="nb">shift</span><span class="p">;</span>
+
+    <span class="nb">unshift</span> <span class="nv">@names</span><span class="p">,</span> <span class="nv">$$owner</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="nv">@names</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nv">@names</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;Foo&#39;</span><span class="p">,</span> <span class="s">&#39;Bar&#39;</span><span class="p">);</span>
+<span class="nv">$owner</span> <span class="o">=</span> <span class="s">&#39;Baz&#39;</span><span class="p">;</span>
+
+<span class="nv">@names</span> <span class="o">=</span> <span class="n">prepend</span><span class="p">(</span><span class="o">\</span><span class="nv">@names</span><span class="p">,</span> <span class="o">\</span><span class="nv">$owner</span><span class="p">);</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Dumper</span><span class="p">(</span><span class="nv">@names</span><span class="p">));</span>
+</pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#uns01-ref" id="uns01">[uns01]</a>
+      </dt>
+      <dd>Perl 5 Porters, "unshift - perldoc.perl.org", <br>
+        <a href="http://perldoc.perl.org/functions/unshift.html">http://perldoc.perl.org/functions/unshift.html</a>
+        [accessed 27nd Dec 2012].
+      </dd>
+    </dl>
+  </body>
+</html>

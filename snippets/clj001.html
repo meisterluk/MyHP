@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>CLJ 001</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Clojure 001 Basic operations and Mergesort</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>meisterluk, FelixHoer</dd>
+        <dt>Date</dt>
+          <dd>08th of Feb 2012</dd>
+        <dt>Tags</dt>
+          <dd>Clojure euclidean algorithm greatest common divisor mergesort concat split asterisk</dd>
+        <dt>Tested with</dt>
+          <dd>Clojure 1.1</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax clj"><pre><span class="p">(</span><span class="nb">comment </span><span class="s">&quot;Thanks Felix for this hacking session :)&quot;</span><span class="p">)</span>
+
+<span class="c1">; basic list usage</span>
+<span class="p">(</span><span class="nb">println </span><span class="p">(</span><span class="nb">first </span><span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">)))</span>
+
+<span class="c1">; variable binding</span>
+<span class="p">(</span><span class="nb">println </span><span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">a</span> <span class="mi">3</span><span class="p">]</span> <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">a</span> <span class="mi">5</span><span class="p">]</span> <span class="nv">a</span><span class="p">)))</span>
+
+<span class="c1">; greatest common divisor</span>
+<span class="p">(</span><span class="k">defn </span><span class="nv">gcd</span> <span class="p">[</span><span class="nv">a</span> <span class="nv">b</span><span class="p">]</span>
+    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">= </span><span class="nv">b</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="nv">a</span>
+        <span class="p">(</span><span class="nf">gcd</span> <span class="nv">b</span> <span class="p">(</span><span class="nf">mod</span> <span class="nv">a</span> <span class="nv">b</span><span class="p">))))</span>
+<span class="p">(</span><span class="nb">println </span><span class="p">(</span><span class="nf">gcd</span> <span class="mi">27</span> <span class="mi">21</span><span class="p">))</span>
+
+<span class="c1">; merge sort</span>
+<span class="p">(</span><span class="k">defn </span><span class="nv">combine</span> <span class="p">[[</span><span class="nv">x</span> <span class="nv">:as</span> <span class="nv">xs</span><span class="p">]</span> <span class="p">[</span><span class="nv">y</span> <span class="nv">:as</span> <span class="nv">ys</span><span class="p">]</span> <span class="nv">sorted</span><span class="p">]</span>
+    <span class="s">&quot;Take two lists and append the lower head value to sorted&quot;</span>
+    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nf">empty?</span> <span class="nv">xs</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb">concat </span><span class="nv">sorted</span> <span class="nv">ys</span><span class="p">)</span>
+        <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nf">empty?</span> <span class="nv">ys</span><span class="p">)</span>
+            <span class="p">(</span><span class="nb">concat </span><span class="nv">sorted</span> <span class="nv">xs</span><span class="p">)</span>
+            <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&lt; </span><span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+                <span class="p">(</span><span class="nf">combine</span> <span class="p">(</span><span class="nb">rest </span><span class="nv">xs</span><span class="p">)</span> <span class="nv">ys</span> <span class="p">(</span><span class="nb">concat </span><span class="nv">sorted</span> <span class="p">(</span><span class="nb">list </span><span class="nv">x</span><span class="p">)))</span>
+                <span class="p">(</span><span class="nf">combine</span> <span class="nv">xs</span> <span class="p">(</span><span class="nb">rest </span><span class="nv">ys</span><span class="p">)</span> <span class="p">(</span><span class="nb">concat </span><span class="nv">sorted</span> <span class="p">(</span><span class="nb">list </span><span class="nv">y</span><span class="p">)))))))</span>
+
+<span class="p">(</span><span class="k">defn </span><span class="nv">mergesort</span> <span class="p">[</span><span class="nv">a</span><span class="p">]</span>
+    <span class="s">&quot;The mergesort function splitting a in two lists&quot;</span>
+    <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">length</span> <span class="p">(</span><span class="nb">count </span><span class="nv">a</span><span class="p">)]</span>
+        <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&lt;= </span><span class="nv">length</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="nv">a</span>
+            <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">half</span> <span class="p">(</span><span class="nb">/ </span><span class="nv">length</span> <span class="mi">2</span><span class="p">)</span>
+                  <span class="p">[</span><span class="nv">f</span> <span class="nv">s</span><span class="p">]</span> <span class="p">(</span><span class="nb">split-at </span><span class="nv">half</span> <span class="nv">a</span><span class="p">)</span>
+                  <span class="nv">sorted-f</span> <span class="p">(</span><span class="nf">mergesort</span> <span class="nv">f</span><span class="p">)</span>
+                  <span class="nv">sorted-s</span> <span class="p">(</span><span class="nf">mergesort</span> <span class="nv">s</span><span class="p">)]</span>
+                <span class="p">(</span><span class="nf">combine</span> <span class="nv">sorted-f</span> <span class="nv">sorted-s</span> <span class="p">[])))))</span>
+<span class="p">(</span><span class="nb">println </span><span class="p">(</span><span class="nf">mergesort</span> <span class="p">[</span><span class="mi">3</span> <span class="mi">4</span> <span class="mi">6</span> <span class="mi">5</span> <span class="mi">2</span><span class="p">]))</span>
+
+<span class="c1">; asterisk is a valid variable name</span>
+<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">*</span> <span class="mi">5</span><span class="p">]</span> <span class="p">(</span><span class="nb">println </span><span class="nv">*</span><span class="p">))</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">1
+5
+3
+(2 3 4 5 6)
+5</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#euc01-ref" id="euc01">[euc01]</a>
+      </dt>
+      <dd>Wikipedia, "Euclidean algorithm", <br>
+        <a href="http://de.wikipedia.org/wiki/Euclidean_algorithm#Implementations">http://de.wikipedia.org/wiki/Euclidean_algorithm#Implementations</a>
+        [accessed 08th Feb 2012].
+      </dd>
+
+    </dl>
+  </body>
+</html>

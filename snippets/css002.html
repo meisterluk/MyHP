@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>CSS 002</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>CSS 002 CSS counters (alternative)</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>21st of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>CSS counters for all headers h1 h2 h3 h4 h5 h6 CSS3</dd>
+        <dt>Tested with</dt>
+          <dd>Firefox 4 on Linux Fedora</dd>
+      </dl>
+    </aside>
+
+    <h2 id="input">
+        Input
+    </h2>
+
+    <figure class="syntax php"><pre><span class="c">/*</span>
+<span class="c"> *     Automatic section numbering</span>
+<span class="c"> */</span>
+
+<span class="k">@charset</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">;</span>
+
+<span class="k">@media</span> <span class="nt">all</span> <span class="p">{</span>
+    <span class="nt">body</span> <span class="p">{</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">first_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">second_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">third_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">fourth_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">fifth_header</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h1</span> <span class="p">{</span> <span class="k">counter-increment</span><span class="o">:</span> <span class="n">first_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">second_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">third_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">fourth_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">fifth_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">sixth_header</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h2</span> <span class="p">{</span> <span class="k">counter-increment</span><span class="o">:</span> <span class="n">second_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">third_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">fourth_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">fifth_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">sixth_header</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h3</span> <span class="p">{</span> <span class="k">counter-increment</span><span class="o">:</span> <span class="n">third_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">fourth_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">fifth_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">sixth_header</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h4</span> <span class="p">{</span> <span class="k">counter-increment</span><span class="o">:</span> <span class="n">fourth_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">fifth_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">sixth_header</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h5</span> <span class="p">{</span> <span class="k">counter-increment</span><span class="o">:</span> <span class="n">fifth_header</span><span class="p">;</span> <span class="k">counter-reset</span><span class="o">:</span> <span class="n">sixth_header</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h6</span> <span class="p">{</span> <span class="k">counter-increment</span><span class="o">:</span> <span class="n">sixth_header</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h1</span><span class="nd">:before</span> <span class="p">{</span> <span class="k">content</span><span class="o">:</span> <span class="n">counter</span><span class="p">(</span><span class="n">first_header</span><span class="p">)</span> <span class="s2">&quot; &quot;</span><span class="p">;</span> <span class="k">opacity</span><span class="o">:</span> <span class="m">0</span><span class="o">.</span><span class="m">5</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h2</span><span class="nd">:before</span> <span class="p">{</span> <span class="k">content</span><span class="o">:</span> <span class="n">counter</span><span class="p">(</span><span class="n">first_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">second_header</span><span class="p">)</span> <span class="s2">&quot; &quot;</span><span class="p">;</span> <span class="k">opacity</span><span class="o">:</span> <span class="m">0</span><span class="o">.</span><span class="m">5</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h3</span><span class="nd">:before</span> <span class="p">{</span> <span class="k">content</span><span class="o">:</span> <span class="n">counter</span><span class="p">(</span><span class="n">first_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">second_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">third_header</span><span class="p">)</span> <span class="s2">&quot; &quot;</span><span class="p">;</span> <span class="k">opacity</span><span class="o">:</span> <span class="m">0</span><span class="o">.</span><span class="m">5</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h4</span><span class="nd">:before</span> <span class="p">{</span> <span class="k">content</span><span class="o">:</span> <span class="n">counter</span><span class="p">(</span><span class="n">first_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">second_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">third_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">fourth_header</span><span class="p">)</span> <span class="s2">&quot; &quot;</span><span class="p">;</span> <span class="k">opacity</span><span class="o">:</span> <span class="m">0</span><span class="o">.</span><span class="m">5</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h5</span><span class="nd">:before</span> <span class="p">{</span> <span class="k">content</span><span class="o">:</span> <span class="n">counter</span><span class="p">(</span><span class="n">first_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">second_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">third_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">fourth_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">fifth_header</span><span class="p">)</span> <span class="s2">&quot; &quot;</span><span class="p">;</span> <span class="k">opacity</span><span class="o">:</span> <span class="m">0</span><span class="o">.</span><span class="m">5</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">h6</span><span class="nd">:before</span> <span class="p">{</span> <span class="k">content</span><span class="o">:</span> <span class="n">counter</span><span class="p">(</span><span class="n">first_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">second_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">third_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">fourth_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">fifth_header</span><span class="p">)</span> <span class="s2">&quot;.&quot;</span> <span class="n">counter</span><span class="p">(</span><span class="n">sixth_header</span><span class="p">)</span> <span class="s2">&quot; &quot;</span><span class="p">;</span> <span class="k">opacity</span><span class="o">:</span> <span class="m">0</span><span class="o">.</span><span class="m">5</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#emp01-ref" id="emp01">[emp01]</a>
+      </dt>
+      <dd>W3C CSS Working Group, "Generated content, automatic numbering, and lists", <br>
+        <a href="http://www.w3.org/TR/CSS2/generate.html">http://www.w3.org/TR/CSS2/generate.html</a>
+        [accessed 21th Aug 2011].
+      </dd>
+    </dl>
+  </body>
+</html>

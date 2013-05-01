@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>PHP 031</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 031 http_negotiate_language replacement</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of Aug 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP http_negotiate_language accept language quality</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.2.6-1 on Debian Lenny</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+    <span class="cm">/*</span>
+<span class="cm">        Determine user&#39;s language out of an given set</span>
+<span class="cm">        Implementation for http_negotiate_language, if it&#39;s not</span>
+<span class="cm">        available at your system.</span>
+
+<span class="cm">        :author:        Anonymous</span>
+
+<span class="cm">        @param languages array list of languages as defined by RFC 1766</span>
+<span class="cm">        @param accept the HTTP_ACCEPT_LANGUAGE string</span>
+<span class="cm">    */</span>
+    <span class="k">function</span> <span class="nf">prefered_language</span> <span class="p">(</span><span class="nv">$languages</span><span class="p">,</span> <span class="nv">$accept</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">// HTTP_ACCEPT_LANGUAGE is defined in</span>
+        <span class="c1">// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4</span>
+        <span class="c1">// pattern to find is therefore something like this:</span>
+        <span class="c1">//    1#( language-range [ &quot;;&quot; &quot;q&quot; &quot;=&quot; qvalue ] )</span>
+        <span class="c1">// where:</span>
+        <span class="c1">//    language-range  = ( ( 1*8ALPHA *( &quot;-&quot; 1*8ALPHA ) ) | &quot;*&quot; )</span>
+        <span class="c1">//    qvalue         = ( &quot;0&quot; [ &quot;.&quot; 0*3DIGIT ] )</span>
+        <span class="c1">//            | ( &quot;1&quot; [ &quot;.&quot; 0*3(&quot;0&quot;) ] )</span>
+        <span class="nb">preg_match_all</span><span class="p">(</span><span class="s2">&quot;/([[:alpha:]]{1,8})(-([[:alpha:]|-]{1,8}))?&quot;</span> <span class="o">.</span>
+                       <span class="s2">&quot;(\s*;\s*q\s*=\s*(1\.0{0,3}|0\.\d{0,3}))?\s*(,|$)/i&quot;</span><span class="p">,</span>
+                       <span class="nv">$accept</span><span class="p">,</span> <span class="nv">$hits</span><span class="p">,</span> <span class="nx">PREG_SET_ORDER</span><span class="p">);</span>
+
+        <span class="c1">// default language (in case of no hits) is the first in the array</span>
+        <span class="nv">$bestlang</span> <span class="o">=</span> <span class="nv">$languages</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="nv">$bestqval</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="k">foreach</span> <span class="p">(</span><span class="nv">$hits</span> <span class="k">as</span> <span class="nv">$arr</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// read data from the array of this hit</span>
+            <span class="nv">$langprefix</span> <span class="o">=</span> <span class="nb">strtolower</span> <span class="p">(</span><span class="nv">$arr</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$arr</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span> <span class="p">{</span>
+                <span class="nv">$langrange</span> <span class="o">=</span> <span class="nb">strtolower</span> <span class="p">(</span><span class="nv">$arr</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span>
+                <span class="nv">$language</span> <span class="o">=</span> <span class="nv">$langprefix</span> <span class="o">.</span> <span class="s2">&quot;-&quot;</span> <span class="o">.</span> <span class="nv">$langrange</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="nv">$language</span> <span class="o">=</span> <span class="nv">$langprefix</span><span class="p">;</span>
+            <span class="nv">$qvalue</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$arr</span><span class="p">[</span><span class="mi">5</span><span class="p">]))</span> <span class="nv">$qvalue</span> <span class="o">=</span> <span class="nb">floatval</span><span class="p">(</span><span class="nv">$arr</span><span class="p">[</span><span class="mi">5</span><span class="p">]);</span>
+
+            <span class="c1">// find q-maximal language</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">in_array</span><span class="p">(</span><span class="nv">$language</span><span class="p">,</span><span class="nv">$languages</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nv">$qvalue</span> <span class="o">&gt;</span> <span class="nv">$bestqval</span><span class="p">))</span> <span class="p">{</span>
+                <span class="nv">$bestlang</span> <span class="o">=</span> <span class="nv">$language</span><span class="p">;</span>
+                <span class="nv">$bestqval</span> <span class="o">=</span> <span class="nv">$qvalue</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="c1">// if no direct hit, try the prefix only but decrease q-value</span>
+            <span class="c1">// by 10% (as http_negotiate_language does)</span>
+            <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nb">in_array</span><span class="p">(</span><span class="nv">$languageprefix</span><span class="p">,</span><span class="nv">$languages</span><span class="p">)</span> 
+                <span class="o">&amp;&amp;</span> <span class="p">((</span><span class="nv">$qvalue</span><span class="o">*</span><span class="mf">0.9</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nv">$bestqval</span><span class="p">))</span> 
+            <span class="p">{</span>
+                <span class="nv">$bestlang</span> <span class="o">=</span> <span class="nv">$languageprefix</span><span class="p">;</span>
+                <span class="nv">$bestqval</span> <span class="o">=</span> <span class="nv">$qvalue</span><span class="o">*</span><span class="mf">0.9</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nv">$bestlang</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">echo</span> <span class="nx">prefered_language</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="s1">&#39;de_at&#39;</span><span class="p">,</span> <span class="s1">&#39;en&#39;</span><span class="p">),</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;HTTP_ACCEPT_LANGUAGE&#39;</span><span class="p">]);</span>
+<span class="cp">?&gt;</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">en</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#htt01-ref" id="htt01">[htt01]</a>
+      </dt>
+      <dd>Anonymous, "PHP: http_negotiate_language", <br>
+        <a href="http://www.php.net/manual/de/function.http-negotiate-language.php#86787">http://www.php.net/manual/de/function.http-negotiate-language.php#86787</a>
+        [accessed 27th Aug 2011].
+      </dd>
+
+    </dl>
+  </body>
+</html>
