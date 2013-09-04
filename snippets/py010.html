@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>Python 010</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Python 010 Python 2.x csv module unicode fix</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>13th of Apr 2012</dd>
+        <dt>Tags</dt>
+          <dd>Python unicode utf8 csv UnicodeDecodeError codec can't decode byte</dd>
+        <dt>Tested with</dt>
+          <dd>Python 2.7.3 (GCC 4.6.3 on linux2), Python 2.7.2 with PyPy 1.8.0 (GCC 4.6.2 on linux2)</dd>
+      </dl>
+    </aside>
+    
+    <h2 id="issue">Issue</h2>
+    <blockquote>
+      <p>
+        <strong>Note:</strong>
+        This version of the
+        <a href="http://docs.python.org/2.7/library/csv.html#module-csv"><tt>csv</tt></a>
+        module doesn&#8217;t support Unicode input.  Also,
+        there are currently some issues regarding ASCII NUL characters.  Accordingly,
+        all input should be UTF-8 or printable ASCII to be safe; see the examples in
+        section
+        <a href="http://docs.python.org/2.7/library/csv.html#csv-examples"><em>Examples</em></a>.</p>
+    </blockquote>
+    
+    <p>
+      python's csv module does only work with UTF-8 data.
+      However, if you use the open function
+      (<code>open(name[, mode[, buffering]]) -&gt; file object</code>)
+      the data will be read by the charset defined as default encoding:
+    </p>
+    <figure class="syntax python"><pre><span class="nd">user@unix</span> <span class="o">~</span> <span class="o">%</span> <span class="n">py</span>
+<span class="sd">Python 2.7.2 (1.8+dfsg-2, Feb 19 2012, 19:18:08)
+[PyPy 1.8.0 with GCC 4.6.2] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+And now for something completely different: ``arguably, everything is a niche''</span>
+<span class="o">&gt;&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">sys</span>
+<span class="o">&gt;&gt;&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">getdefaultencoding</span><span class="p">()</span>
+<span class="s">&#39;ascii&#39;</span>
+<span class="o">&gt;&gt;&gt;&gt;</span></pre></figure>
+
+    <p>
+      The referenced Examples section provides good convenient ways
+      to handle this issue. I am providing my own here:
+    </p>
+
+    <h2 id="input">
+        Input
+    </h2>
+    
+    <p>Be sure to store this file as UTF8 text file.</p>
+
+    <figure class="syntax python"><pre><span class="c">#!/usr/bin/env python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">codecs</span>
+
+<span class="n">FILEENCODING</span> <span class="o">=</span> <span class="s">u&#39;utf-8&#39;</span>
+<span class="n">FILENAME</span> <span class="o">=</span> <span class="s">u&#39;csvtestfile&#39;</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="s">u&#39;hello&#39;</span><span class="p">,</span> <span class="s">u&#39;world&#39;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s">u&#39;foo&#39;</span><span class="p">,</span> <span class="s">u&#39;bär&#39;</span><span class="p">]</span>
+<span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">encoded_stream</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Take a stream of unicode strings and return it encoded&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">line</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">FILEENCODING</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">safe_open</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;`open(name[, mode[, buffering]])` with respect to the encoding.</span>
+<span class="sd">    Use only for reading.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">u&#39;encoding&#39;</span><span class="p">:</span> <span class="n">FILEENCODING</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="c"># writing</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">FILENAME</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">csv_writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">csv_writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="n">v</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">FILEENCODING</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">row</span><span class="p">])</span>
+
+<span class="c"># reading</span>
+<span class="n">read_data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">with</span> <span class="n">safe_open</span><span class="p">(</span><span class="n">FILENAME</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">csv_reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">encoded_stream</span><span class="p">(</span><span class="n">fp</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">csv_reader</span><span class="p">:</span>
+        <span class="n">read_data</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">unicode</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">FILEENCODING</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">row</span><span class="p">])</span>
+
+<span class="c"># compare</span>
+<span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">read_data</span><span class="p">)</span></pre></figure>
+
+    <h2 id="output">
+        Output
+    </h2>
+
+    <p>
+      As far as both data look the same (<code>data</code> and <code>read_data</code>)
+      the whole procedure worked as required.
+    </p>
+
+    <figure class="syntax"><pre><span class="m">[[u'hello', u'world'], [u'foo', u'b\xe4r']]
+[[u'hello', u'world'], [u'foo', u'b\xe4r']]</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#csv01-ref" id="csv01">[csv01]</a>
+      </dt>
+      <dd>Python Software Foundation, 13.1. csv — CSV File Reading and Writing &mdash; Python v2.7.4 documentation, <br>
+        <a href="http://docs.python.org/2.7/library/csv.html">http://docs.python.org/2.7/library/csv.html</a>
+        [accessed 13th Apr 2013].
+      </dd>
+    </dl>
+  </body>
+</html>
