@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>Python 012</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Python 012 Property inheritance</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>28th of Feb 2014</dd>
+        <dt>Tags</dt>
+          <dd>Python property inheritance getter setter </dd>
+        <dt>Tested with</dt>
+          <dd>Python 2.7.4</dd>
+      </dl>
+    </aside>
+
+    <h2 id="input">
+        Input
+    </h2>
+
+    <figure class="syntax python"><pre><span class="k">class</span> <span class="nc">Parent</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">getter_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">42</span>
+    <span class="n">prop</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">getter_method</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Parent</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">getter_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">3.141592</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">inst</span> <span class="o">=</span> <span class="n">Child</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">inst</span><span class="o">.</span><span class="n">prop</span><span class="p">)</span></pre></figure>
+
+    <h2 id="output">
+        Output
+    </h2>
+
+    <figure class="syntax"><pre><span class="m">42</span></pre></figure>
+  </body>
+</html>
