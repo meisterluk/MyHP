@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>Python 013</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+    <style type="text/css">
+      .filename { font-family: monospace; font-size: 80%; }
+    </style>
+  </head>
+
+  <body>
+    <h1>Python 013 import module vs from import</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>1st of Mar 2014</dd>
+        <dt>Tags</dt>
+          <dd>Python module scope from module import singleton absolute import</dd>
+        <dt>Tested with</dt>
+          <dd>Python 2.7.4</dd>
+      </dl>
+    </aside>
+
+    <h2 id="import-module">import module approach</h2>
+    <h3>File <span class="filename">a.py</span></h3>
+
+    <figure class="syntax python"><pre><span class="kn">import</span> <span class="nn">config</span>
+<span class="kn">import</span> <span class="nn">b</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">inc</span><span class="p">()</span>
+    <span class="k">print</span> <span class="n">config</span><span class="o">.</span><span class="n">STATE</span>
+    <span class="n">b</span><span class="o">.</span><span class="n">output</span><span class="p">()</span>
+    <span class="k">print</span> <span class="n">config</span><span class="o">.</span><span class="n">STATE</span></pre></figure>
+
+    <h3>File <span class="filename">b.py</span></h3>
+
+    <figure class="syntax python"><pre><span class="kn">import</span> <span class="nn">config</span>
+
+<span class="k">def</span> <span class="nf">output</span><span class="p">():</span>
+    <span class="k">print</span> <span class="n">config</span><span class="o">.</span><span class="n">STATE</span></pre></figure>
+
+    <h3>File <span class="filename">config.py</span></h3>
+
+    <figure class="syntax python"><pre><span class="n">STATE</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="k">def</span> <span class="nf">inc</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">STATE</span>
+    <span class="n">STATE</span> <span class="o">+=</span> <span class="mi">1</span></pre></figure>
+
+    <h3>Output</h3>
+
+    <p>Output for <code>python a.py</code></p>
+
+    <figure class="syntax python"><pre><span class="mi">2</span>
+<span class="mi">2</span>
+<span class="mi">2</span></pre></figure>
+
+    <p>
+        Thus all module share the same instance of the config module.
+        The config module is a singleton.
+    </p>
+
+    <h2 id="from-import">from import approach</h2>
+    <h3>New <span class="filename">b.py</span></h3>
+
+    <figure class="syntax python"><pre><span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">STATE</span>
+
+<span class="k">def</span> <span class="nf">output</span><span class="p">():</span>
+    <span class="k">print</span> <span class="n">STATE</span></pre></figure>
+
+    <h3>Output</h3>
+
+    <p>Output of <code>python a.py</code></p>
+
+    <figure class="syntax python"><pre><span class="mi">2</span>
+<span class="mi">1</span>
+<span class="mi">2</span></pre></figure>
+
+    <p>
+        Here we have different integers as result. So <code>from module import var</code>
+        creates a new instance of this module (module is not a singleton).
+    </p>
+
+    <p id="py3k">
+        There is no difference between python 2.x and py3k.
+    </p>
+
+    <h2>Absolute imports?</h2>
+
+    <h3>File <span class="filename">b.py</span></h3>
+
+    <figure class="syntax python"><pre><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
+
+<span class="k">def</span> <span class="nf">output</span><span class="p">():</span>
+    <span class="k">print</span> <span class="n">config</span><span class="o">.</span><span class="n">STATE</span></pre></figure>
+
+    <h3>File <span class="filename">config.py</span></h3>
+
+    <figure class="syntax python"><pre><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+
+<span class="n">STATE</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="k">def</span> <span class="nf">inc</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">STATE</span>
+    <span class="n">STATE</span> <span class="o">+=</span> <span class="mi">1</span></pre></figure>
+
+    <h3>File <span class="filename">__init__.py</span></h3>
+
+    <figure class="syntax python"><pre><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">b</span>
+
+<span class="n">config</span><span class="o">.</span><span class="n">inc</span><span class="p">()</span>
+<span class="k">print</span> <span class="n">config</span><span class="o">.</span><span class="n">STATE</span>
+<span class="n">b</span><span class="o">.</span><span class="n">output</span><span class="p">()</span>
+<span class="k">print</span> <span class="n">config</span><span class="o">.</span><span class="n">STATE</span></pre></figure>
+
+    <h3>Output</h3>
+
+    <figure class="syntax python"><pre><span class="mi">2</span>
+<span class="mi">2</span>
+<span class="mi">2</span></pre></figure>
+
+    <p><code>from . import module</code> behaves the same way like <code>import module</code></p>
+  </body>
+</html>
