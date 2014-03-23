@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+   <title>PHP 048</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>PHP 048 Revisioned class members</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>22th of Mar 2011</dd>
+        <dt>Tags</dt>
+          <dd>PHP object member property revisioned control version restore previous</dd>
+        <dt>Tested with</dt>
+          <dd>PHP 5.5.3-1 on xubuntu 13.10</dd>
+        <dt>License</dt>
+          <dd>Public Domain</dd>
+      </dl>
+    </aside>
+
+    <div id="toc">
+      <ul>
+        <li><a href="#idea">Idea</a>
+          <ul>
+            <li><a href="#examples">Usage examples</a></li>
+          </ul>
+        </li>
+        <li><a href="#interface">Interface</a>
+          <ul>
+            <li><a href="#design">PHP implementation design</a></li>
+            <li><a href="#implementation">Implementation</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <style type="text/css">
+      .field::first-child:before { content: attr(data-name) "."; font-weight: bold; }
+    </style>
+
+    <div class="field" data-name="Note">
+      <p>
+        In this snippet I introduce a revisioned object members design pattern
+        and a corresponding implementation for PHP 5.4.
+      </p>
+    </div>
+
+    <h2 id="idea">
+        Idea
+    </h2>
+
+    <p>
+      In various scenarios, you might be interested in an old state of an object.
+      What about trying some configuration? If it is not successful,
+      use an old configuration. Or run a program and store an intermediate state
+      in the object. If this intermediate state is unsuccessful, revert to an
+      old state (like in backtracking).
+    </p>
+
+    <h3 id="examples">Usage examples</h3>
+    <p>
+      I want to provide two usage examples.
+      Let us consider the following classes:
+    </p>
+
+    <figure class="syntax php"><pre><span class="k">class</span> <span class="nc">Config</span> <span class="k">implements</span> <span class="nx">RevInterface</span> <span class="p">{</span>
+    <span class="k">use</span> <span class="nx">RevTrait</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$user</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$pwd</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$db</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$mysql_table</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$postgres_schema</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$speed</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">CollatzProblem</span> <span class="k">implements</span> <span class="nx">RevInterface</span> <span class="p">{</span>
+    <span class="k">use</span> <span class="nx">RevTrait</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$val</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$iter</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nv">$start_value</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__set</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="nv">$start_value</span><span class="p">);</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">iter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">val</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__set</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">val</span> <span class="o">/</span> <span class="mi">2</span><span class="p">);</span>
+        <span class="k">else</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__set</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">val</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre></figure>
+
+    <p>Followingly we can illustrate both usecases mentioned above.</p>
+
+    <figure class="syntax php"><pre><span class="c1">// Use this config to run a procedure. Returns false on failure.</span>
+<span class="k">function</span> <span class="nf">useConfig</span><span class="p">(</span><span class="nv">$config</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">==</span> <span class="s2">&quot;meisterluk&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">function</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$config</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Config</span><span class="p">();</span>
+
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s2">&quot;meisterluk&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;39f6vgfok2&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">db</span> <span class="o">=</span> <span class="s2">&quot;mysql&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">mysql_table</span> <span class="o">=</span> <span class="s2">&quot;user_accounts&quot;</span><span class="p">;</span>
+    <span class="nv">$snapshot1</span> <span class="o">=</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s2">&quot;prokls&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;dg701rs643a&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">db</span> <span class="o">=</span> <span class="s2">&quot;postgres&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">postgres_schema</span> <span class="o">=</span> <span class="s2">&quot;public&quot;</span><span class="p">;</span>
+    <span class="nv">$snapshot2</span> <span class="o">=</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+
+    <span class="k">foreach</span> <span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="nv">$snapshot2</span><span class="p">,</span> <span class="nv">$snapshot1</span><span class="p">)</span> <span class="k">as</span> <span class="nv">$rev</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">useConfig</span><span class="p">(</span><span class="nv">$config</span><span class="p">))</span>
+            <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">runCollatz</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$collatz</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">CollatzProblem</span><span class="p">(</span><span class="m">42</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="o">!</span><span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">was</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">));</span>
+    <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="mi">500</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">run</span><span class="p">();</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">was</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">42</span><span class="p">));</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">was</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">));</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">was</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">));</span>
+<span class="p">}</span></pre></figure>
+
+    <p>
+      We can use <code>revertRevision</code> to revert to an
+      old state of the object member. The argument specifies
+      a revision (integer), which is unique per state of this
+      object. So every modification of an object member creates
+      a new revision. <code>was</code> allows you to test whether
+      a particular member has ever been set to a specific value.
+    </p>
+    <p>
+      But I guess we have to specify a few technical things to go on.
+    </p>
+
+    <h2 id="interface">Interface</h2>
+
+    <figure class="syntax php"><pre><span class="k">interface</span> <span class="nx">RevInterface</span> <span class="p">{</span>
+    <span class="c1">// What is the current revision?</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getRevision</span><span class="p">();</span>
+    <span class="c1">// Restore a previous revision $rev.</span>
+    <span class="c1">// 0 is the state before the constructor was called.</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">revertRevision</span><span class="p">(</span><span class="nv">$rev</span><span class="p">);</span>
+    <span class="c1">// Retrieve member $var at old revision $rev.</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getMemberAtRevision</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$rev</span><span class="p">);</span>
+    <span class="c1">// How many times has member $var been changed?</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getMemberChanges</span><span class="p">(</span><span class="nv">$var</span><span class="p">);</span>
+    <span class="c1">// Revert one specific member $var to a previous state $rev.</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">revertMember</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$rev</span><span class="p">);</span>
+<span class="p">}</span></pre></figure>
+
+    <ul>
+      <li>
+        <code>getRevision</code> returns a revision identifier.
+        Revisions identifiers define a totally ordered set <a href="#tot01" id="tot01-ref">[tot01]</a>; thus allowing ordered comparison.
+        They are specific for one object and no revision identifier is returned twice
+        unless object state is reverted.
+      </li>
+      <li>
+        <code>revertRevision</code>, <code>revertMember</code> and <code>getMemberAtRevision</code>
+        allows you to retrieve old object states. Whereas the third method
+        only returns a value at a specific revision, they first two methods actually
+        revert the state. Reversion is an irrevocable operation in this design.
+        Starting at state 10, reverting to state 5, you cannot revert back to state 10.
+      </li>
+      <li>
+        <code>getMemberChanges</code> returns the number of times an object member has changed.
+      </li>
+    </ul>
+
+    <h3 id="design">PHP implementation design</h3>
+    <p>PHP is not appropriate to create beautiful APIs, but let's try our best.</p>
+    <p>
+      Implementing this interface requires a hook to recognize any modifications
+      of an object. This is <em>not</em> possible in PHP unless …
+    </p>
+    <ul>
+      <li>
+        <code>__set</code> <a href="#mag01" id="mag01-ref">[mag01]</a>
+        is called for <em>any</em> modification
+        of the revisioned object member.
+        However per default <code>__set</code> is only run only
+        when writing data to <em>inaccessible</em> properties.
+        To make objects inaccessible, we declare them as protected or private.
+        If we access them from the outside, everything is fine.
+        If we access them within the object, we have to call <code>__set</code> explicitly.
+      </li>
+      <li>
+        <code>__get</code> in this implementation discards any public,
+        private and protected declarations and makes them all public.
+        Using the reflection API you can fix that
+        if you want to <a href="#ref01" id="ref01-ref">[ref01]</a>.
+        It will return <code>null</code> for undefined properties after reverting
+        to revision 0; not triggering the usual undefined value notice.
+      </li>
+    </ul>
+
+    <p>
+      We are going to use Traits <a href="#tra01" id="tra01-ref">[tra01]</a>.
+      A quick and dirty implementation looks like:
+    </p>
+
+    <figure class="syntax php"><pre><span class="k">trait</span> <span class="nx">RevTrait</span> <span class="p">{</span>
+    <span class="k">protected</span> <span class="nv">$revisions</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="k">protected</span> <span class="nv">$current_revision</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__set</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$val</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">][</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">current_revision</span><span class="p">]</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">};</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">current_revision</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">}</span> <span class="o">=</span> <span class="nv">$val</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__get</span><span class="p">(</span><span class="nv">$var</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">};</span> <span class="p">}</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">revertRevision</span><span class="p">(</span><span class="nv">$rev</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span> <span class="k">as</span> <span class="nv">$var</span> <span class="o">=&gt;</span> <span class="nv">$_</span><span class="p">)</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revertMember</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$rev</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">revertMember</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$rev</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">}</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$rev</span><span class="p">);</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$revision</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$revision</span> <span class="o">&gt;=</span> <span class="nv">$rev</span><span class="p">)</span>
+                <span class="nb">unset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">][</span><span class="nv">$revision</span><span class="p">]);</span>
+    <span class="p">}</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getRevision</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">current_revision</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getMemberAtRevision</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$rev</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]))</span>
+            <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">};</span>
+        <span class="nv">$keys</span> <span class="o">=</span> <span class="nb">array_keys</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]);</span>
+        <span class="nb">sort</span><span class="p">(</span><span class="nv">$keys</span><span class="p">);</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="nv">$keys</span> <span class="k">as</span> <span class="nv">$key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$key</span> <span class="o">&gt;=</span> <span class="nv">$rev</span><span class="p">)</span>
+                <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">][</span><span class="nv">$key</span><span class="p">];</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">};</span>
+    <span class="p">}</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getMemberChanges</span><span class="p">(</span><span class="nv">$var</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]))</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">TestClass</span> <span class="k">implements</span> <span class="nx">RevInterface</span> <span class="p">{</span>
+    <span class="k">use</span> <span class="nx">RevTrait</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$member</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nv">$cls</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">TestClass</span><span class="p">();</span>
+<span class="nv">$cls</span><span class="o">-&gt;</span><span class="na">member</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>
+<span class="nv">$cls</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="nb">assert</span><span class="p">(</span><span class="nv">$cls</span><span class="o">-&gt;</span><span class="na">member</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span></pre></figure>
+
+    <p>But we want to provide a better implementation:</p>
+    <ul>
+      <li>
+        <p>We allow negative revisions. Assume there are 5 object member revisions.</p>
+        <figure class="syntax php"><pre><span class="c1">// revision 0 and -4</span>
+<span class="nv">$obj</span><span class="o">-&gt;</span><span class="na">member</span> <span class="o">=</span> <span class="s2">&quot;some value&quot;</span><span class="p">;</span>
+<span class="c1">// revision 1 and -3</span>
+<span class="nv">$obj</span><span class="o">-&gt;</span><span class="na">member</span> <span class="o">=</span> <span class="s2">&quot;some other value&quot;</span><span class="p">;</span>
+<span class="c1">// revision 2 and -2</span>
+<span class="nv">$obj</span><span class="o">-&gt;</span><span class="na">member</span> <span class="o">=</span> <span class="s2">&quot;some other value&quot;</span><span class="p">;</span>
+<span class="c1">// revision 2 and -2</span>
+<span class="nv">$obj</span><span class="o">-&gt;</span><span class="na">othermember</span> <span class="o">=</span> <span class="s2">&quot;hello&quot;</span><span class="p">;</span>
+<span class="c1">// revision 3 and -1</span>
+<span class="nv">$obj</span><span class="o">-&gt;</span><span class="na">othermember</span> <span class="o">=</span> <span class="s2">&quot;world&quot;</span><span class="p">;</span>
+<span class="c1">// revision 4</span></pre></figure>
+        <p>
+          So <var>0</var> always points to the initial state.
+          <var>-1</var> will point to one revision before the most current one.
+          <var>-current</var> is always revision 0.
+          This indexing is non-cyclic. This means any revision ≥ <var>4</var> returns the value of revision 4.
+          Any revision ≤ <var>-4</var> returns revision 0.
+          So in conclusion positive revision numbers are absolute; negative ones are relative.
+        </p>
+      </li>
+      <li>
+        The actual implementation is implemented with a comprehensive testsuite.
+      </li>
+    </ul>
+
+    <h3 id="implementation">Implementation</h3>
+    <figure class="syntax php"><pre><span class="cp">&lt;?php</span>
+<span class="k">namespace</span> <span class="nx">Object\Revision</span><span class="p">;</span>
+
+<span class="nb">error_reporting</span><span class="p">(</span><span class="k">E_ALL</span> <span class="o">|</span> <span class="nx">E_STRICT</span><span class="p">);</span>
+<span class="nb">ini_set</span><span class="p">(</span><span class="s1">&#39;display_errors&#39;</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+
+<span class="k">interface</span> <span class="nx">RevInterface</span> <span class="p">{</span>
+    <span class="c1">// What is the current revision?</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getRevision</span><span class="p">();</span>
+    <span class="c1">// Restore a previous revision $rev.</span>
+    <span class="c1">// 0 is the state before the constructor was called.</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">revertRevision</span><span class="p">(</span><span class="nv">$rev</span><span class="p">);</span>
+    <span class="c1">// Retrieve member $var at old revision $rev.</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getMemberAtRevision</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$rev</span><span class="p">);</span>
+    <span class="c1">// How many times has member $var been changed?</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getMemberChanges</span><span class="p">(</span><span class="nv">$var</span><span class="p">);</span>
+    <span class="c1">// Revert one specific member $var to a previous state $rev.</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">revertMember</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$rev</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">trait</span> <span class="nx">RevTrait</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="nv">$revisions</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="k">private</span> <span class="nv">$rev_id</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="c1">// Called for inaccessible properties</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__set</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$val</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">array_key_exists</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">))</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">property_exists</span><span class="p">(</span><span class="nv">$this</span><span class="p">,</span> <span class="nv">$var</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">}</span> <span class="o">===</span> <span class="nv">$val</span><span class="p">)</span>
+            <span class="k">return</span><span class="p">;</span>
+
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">][</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">]</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">};</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">}</span> <span class="o">=</span> <span class="nv">$val</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Disables distinction of public, protected and private members.</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__get</span><span class="p">(</span><span class="nv">$var</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// If you want to avoid &quot;Undefined property&quot; messages,</span>
+        <span class="c1">// return null instead.</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">};</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getRevision</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">revertRevision</span><span class="p">(</span><span class="nv">$rev</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$rev</span> <span class="o">&gt;=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">)</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nv">$rev</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">)</span>
+            <span class="nv">$rev</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nv">$rev</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="nv">$rev</span> <span class="o">=</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span> <span class="o">+</span> <span class="p">(</span><span class="nv">$rev</span> <span class="o">%</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">))</span> <span class="o">%</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">;</span>
+
+        <span class="nb">assert</span><span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="nv">$rev</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span> <span class="o">===</span> <span class="mi">0</span> <span class="o">||</span> <span class="nv">$rev</span> <span class="o">&lt;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">));</span>
+
+        <span class="k">foreach</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span> <span class="k">as</span> <span class="nv">$var</span> <span class="o">=&gt;</span> <span class="nv">$revs</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$keys</span> <span class="o">=</span> <span class="nb">array_keys</span><span class="p">(</span><span class="nv">$revs</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$rev</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">count</span><span class="p">(</span><span class="nv">$keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">}</span> <span class="o">=</span> <span class="nv">$revs</span><span class="p">[</span><span class="nx">min</span><span class="p">(</span><span class="nv">$keys</span><span class="p">)];</span>
+                <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="c1">// target = smallest revision number greater $rev</span>
+                <span class="nv">$target</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">;</span>
+                <span class="k">foreach</span> <span class="p">(</span><span class="nv">$keys</span> <span class="k">as</span> <span class="nv">$revision</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nv">$revision</span> <span class="o">&gt;=</span> <span class="nv">$rev</span> <span class="o">&amp;&amp;</span> <span class="nv">$revision</span> <span class="o">&lt;</span> <span class="nv">$target</span><span class="p">)</span>
+                        <span class="nv">$target</span> <span class="o">=</span> <span class="nv">$revision</span><span class="p">;</span>
+                <span class="p">}</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nv">$target</span> <span class="o">!==</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">)</span>
+                    <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">}</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">][</span><span class="nv">$target</span><span class="p">];</span>
+                <span class="k">foreach</span> <span class="p">(</span><span class="nv">$keys</span> <span class="k">as</span> <span class="nv">$revision</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nv">$revision</span> <span class="o">&gt;=</span> <span class="nv">$target</span><span class="p">)</span>
+                        <span class="nb">unset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">][</span><span class="nv">$revision</span><span class="p">]);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span> <span class="o">=</span> <span class="nv">$rev</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getMemberAtRevision</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$rev</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">array_key_exists</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">)</span> <span class="o">||</span> <span class="nv">$rev</span> <span class="o">&gt;=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">};</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$rev</span> <span class="o">===</span> <span class="mi">0</span> <span class="o">||</span> <span class="nv">$rev</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$keys</span> <span class="o">=</span> <span class="nb">array_keys</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]);</span>
+            <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">][</span><span class="nx">min</span><span class="p">(</span><span class="nv">$keys</span><span class="p">)];</span>
+        <span class="p">}</span>
+
+        <span class="nv">$keys</span> <span class="o">=</span> <span class="nb">array_keys</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">count</span><span class="p">(</span><span class="nv">$keys</span><span class="p">)</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">};</span>
+
+        <span class="nv">$min</span> <span class="o">=</span> <span class="nx">min</span><span class="p">(</span><span class="nv">$keys</span><span class="p">);</span>
+
+        <span class="nb">assert</span><span class="p">(</span><span class="o">-</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span> <span class="o">&lt;</span> <span class="nv">$rev</span> <span class="o">&amp;&amp;</span> <span class="nv">$rev</span> <span class="o">&lt;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$rev</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="nv">$rev</span> <span class="o">=</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span> <span class="o">+</span> <span class="p">(</span><span class="nv">$rev</span> <span class="o">%</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">))</span> <span class="o">%</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$rev</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">][</span><span class="nv">$min</span><span class="p">];</span>
+
+        <span class="nb">assert</span><span class="p">(</span><span class="mi">0</span> <span class="o">&lt;</span> <span class="nv">$rev</span> <span class="o">&amp;&amp;</span> <span class="nv">$rev</span> <span class="o">&lt;</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">);</span>
+
+        <span class="c1">// target = smallest index greater $rev</span>
+        <span class="nv">$target</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">;</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="nv">$keys</span> <span class="k">as</span> <span class="nv">$revision</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$revision</span> <span class="o">&gt;=</span> <span class="nv">$rev</span> <span class="o">&amp;&amp;</span> <span class="nv">$revision</span> <span class="o">&lt;</span> <span class="nv">$target</span><span class="p">)</span>
+                <span class="nv">$target</span> <span class="o">=</span> <span class="nv">$revision</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$target</span> <span class="o">===</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">};</span>
+        <span class="k">else</span>
+            <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">][</span><span class="nv">$target</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getMemberChanges</span><span class="p">(</span><span class="nv">$var</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">array_key_exists</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">))</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">property_exists</span><span class="p">(</span><span class="nv">$this</span><span class="p">,</span> <span class="nv">$var</span><span class="p">))</span>
+                <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="k">else</span>
+                <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]);</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">revertMember</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$rev</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">}</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$rev</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">array_key_exists</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">))</span>
+            <span class="k">foreach</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$revision</span> <span class="o">=&gt;</span> <span class="nv">$val</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nv">$revision</span> <span class="o">&gt;=</span> <span class="nv">$rev</span><span class="p">)</span>
+                    <span class="nb">unset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">][</span><span class="nv">$revision</span><span class="p">]);</span>
+            <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Methods implemented, but not part of interface</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">dumpRevisions</span><span class="p">(</span><span class="nv">$var</span><span class="o">=</span><span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="s2">&quot;Member revisions:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">rev_id</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">echo</span> <span class="s2">&quot;-------------------------------------</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+            <span class="k">echo</span> <span class="s2">&quot;  REVISION </span><span class="si">$i</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nv">$i</span> <span class="o">===</span> <span class="mi">0</span> <span class="o">?</span> <span class="s2">&quot; (empty as always)&quot;</span> <span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$var</span> <span class="o">===</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">foreach</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span> <span class="k">as</span> <span class="nv">$variable</span> <span class="o">=&gt;</span> <span class="nv">$_</span><span class="p">)</span>
+                    <span class="k">echo</span> <span class="nb">str_pad</span><span class="p">(</span><span class="nv">$variable</span> <span class="o">.</span> <span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="nx">STR_PAD_RIGHT</span><span class="p">),</span>
+                         <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="nv">$variable</span><span class="p">,</span> <span class="nv">$i</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">echo</span> <span class="nv">$variable</span><span class="o">.</span><span class="s2">&quot;:  &quot;</span><span class="p">;</span>
+                <span class="nb">var_dump</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="nv">$variable</span><span class="p">,</span> <span class="nv">$i</span><span class="p">));</span>
+                <span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">echo</span> <span class="s2">&quot;-------------------------------------</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Was the value of $var $val at any point in time? Comparison with ===</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">was</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$val</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$var</span><span class="p">}</span> <span class="o">===</span> <span class="nv">$val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">array_key_exists</span><span class="p">(</span><span class="nv">$var</span><span class="p">,</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">))</span>
+            <span class="k">foreach</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">revisions</span><span class="p">[</span><span class="nv">$var</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$old_val</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nv">$old_val</span> <span class="o">===</span> <span class="nv">$val</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+
+        <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// API examples</span>
+
+<span class="k">class</span> <span class="nc">Car</span> <span class="k">implements</span> <span class="nx">RevInterface</span> <span class="p">{</span>
+    <span class="k">use</span> <span class="nx">RevTrait</span><span class="p">;</span>
+
+    <span class="c1">// Only works for protected and private members.</span>
+    <span class="c1">// But you will be able to access them from outside.</span>
+    <span class="k">protected</span> <span class="nv">$name</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$speed</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nv">$name</span> <span class="o">=</span> <span class="s2">&quot;Car&quot;</span><span class="p">,</span> <span class="nv">$speed</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">name</span> <span class="o">=</span> <span class="nv">$name</span><span class="p">;</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">speed</span> <span class="o">=</span> <span class="nv">$speed</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">goFaster</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// __set will not be called (because its accessible)</span>
+        <span class="c1">//$this-&gt;speed += 20;</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__set</span><span class="p">(</span><span class="s1">&#39;speed&#39;</span><span class="p">,</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">speed</span> <span class="o">+</span> <span class="mi">20</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__toString</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">&quot;Object[%s] at speed %d</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">name</span><span class="p">,</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">speed</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">Config</span> <span class="k">implements</span> <span class="nx">RevInterface</span> <span class="p">{</span>
+    <span class="k">use</span> <span class="nx">RevTrait</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$user</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$pwd</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$db</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$mysql_table</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$postgres_schema</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$speed</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">Config2</span> <span class="k">implements</span> <span class="nx">RevInterface</span> <span class="p">{</span>
+    <span class="k">use</span> <span class="nx">RevTrait</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$def</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">CollatzProblem</span> <span class="k">implements</span> <span class="nx">RevInterface</span> <span class="p">{</span>
+    <span class="k">use</span> <span class="nx">RevTrait</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$val</span><span class="p">;</span>
+    <span class="k">protected</span> <span class="nv">$iter</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nv">$start_value</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__set</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="nv">$start_value</span><span class="p">);</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">iter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">val</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__set</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">val</span> <span class="o">/</span> <span class="mi">2</span><span class="p">);</span>
+        <span class="k">else</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__set</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">val</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// API example</span>
+
+<span class="c1">// Use this config to run a procedure. Returns false on failure.</span>
+<span class="k">function</span> <span class="nf">useConfig</span><span class="p">(</span><span class="nv">$config</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">==</span> <span class="s2">&quot;meisterluk&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">function</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$config</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Config</span><span class="p">();</span>
+
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s2">&quot;meisterluk&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;39f6vgfok2&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">db</span> <span class="o">=</span> <span class="s2">&quot;mysql&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">mysql_table</span> <span class="o">=</span> <span class="s2">&quot;user_accounts&quot;</span><span class="p">;</span>
+    <span class="nv">$snapshot1</span> <span class="o">=</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s2">&quot;prokls&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;dg701rs643a&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">db</span> <span class="o">=</span> <span class="s2">&quot;postgres&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">postgres_schema</span> <span class="o">=</span> <span class="s2">&quot;public&quot;</span><span class="p">;</span>
+    <span class="nv">$snapshot2</span> <span class="o">=</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+
+    <span class="c1">// descending order iteration, because previous revisions get lost</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="nv">$snapshot2</span><span class="p">,</span> <span class="nv">$snapshot1</span><span class="p">)</span> <span class="k">as</span> <span class="nv">$rev</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// try various configurations</span>
+        <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">useConfig</span><span class="p">(</span><span class="nv">$config</span><span class="p">))</span>
+            <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="k">function</span> <span class="nf">runCollatz</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// Test whether value was ever taken during the run of collatz&#39; problem</span>
+    <span class="nv">$collatz</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">CollatzProblem</span><span class="p">();</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="o">!</span><span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">was</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">));</span>
+    <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="mi">500</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">run</span><span class="p">();</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">was</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">42</span><span class="p">));</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">was</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">));</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">was</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">runCollatz2</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// Now without the default start value 42, but 987654321</span>
+    <span class="nv">$collatz</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">CollatzProblem</span><span class="p">(</span><span class="mi">987654321</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="mi">2000</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">run</span><span class="p">();</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="o">!</span><span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">was</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">1237</span><span class="p">));</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="o">!</span><span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">was</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">200</span><span class="p">));</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="o">!</span><span class="nv">$collatz</span><span class="o">-&gt;</span><span class="na">was</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="mi">43</span><span class="p">));</span>
+<span class="p">}</span>
+
+
+<span class="c1">// TESTS</span>
+
+<span class="k">function</span> <span class="nf">testBasic</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$honda</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Car</span><span class="p">(</span><span class="s2">&quot;Honda&quot;</span><span class="p">);</span>
+    <span class="nv">$init_rev</span> <span class="o">=</span> <span class="nv">$honda</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$honda</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;speed&#39;</span><span class="p">,</span> <span class="nv">$honda</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$honda</span><span class="o">-&gt;</span><span class="na">getMemberChanges</span><span class="p">(</span><span class="s1">&#39;speed&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="nv">$honda</span><span class="o">-&gt;</span><span class="na">goFaster</span><span class="p">();</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$honda</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">()</span> <span class="o">==</span> <span class="nv">$init_rev</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="nv">$honda</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$init_rev</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$honda</span><span class="o">-&gt;</span><span class="na">speed</span> <span class="o">==</span> <span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">testGetRevision</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$toyota</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Car</span><span class="p">(</span><span class="s2">&quot;Toyota&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Config</span><span class="p">();</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+
+    <span class="nv">$old_rev_toyota</span> <span class="o">=</span> <span class="nv">$toyota</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+    <span class="nv">$old_rev_config</span> <span class="o">=</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+
+    <span class="k">foreach</span> <span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="k">as</span> <span class="nv">$run</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$toyota</span><span class="o">-&gt;</span><span class="na">speed</span> <span class="o">+=</span> <span class="mi">32</span><span class="p">;</span>
+        <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">.=</span> <span class="s1">&#39;298&#39;</span><span class="p">;</span>
+
+        <span class="nb">assert</span><span class="p">(</span><span class="nv">$toyota</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">()</span> <span class="o">&gt;</span> <span class="nv">$old_rev_toyota</span><span class="p">);</span>
+        <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">()</span> <span class="o">&gt;</span> <span class="nv">$old_rev_config</span><span class="p">);</span>
+        <span class="nb">assert</span><span class="p">(</span><span class="nv">$toyota</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">()</span> <span class="o">===</span> <span class="nv">$toyota</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">());</span>
+        <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">()</span> <span class="o">===</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">());</span>
+
+        <span class="nv">$old_rev_toyota</span> <span class="o">=</span> <span class="nv">$toyota</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+        <span class="nv">$old_rev_config</span> <span class="o">=</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">testNonShared</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$mercedes</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Car</span><span class="p">(</span><span class="s2">&quot;Mercedes&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Config</span><span class="p">();</span>
+
+    <span class="nv">$mercedes</span><span class="o">-&gt;</span><span class="na">speed</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>
+    <span class="nv">$mercedes</span><span class="o">-&gt;</span><span class="na">speed</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">speed</span> <span class="o">!==</span> <span class="mi">50</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">speed</span> <span class="o">!==</span> <span class="mi">20</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">testForceRevision</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$config</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Config</span><span class="p">();</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;8s8gnj4&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;sg19rn4&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;swren29&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;91ktb31&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;s8712ka&quot;</span><span class="p">;</span>
+
+    <span class="nv">$rev</span> <span class="o">=</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span> <span class="o">+</span> <span class="mi">987654321</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;s8712ka&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;s8712ka&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;s8712ka&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;91ktb31&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span> <span class="o">-</span> <span class="mi">2</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;swren29&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span> <span class="o">-</span> <span class="mi">3</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;sg19rn4&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span> <span class="o">-</span> <span class="mi">4</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;8s8gnj4&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span> <span class="o">-</span> <span class="mi">5</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">testForceRevision2</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$config</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Config</span><span class="p">();</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;8s8gnj4&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;sg19rn4&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;swren29&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;91ktb31&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;s8712ka&quot;</span><span class="p">;</span>
+    <span class="nv">$rev</span> <span class="o">=</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span> <span class="o">-</span> <span class="mi">2</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;swren29&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="nv">$rev</span> <span class="o">+</span> <span class="mi">50</span><span class="p">);</span> <span class="c1">// must not change anything</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;swren29&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$rev</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">===</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">());</span>
+
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">testForceRevision3</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// negative revisions (they are relative)</span>
+    <span class="nv">$config</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Config</span><span class="p">();</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;8s8gnj4&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;sg19rn4&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;swren29&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;91ktb31&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;8s8gnj4&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;sg19rn4&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;swren29&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;91ktb31&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;s8712ka&quot;</span><span class="p">;</span>
+    <span class="nv">$toprev</span> <span class="o">=</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;s8712ka&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;91ktb31&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;sg19rn4&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="s2">&quot;sg19rn4&quot;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">testGetMemberAtRevision</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$config</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Config</span><span class="p">();</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;8s8gnj4&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;sg19rn4&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;swren29&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s2">&quot;world&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;91ktb31&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;8s8gnj4&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;s8712ka&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s2">&quot;hello&quot;</span><span class="p">;</span>
+    <span class="nv">$toprev</span> <span class="o">=</span> <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getRevision</span><span class="p">();</span>
+
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;s8712ka&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;s8712ka&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;8s8gnj4&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;91ktb31&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;swren29&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;swren29&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;sg19rn4&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;8s8gnj4&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;s8712ka&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;8s8gnj4&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;91ktb31&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;swren29&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;swren29&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">6</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;sg19rn4&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">7</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;8s8gnj4&quot;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">8</span><span class="p">)</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">9</span><span class="p">)</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1000</span><span class="p">)</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">testGetMemberChanges</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$config</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Config</span><span class="p">();</span>
+
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberChanges</span><span class="p">(</span><span class="s1">&#39;nomember&#39;</span><span class="p">)</span> <span class="o">===</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberChanges</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">)</span> <span class="o">===</span> <span class="mi">1</span><span class="p">);</span>
+
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;meisterluk&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;prokls&quot;</span><span class="p">;</span>
+
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberChanges</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">)</span> <span class="o">===</span> <span class="mi">2</span><span class="p">);</span>
+
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;meisterluk&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;meisterluk&quot;</span><span class="p">;</span>
+
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberChanges</span><span class="p">(</span><span class="s1">&#39;pwd&#39;</span><span class="p">)</span> <span class="o">===</span> <span class="mi">3</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">testRevertMember</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$config</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Config</span><span class="p">();</span>
+
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s2">&quot;meisterluk&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">=</span> <span class="s2">&quot;39f6vgfok2&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">db</span> <span class="o">=</span> <span class="s2">&quot;mysql&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">mysql_table</span> <span class="o">=</span> <span class="s2">&quot;user_accounts&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s2">&quot;prokls&quot;</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s2">&quot;meisterluk&quot;</span><span class="p">;</span>
+
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertMember</span><span class="p">(</span><span class="s1">&#39;db&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">db</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">!==</span> <span class="k">null</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertMember</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">===</span> <span class="s1">&#39;meisterluk&#39;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertMember</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">===</span> <span class="s1">&#39;prokls&#39;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertMember</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="mi">2000</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">===</span> <span class="s1">&#39;prokls&#39;</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertMember</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">===</span> <span class="s1">&#39;meisterluk&#39;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">!==</span> <span class="k">null</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertMember</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">===</span> <span class="s1">&#39;meisterluk&#39;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">!==</span> <span class="k">null</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertMember</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">===</span> <span class="s1">&#39;meisterluk&#39;</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">!==</span> <span class="k">null</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertMember</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">===</span> <span class="k">null</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">pwd</span> <span class="o">!==</span> <span class="k">null</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">testDefaultValue</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nv">$config</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Config2</span><span class="p">();</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;def&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">===</span> <span class="mi">3</span><span class="p">);</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">def</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">def</span> <span class="o">=</span> <span class="mi">9</span><span class="p">;</span>
+    <span class="nv">$config</span><span class="o">-&gt;</span><span class="na">revertRevision</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">def</span> <span class="o">===</span> <span class="mi">3</span><span class="p">);</span>
+    <span class="nb">assert</span><span class="p">(</span><span class="nv">$config</span><span class="o">-&gt;</span><span class="na">getMemberAtRevision</span><span class="p">(</span><span class="s1">&#39;def&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">===</span> <span class="mi">3</span><span class="p">);</span>
+<span class="p">}</span>
+
+
+<span class="nx">run</span><span class="p">();</span>
+<span class="nx">runCollatz</span><span class="p">();</span>
+<span class="nx">runCollatz2</span><span class="p">();</span>
+<span class="nx">testBasic</span><span class="p">();</span>
+<span class="nx">testGetRevision</span><span class="p">();</span>
+<span class="nx">testNonShared</span><span class="p">();</span>
+<span class="nx">testForceRevision</span><span class="p">();</span>
+<span class="nx">testForceRevision2</span><span class="p">();</span>
+<span class="nx">testForceRevision3</span><span class="p">();</span>
+<span class="nx">testGetMemberAtRevision</span><span class="p">();</span>
+<span class="nx">testGetMemberChanges</span><span class="p">();</span>
+<span class="nx">testRevertMember</span><span class="p">();</span>
+<span class="nx">testDefaultValue</span><span class="p">();</span>
+</pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#mag01-ref" id="mag01">[mag01]</a>
+      </dt>
+      <dd>The PHP Group, PHP: Magic methods, <br>
+        <a href="http://www.php.net/manual/en/language.oop5.magic.php">http://www.php.net/manual/en/language.oop5.magic.php</a>
+        [accessed 23th Mar 2014].
+      </dd>
+      <dt class="index">
+        <a href="#tot01-ref" id="tot01">[tot01]</a>
+      </dt>
+      <dd>Wikipedia, the free encyclopedia, Total order, <br>
+        <a href="https://en.wikipedia.org/wiki/Total_order">https://en.wikipedia.org/wiki/Total_order</a>
+        [accessed 23th Mar 2014].
+      </dd>
+      <dt class="index">
+        <a href="#tra01-ref" id="tra01">[tra01]</a>
+      </dt>
+      <dd>The PHP Group, PHP: Traits, <br>
+        <a href="http://us2.php.net/manual/en/language.oop5.traits.php">http://us2.php.net/manual/en/language.oop5.traits.php</a>
+        [accessed 23th Mar 2014].
+      </dd>
+      <dt class="index">
+        <a href="#ref01-ref" id="ref01">[ref01]</a>
+      </dt>
+      <dd>The PHP Group, PHP: Reflection, <br>
+        <a href="http://us2.php.net/manual/en/class.reflection.php">http://us2.php.net/manual/en/class.reflection.php</a>
+        [accessed 23th Mar 2014].
+      </dd>
+    </dl>
+  </body>
+</html>
