@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <meta charset="utf-8" />
+   <title>Python 014</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Python 014 Metadata for multiple decorator calls</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>5th of June 2014</dd>
+        <dt>Tags</dt>
+          <dd>Python multiple decorator metadata annotation data state </dd>
+        <dt>Tested with</dt>
+          <dd>Python 2.7.4</dd>
+      </dl>
+    </aside>
+
+    <h2 id="input">Source code</h2>
+
+    <figure class="syntax python"><pre><span class="kn">import</span> <span class="nn">functools</span>
+
+<span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">outer</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="nd">@functools.wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s">&#39;metadata&#39;</span><span class="p">):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="n">func</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s">&#39;sum&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">func</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s">&#39;sum&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">val</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">metadata</span>
+
+            <span class="k">if</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;inner&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s">&#39;sum&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inner</span>
+    <span class="k">return</span> <span class="n">outer</span>
+
+<span class="nd">@add</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@add</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">function</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;A function adding numbers via decorator&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mi">1</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">function</span><span class="p">())</span></pre></figure>
+
+    <h2 id="output">Output</h2>
+
+    <figure class="syntax python"><pre><span class="m">11</span></pre></figure>
+
+    <h2 id="explanation">Explanation</h2>
+
+    <p>
+        <strong>Goal.</strong>
+        Our goal is to provide a function which additionally annotates metadata
+        via decorators. In our case a function returning an integer and all
+        values of decorators (metadata) are added to this return value.
+    </p>
+
+    <h3>Implementation</h3>
+    <p>
+        If you are using called decorators, you need 3 nested functions,
+        where the call argument, the function and its arguments are supplied respectively.
+        They are called <code>add</code>, <code>outer</code> and <code>inner</code>.
+    </p>
+
+    <p>
+        In python, everything is an object. Hence we will annotate metadata to the function
+        itself by introducing a new field using
+        <code class="syntax python"><span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></code>.
+        However decorators are wrappers and behave like an onion. In the outer-most
+        layer we have a call to a function parameterized with an integer 3. Then this
+        function object is wrapped with a function parameterized with 5 and finally
+        we have the user-defined <code>function</code>. As you might know
+        <a href="#dec01">[dec01]</a> decorators can be rewritten as
+    </p>
+
+    <pre class="syntax python"><span class="m">…</span>
+
+<span class="k">def</span> <span class="nf">function</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;A function adding numbers via decorator&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mi">1</span>
+
+<span class="n">function</span> <span class="o">=</span> <span class="n">add</span><span class="p">(</span><span class="mi">7</span><span class="p">)(</span><span class="n">function</span><span class="p">)</span>
+<span class="n">function</span> <span class="o">=</span> <span class="n">add</span><span class="p">(</span><span class="mi">3</span><span class="p">)(</span><span class="n">function</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">function</span><span class="p">())</span></pre>
+
+    <p>
+        We assign a mutable dict to the function at any layer with the field
+        <code>'metadata'</code>. As far as mutable data structures create references
+        rather than values through assignments, all functions will reference the
+        same dictionary.
+    </p>
+
+    <p>
+        At every layer the call of <code>func</code> will be invoked. We don't want
+        to add <code>func.metadata['sum']</code> at every layer. Hence we only want
+        to add it when the function is the original function object. This is why we
+        do have a conditional statement testing the function name.
+    </p>
+
+    <p>
+        <em>Be aware!</em> This implementation does not work if the user-defined function
+        is called <code>inner</code>. If this is a serious problem, you can use other
+        decorator magic <a href="#can01">[can01]</a> to achieve unique function
+        identification.
+    </p>
+
+    <p>
+        Finally you can access the metadata dict via <code>function.metadata</code>.
+    </p>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#dec01-ref" id="dec01">[dec01]</a>
+      </dt>
+      <dd>PEP 318 – Decorators for Functions and Methods, <br />
+        <a href="http://legacy.python.org/dev/peps/pep-0318/">http://legacy.python.org/dev/peps/pep-0318/</a>
+        [accessed 5th June 2014].
+      </dd>
+      <dt class="index">
+        <a href="#can01-ref" id="can01">[can01]</a>
+      </dt>
+      <dd>“is there a self flag can reference python function inside itself?” <br />
+        <a href="http://stackoverflow.com/questions/5063607/is-there-a-self-flag-can-reference-python-function-inside-itself">http://stackoverflow.com/questions/5063607</a>
+        [accessed 5th of June 2014].
+      </dd>
+    </dl>
+  </body>
+</html>
