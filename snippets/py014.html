@@ -33,7 +33,7 @@
     <span class="k">def</span> <span class="nf">outer</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
         <span class="nd">@functools.wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s">&#39;metadata&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s">&#39;metadata&#39;</span> <span class="ow">or</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span> <span class="o">!=</span> <span class="s">&#39;inner&#39;</span><span class="p">:</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{})</span>
                 <span class="n">func</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s">&#39;sum&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -103,7 +103,9 @@
         We assign a mutable dict to the function at any layer with the field
         <code>'metadata'</code>. As far as mutable data structures create references
         rather than values through assignments, all functions will reference the
-        same dictionary.
+        same dictionary. To ensure that the dictionary is emptied before using the
+        decorator with a different function we use the disjunction
+        <code>or func.__name__ != 'inner'</code>.
     </p>
 
     <p>
