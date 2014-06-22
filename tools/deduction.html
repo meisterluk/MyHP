@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Deduction of production rules</title>
+    <style type="text/css">
+      body {
+        width: 70%;
+        margin: auto;
+        color: #CCD;
+        font-family: sans-serif;
+        background-color: #1A1A1A;
+      }
+      textarea {
+        margin-left: 20px;
+        padding: 4px;
+        border-color: #666;
+        color: #EEF;
+        background-color: rgb(100, 114, 132);
+      }
+      input {
+        background-color: rgb(100, 114, 132);
+        border: none;
+        padding: 6px;
+        color: #EEF;
+      }
+      #errors {
+        list-style: none;
+        color: #C00;
+      }
+      #errors li:before { content: "→ "; }
+      #def { background-color: #333; line-height: 1.4em; }
+      #def * { margin: 0; padding-left: 10px; background-color: #1A1A1A; }
+      #deduced { column-count: 2; column-gap: 3em; }
+      #deduced * { display: inline-block; }
+      .metadata {
+        font-size: 0.6em;
+        margin-left: 30px;
+      }
+    </style>
+
+    <script type="text/javascript" src="http://lukas-prokop.at/jquery.js"></script>
+    <script type="text/javascript">
+      // maximum recursion depth (ie. maximum number of assignments)
+      var max_deductions = 2;
+
+      function all(lst) {
+        if (lst.length === 0) return true;
+        else return lst[0] && all(lst.slice(1));
+      }
+
+      // -- parsing ----------------------------------------------------------
+
+      function read(/*textarea content*/ str)
+        // returns Set[Rule]
+      {
+        str = str.trim();
+        if (str[0] == "{" && str[str.length - 1] == "}")
+          str = str.substring(1, str.length - 2);
+        var lines = str.split(/[\r\n]+/);
+        var assignop = /(<-|->|⇐|⇒|←|→|:-|:?=)/;
+
+        var rules = [];
+        for (var line in lines) {
+          line = lines[line].trim();
+          if (line[line.length - 1] == ",")
+            line = line.substr(0, line.length - 1);
+          if (line.length == 0)  // skip empty lines
+            continue;
+          var split = line.split(assignop);
+          var target_name = split[0].trim();
+          var target = new Variable(target_name);
+
+          if (split.length != 3) {
+            addListItem("errors", "Line '" + line + "' is invalid.");
+            continue;
+          }
+
+          var def = split[2].split(/\s+/)
+            .filter(function (v) { return v !== ""; })
+            .map(function (v) {
+              // determine non-terminals
+              if (v.match(/^[A-Z]/))  // is capitalized
+                return new Variable(v);
+              else
+                return v;
+            }).map(function (v) {
+              // epsilon == empty string
+              if (v === "epsilon" || v === "ε" || v === "ϵ" || v == "ℇ")
+                return "";
+              else
+                return v;
+            });
+
+          rules.push(new Rule(target, def, 0));
+        }
+
+        return rules;
+      }
+
+
+      // -- sorting ----------------------------------------------------------
+
+      // defines order of deduced output
+      function compareRules(/* Rule */ rule1, /*Rule*/ rule2)
+        // returns -1|0|1
+      {
+        var c1 = rule1.complete();
+        var c2 = rule2.complete();
+        var l1 = rule1.repr().length;
+        var l2 = rule2.repr().length;
+        var d1 = rule1.depth || 0;
+        var d2 = rule2.depth || 0;
+
+        // by number of deductions
+        if (d1 < d2) return -1;
+        if (d2 > d1) return 1;
+
+        // by completeness
+        if (c1 && c2) return (l1 < l2) ? -1 : ((l1 == l2) ? 0 : 1);
+        if (c1) return -1;
+        if (c2) return 1;
+
+        return rule1.repr().localeCompare(rule2.repr());
+      }
+
+      var removeDuplicates = function (/*List[Rule]*/ rules)
+        // returns Set[Rule]
+      {
+        var last = -42;
+        var new_list = [];
+        for (var r in rules) {
+          if (rules[r] !== last)
+            new_list.push(rules[r]);
+          last = rules[r];
+        }
+        return new_list;
+      };
+
+      function sortRules(/*List[Rule]*/ rules)
+        // returns SortedSet[Rule]
+      {
+        rules.sort(compareRules);
+        rules = removeDuplicates(rules);
+        return rules;
+      }
+
+      // -- implementation ---------------------------------------------------
+
+      var Variable = function (name) {
+        return { 'repr': function () { return name; },
+                 'toString': function () { return "Var⟨" + name + "⟩"; },
+                 'name': name, 'is_variable': true, 'is_rule': false };
+      }
+
+      var Rule = function(/*Variable*/ target,
+                          /*List[Variable|string]*/ def,
+                          /*int*/ depth)
+        // returns Rule
+      {
+        var repr = function ()
+          // returns string
+        {
+          var lst = def.map(function (v) {
+            if (v.is_variable)
+              return v.repr();
+            else
+              return ("" + v);
+          });
+          return lst.join(" ");
+        };
+
+        var toString = function ()
+          // returns string
+        {
+          var lst = def.map(function (v) {
+            if (v.is_variable)
+              return v.toString();
+            return ("" + v);
+          });
+          return target.toString() + " ← " + lst.join(" ");
+        };
+
+        // Are all non-terminals substituted?
+        var complete = function ()
+          // returns boolean
+        {
+          for (var i in def)
+            if (def[i].is_variable)
+              return false;
+          return true;
+        };
+
+        // take `base` list and replace variables according to `assignment`
+        var substitute = function(/*List[Var|String]*/ base,
+                                  /*Map[Var:List[String|Var]|Rule]*/ assignment)
+          // returns List[Var|String]
+        {
+          var new_list = [];
+          var count_subs = 0;
+
+          for (var i in base) {
+            var sub = assignment[base[i].name];
+            if (base[i].is_variable && sub !== undefined && count_subs < 1) {
+              if (sub.is_rule)
+                sub = sub.definition;
+              for (var j in sub)
+                new_list.push(sub[j]);
+              count_subs++;
+            } else
+              new_list.push(base[i]);
+          }
+
+          return new_list;
+        }
+
+        // use possible assignments `pos_ass` to deduce `def` recursively
+        var deduce = function(/*Map[Var:List[List[String|Var]|Rule]]*/ pos_ass)
+          // returns List[Rule]
+        {
+          var results = [];
+          for (var i in def) {
+            if (!(def[i].is_variable))
+              continue;
+
+            var nonterminal = def[i].name;
+            for (var j in pos_ass[nonterminal]) {
+              var sub = pos_ass[nonterminal][j];
+              if (sub.is_rule)
+                sub = sub.definition;
+
+              var repl = {};
+              repl[nonterminal] = sub;
+              var new_def = substitute(def, repl);
+
+              var rule = new Rule(target, new_def, depth + 1);
+              results.push(rule);
+
+              if (depth < max_deductions - 1) {
+                var rules = rule.deduce(pos_ass);
+                for (var r in rules)
+                  results.push(rules[r]);
+              }
+            }
+          }
+          return results;
+        }
+
+        return {
+            'repr': repr,
+            'toString': toString,
+            'complete': complete,
+            'deduce': deduce,
+
+            'depth': depth,
+            'definition': def,
+            'target': target,
+            'is_variable': false,
+            'is_rule': true
+        };
+      }
+
+      // -- html & css & events ----------------------------------------------
+
+      function clearList(which) {
+        $("#" + which + " > *").remove();
+      }
+
+      function addListItem(lst, errmsg, additional) {
+        var li = document.createElement("li");
+        li.textContent = errmsg;
+
+        if (additional !== undefined) {
+          var p = document.createElement("span");
+          p.className = "metadata";
+          p.textContent = additional;
+          li.appendChild(p);
+        }
+
+        document.getElementById(lst).appendChild(li);
+      }
+
+      function run() {
+        // cleanup
+        clearList("errors");
+        clearList("deduced-complete");
+        clearList("deduced-incomplete");
+        clearList("def");
+
+        // retrieval
+        var input = document.getElementById("deductions").value;
+        var start_symbol = document.getElementById("start").value.trim();
+        var deductions = document.getElementById("max_ded").value;
+        if (isNaN(parseInt(deductions)) || parseInt(deductions) <= 0)
+          addListItem("errors", deductions + " is not a non-negative number");
+        else
+          max_deductions = parseInt(deductions);
+
+        // processing
+        var rules = read(input);
+        for (var i in rules)
+          addListItem("def", rules[i].toString());
+
+        var repls = {};
+        for (var i in rules)
+          if (repls[rules[i].target.name] === undefined)
+            repls[rules[i].target.name] = [rules[i]];
+          else
+            repls[rules[i].target.name].push(rules[i]);
+
+        var all_deductions = [];
+        for (var i in rules) {
+          if (rules[i].target.name !== start_symbol)
+            continue;
+          all_deductions.push(rules[i]);
+          var recursive = rules[i].deduce(repls);
+          for (var j = 0; j < recursive.length; j++)
+            all_deductions.push(recursive[j]);
+        }
+
+        // print
+        all_deductions = sortRules(all_deductions);
+        for (var i in all_deductions) {
+          if (all_deductions[i].complete())
+            addListItem("deduced-complete", all_deductions[i].repr(),
+                        "deductions = " + all_deductions[i].depth);
+          else
+            addListItem("deduced-incomplete", all_deductions[i].repr(),
+                        "deductions = " + all_deductions[i].depth);
+        }
+
+        // return
+        setTimeout(run, 3000);
+      }
+
+      $(document).ready(function () {
+        if (window.location.hash.contains(";")) {
+          var value = window.location.hash.substr(1);
+          document.getElementById("deductions")
+                  .textContent = value.replace(";", "\n");
+        }
+        run();
+      });
+    </script>
+  </head>
+
+  <body>
+    <h1>Deduction of production rules</h1>
+
+    <p>Enter production rules:</p>
+    <textarea id="deductions" rows="5" cols="50">S ← S S
+S ← 1
+S ← A
+A ← epsilon
+A ← 0
+A &lt;- 00</textarea>
+
+    <table>
+      <tr>
+        <td>Start symbol:</td> <td><input type="text" size="5" id="start" value="S" /></td>
+      </tr><tr>
+        <td>Maximum number of deductions:</td> <td><input type="text" size="3" id="max_ded" value="2" /></td>
+      </tr>
+    </table>
+
+    <ul id="errors"></ul>
+
+    <h2>Definitions</h2>
+    <ol id="def"></ol>
+
+    <h2>Deductions</h2>
+    <h3 id="complete">Complete deductions</h3>
+    <ul id="deduced-complete"></ul>
+
+    <h3 id="incomplete">Incomplete deductions</h3>
+    <ul id="deduced-incomplete"></ul>
+  </body>
+</html>
