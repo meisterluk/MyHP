@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>C 005</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>C 005 sizeof without parentheses</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>8th of July 2014</dd>
+        <dt>Tags</dt>
+          <dd>C sizeof parens parentheses type</dd>
+        <dt>Tested with</dt>
+          <dd>gcc version 4.7.3</dd>
+        <dt>License</dt>
+          <dd>Public Domain</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax c"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// fine</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%lu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">a</span><span class="p">));</span>
+
+    <span class="c1">// fine</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%lu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="k">sizeof</span> <span class="n">a</span><span class="p">);</span>
+
+    <span class="c1">// fine</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%lu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+
+    <span class="c1">// Error</span>
+    <span class="c1">// test.c: In function ‘main’:</span>
+    <span class="c1">// test.c:17:28: erreur: expected expression before ‘int’</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%lu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="k">sizeof</span> <span class="kt">int</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span></pre></figure>
+
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#una01-ref" id="una01">[una01]</a>
+      </dt>
+      <dd>ISO C Committee, "6.5.3 Unary operators", <br>
+        <a href="http://c0x.coding-guidelines.com/6.5.3.html">http://c0x.coding-guidelines.com/6.5.3.html</a>
+        [accessed 08th Jul 2014].
+      </dd>
+    </dl>
+
+  </body>
+</html>
