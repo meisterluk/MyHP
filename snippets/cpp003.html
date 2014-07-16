@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CPP 003</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>CPP 003 SAT solver abstraction interface</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>10th of July 2014</dd>
+        <dt>Tags</dt>
+          <dd>C++ Minisat SAT solver interface Assume AddClause assumptions</dd>
+        <dt>Tested with</dt>
+          <dd>gcc (Ubuntu/Linaro 4.7.3-1ubuntu1) 4.7.3</dd>
+        <dt>License</dt>
+          <dd>Public Domain</dd>
+      </dl>
+    </aside>
+
+    <h2 id="sat-solvers">
+        SAT solvers
+    </h2>
+
+    <p>
+      SAT solvers solve a computationally infeasible problem the best way.
+      They take a CNF as input and return the satisfiability state of the equation.
+      On the level of an application programming interface, means to define literals
+      (literals are tuples of a sign and a variable), define clauses and
+      sets of clauses are required.
+    </p>
+    <p>
+      Many SAT solver implementations are based on the MiniSat interface
+      <a href="#min01" id="min01-ref">[min01]</a> because MiniSat provides a minimalistic
+      framework which is easily adaptable and implements the established DPLL algorithm
+      <a href="#dpl01" id="dpl01-ref">[dpl01]</a>.
+    </p>
+
+    <h2 id="minisat">
+      MiniSat's interface
+    </h2>
+
+    <p>
+      The following excerpt originates from MiniSat's <code>Solver.h</code> file.
+      It illustrates the basic functionality allowing to specify the problem.
+    </p>
+
+    <figure class="syntax cpp"><pre><span class="k">class</span> <span class="nc">Solver</span> <span class="p">{</span>
+<span class="nl">public:</span>
+
+    <span class="n">Var</span> <span class="n">newVar</span> <span class="p">(</span><span class="n">lbool</span> <span class="n">upol</span> <span class="o">=</span> <span class="n">l_Undef</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">dvar</span> <span class="o">=</span> <span class="nb">true</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="nf">releaseVar</span><span class="p">(</span><span class="n">Lit</span> <span class="n">l</span><span class="p">);</span>
+
+    <span class="kt">bool</span> <span class="nf">addClause</span> <span class="p">(</span><span class="k">const</span> <span class="n">vec</span><span class="o">&lt;</span><span class="n">Lit</span><span class="o">&gt;&amp;</span> <span class="n">ps</span><span class="p">);</span>
+    <span class="kt">bool</span> <span class="nf">addEmptyClause</span><span class="p">();</span>
+    <span class="kt">bool</span> <span class="nf">addClause</span> <span class="p">(</span><span class="n">Lit</span> <span class="n">p</span><span class="p">);</span>
+    <span class="kt">bool</span> <span class="nf">addClause</span> <span class="p">(</span><span class="n">Lit</span> <span class="n">p</span><span class="p">,</span> <span class="n">Lit</span> <span class="n">q</span><span class="p">);</span>
+    <span class="kt">bool</span> <span class="nf">addClause</span> <span class="p">(</span><span class="n">Lit</span> <span class="n">p</span><span class="p">,</span> <span class="n">Lit</span> <span class="n">q</span><span class="p">,</span> <span class="n">Lit</span> <span class="n">r</span><span class="p">);</span>
+    <span class="kt">bool</span> <span class="nf">addClause</span> <span class="p">(</span><span class="n">Lit</span> <span class="n">p</span><span class="p">,</span> <span class="n">Lit</span> <span class="n">q</span><span class="p">,</span> <span class="n">Lit</span> <span class="n">r</span><span class="p">,</span> <span class="n">Lit</span> <span class="n">s</span><span class="p">);</span>
+    <span class="kt">bool</span> <span class="nf">addClause_</span><span class="p">(</span> <span class="n">vec</span><span class="o">&lt;</span><span class="n">Lit</span><span class="o">&gt;&amp;</span> <span class="n">ps</span><span class="p">);</span>
+
+    <span class="kt">bool</span> <span class="nf">simplify</span> <span class="p">();</span>
+    <span class="kt">bool</span> <span class="nf">solve</span> <span class="p">(</span><span class="k">const</span> <span class="n">vec</span><span class="o">&lt;</span><span class="n">Lit</span><span class="o">&gt;&amp;</span> <span class="n">assumps</span><span class="p">);</span>
+    <span class="n">lbool</span> <span class="nf">solveLimited</span> <span class="p">(</span><span class="k">const</span> <span class="n">vec</span><span class="o">&lt;</span><span class="n">Lit</span><span class="o">&gt;&amp;</span> <span class="n">assumps</span><span class="p">);</span>
+    <span class="kt">bool</span> <span class="nf">solve</span> <span class="p">();</span>
+    <span class="kt">bool</span> <span class="nf">solve</span> <span class="p">(</span><span class="n">Lit</span> <span class="n">p</span><span class="p">);</span>
+    <span class="kt">bool</span> <span class="nf">solve</span> <span class="p">(</span><span class="n">Lit</span> <span class="n">p</span><span class="p">,</span> <span class="n">Lit</span> <span class="n">q</span><span class="p">);</span>
+    <span class="kt">bool</span> <span class="nf">solve</span> <span class="p">(</span><span class="n">Lit</span> <span class="n">p</span><span class="p">,</span> <span class="n">Lit</span> <span class="n">q</span><span class="p">,</span> <span class="n">Lit</span> <span class="n">r</span><span class="p">);</span>
+    <span class="kt">bool</span> <span class="n">okay</span> <span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+
+    <span class="kt">bool</span> <span class="nf">implies</span> <span class="p">(</span><span class="k">const</span> <span class="n">vec</span><span class="o">&lt;</span><span class="n">Lit</span><span class="o">&gt;&amp;</span> <span class="n">assumps</span><span class="p">,</span> <span class="n">vec</span><span class="o">&lt;</span><span class="n">Lit</span><span class="o">&gt;&amp;</span> <span class="n">out</span><span class="p">);</span>
+<span class="p">};</span></pre></figure>
+
+    <p>
+      The following excerpt shows the definition of <code>Lit</code>.
+      A literal is defined as a tuple of a variable and a sign
+      (internally represented as one signed integer).
+    </p>
+
+    <figure class="syntax cpp"><pre><span class="k">struct</span> <span class="n">Lit</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">x</span><span class="p">;</span>
+
+    <span class="k">friend</span> <span class="n">Lit</span> <span class="nf">mkLit</span><span class="p">(</span><span class="n">Var</span> <span class="n">var</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">sign</span> <span class="o">=</span> <span class="nb">false</span><span class="p">);</span>
+
+    <span class="kt">bool</span> <span class="k">operator</span> <span class="o">==</span> <span class="p">(</span><span class="n">Lit</span> <span class="n">p</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="o">==</span> <span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">;</span> <span class="p">}</span>
+    <span class="kt">bool</span> <span class="k">operator</span> <span class="o">!=</span> <span class="p">(</span><span class="n">Lit</span> <span class="n">p</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">;</span> <span class="p">}</span>
+    <span class="kt">bool</span> <span class="k">operator</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">Lit</span> <span class="n">p</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">};</span></pre></figure>
+
+    <p>
+      Be aware that constructor's second argument asks for “Has a sign”?
+      This is counter-intuitive in my opinion because negation is naturally
+      associated with boolean value <code>false</code> rather than <code>true</code>.
+      However <code>new Lit(3, false)</code> represents the boolean value
+      <code>v<sub>3</sub></code> and <code>new Lit(5, true)</code> represents
+      <code>¬v<sub>5</sub></code>.
+      This lead to heavy criticism from my side to the SAT community and its adoption
+      of the MiniSat interface.
+    </p>
+
+    <h2 id="example">
+      An example
+    </h2>
+
+    <p>
+      I want to briefly illustrate how to provide a CNF to the SAT solver.
+    </p>
+
+    <figure class="syntax cpp"><pre>  <span class="n">Solver</span> <span class="n">s</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">newVar</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">newVar</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="n">c</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">newVar</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="n">d</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">newVar</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="n">e</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">newVar</span><span class="p">();</span>
+
+  <span class="n">vec</span><span class="o">&lt;</span><span class="n">Lit</span><span class="o">&gt;</span> <span class="n">clause</span><span class="p">;</span>
+  <span class="n">clause</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">Lit</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="nb">false</span><span class="p">));</span>
+  <span class="n">clause</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">Lit</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="nb">false</span><span class="p">));</span>
+  <span class="n">clause</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">Lit</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">false</span><span class="p">));</span>
+  <span class="n">s</span><span class="p">.</span><span class="n">addClause</span><span class="p">(</span><span class="n">clause</span><span class="p">);</span>
+
+  <span class="n">vec</span><span class="o">&lt;</span><span class="n">Lit</span><span class="o">&gt;</span> <span class="n">clause</span><span class="p">;</span>
+  <span class="n">clause</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">Lit</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="nb">false</span><span class="p">));</span>
+  <span class="n">clause</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">Lit</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="nb">true</span><span class="p">));</span>
+  <span class="n">s</span><span class="p">.</span><span class="n">addClause</span><span class="p">(</span><span class="n">clause</span><span class="p">);</span>
+
+  <span class="n">vec</span><span class="o">&lt;</span><span class="n">Lit</span><span class="o">&gt;</span> <span class="n">assumptions</span><span class="p">;</span>
+  <span class="n">assumptions</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">Lit</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">false</span><span class="p">));</span>
+  <span class="n">assumptions</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">Lit</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="nb">true</span><span class="p">));</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Is satisfiable? &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">s</span><span class="p">.</span><span class="n">solve</span><span class="p">(</span><span class="n">assumptions</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span></pre></figure>
+
+    <p>
+      This example evaluates the equation:
+    </p>
+    <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mo stretchy="false">(</mo><mi>a</mi><mo>∨</mo><mi>b</mi><mo>∨</mo><mi>c</mi><mo stretchy="false">)</mo><mo>∧</mo><mo stretchy="false">(</mo><mi>a</mi><mo>∨</mo><mo>¬</mo><mi>b</mi><mo stretchy="false">)</mo><mo>∧</mo><mo stretchy="false">(</mo><mi>d</mi><mo stretchy="false">)</mo><mo>∧</mo><mo stretchy="false">(</mo><mo>¬</mo><mi>e</mi><mo stretchy="false">)</mo></mrow></math>
+
+    <p>
+      The clauses <code>d</code> and <code>¬e</code> are added as <em>assumptions</em>
+      which means that after one evaluation those clauses will be lost unlike other clauses
+      which allows you to add clauses <em>incrementally</em>.
+    </p>
+
+    <h2 id="python">
+      The Pythonic Way
+    </h2>
+
+    <p>
+      <code>pycosat</code> <a href="#pyc01" id="pyc01-ref">[pyc01]</a> is a python binding to the
+      PicoSAT SAT solver <a href="#pic01" id="pic01-ref">[pic01]</a>. The python interface looks as
+      follows:
+    </p>
+
+    <figure class="syntax cpp"><pre><span class="kn">import</span> <span class="nn">pycosat</span>
+<span class="n">cnf</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">]]</span>
+<span class="n">pycosat</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">cnf</span><span class="p">)</span>
+<span class="c"># gives [1, -2, -3, -4, 5]</span>
+</pre></figure>
+
+    <p>
+      This interface is beautiful, because it clearly shows the involved variables,
+      uses one character to negate some variable and clauses are visually
+      separated without much boilerplate.
+      I want to achieve something similar in C++.
+    </p>
+
+    <h2 id="init-list">
+      Using C++11 initializer lists
+    </h2>
+
+    <p>
+      C++11 initializer lists allow you to provide list items in immutable,
+      light-weight lists. They are denoted by curly braces:
+    </p>
+
+    <figure class="syntax cpp"><pre>  <span class="n">Solver</span> <span class="n">s</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">newVar</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">newVar</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="n">c</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">newVar</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="n">d</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">newVar</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="n">e</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">newVar</span><span class="p">();</span>
+
+  <span class="n">s</span><span class="p">.</span><span class="n">AddClause</span><span class="p">({</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="p">});</span>
+  <span class="n">s</span><span class="p">.</span><span class="n">AddClause</span><span class="p">({</span> <span class="n">a</span><span class="p">,</span> <span class="o">-</span><span class="n">b</span> <span class="p">});</span>
+
+  <span class="n">s</span><span class="p">.</span><span class="n">Assume</span><span class="p">(</span><span class="n">d</span><span class="p">);</span>
+  <span class="n">s</span><span class="p">.</span><span class="n">Assume</span><span class="p">(</span><span class="o">-</span><span class="n">e</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Is satisfiable? &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">s</span><span class="p">.</span><span class="n">solve</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span></pre></figure>
+
+    <h2 id="abstraction">
+      Abstraction
+    </h2>
+
+    <p>
+      Okay, this interface looks nice, but now I want to provide the
+      actual interface definition and one real-world implementation
+      using CryptoMiniSat <a href="cms01" id="cms01-ref">[cms01]</a>
+      in version 2, but the current version 4 should also work,
+      because XOR clauses are supported again (unlike version 3).
+    </p>
+
+    <p>
+      Also the interface fixes the signum problem. Like in python
+      negation is denoted as minus. This features is also provided
+      in the given interface.
+    </p>
+
+    <h2 id="implementation">
+      SAT solver interface implementation
+    </h2>
+
+    <h3 id="header">
+      Header file
+    </h3>
+
+    <figure class="syntax cpp"><pre><span class="cm">/*</span>
+<span class="cm"> * satsolverinterface.cpp</span>
+<span class="cm"> *</span>
+<span class="cm"> * This file contains an abstraction for all MiniSat-compatible</span>
+<span class="cm"> * SAT solvers and various implementations of it.</span>
+<span class="cm"> *</span>
+<span class="cm"> * @class ISatSolver</span>
+<span class="cm"> * @class CMSatSolver  implementing ISatSolver</span>
+<span class="cm"> * @class DebugSatSolver  implementing ISatSolver</span>
+<span class="cm"> * @class DimacsSatSolver  implementing ISatSolver</span>
+<span class="cm"> *</span>
+<span class="cm"> * literal = variables + sign</span>
+<span class="cm"> * clause = disjunction of literals</span>
+<span class="cm"> */</span>
+
+<span class="cp">#ifndef SATSOLVERINTERFACE_H_</span>
+<span class="cp">#define SATSOLVERINTERFACE_H_</span>
+
+<span class="c1">//#define SAT_EXPLICIT_SOLUTION</span>
+
+<span class="cp">#include &lt;initializer_list&gt;</span>
+<span class="cp">#include &lt;vector&gt;</span>
+
+<span class="c1">// cryptominisat 2.9.6 (abbr. CMSAT)</span>
+<span class="cp">#include &quot;cmsat/Solver.h&quot;       </span><span class="c1">// provides CMSat::Solver</span>
+<span class="cp">#include &quot;cmsat/SolverTypes.h&quot;  </span><span class="c1">// provides CMSat::Var, CMSat::Lit, CMSat::lbool and others</span>
+<span class="cp">#include &quot;cmsat/Vec.h&quot;          </span><span class="c1">// provides CMSat::vec</span>
+
+<span class="k">class</span> <span class="nc">ISatSolver</span> <span class="p">{</span>
+<span class="nl">public:</span>
+  <span class="k">static</span> <span class="n">constexpr</span> <span class="kt">char</span> <span class="n">NAME</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&quot;Abstract SatSolver interface&quot;</span><span class="p">;</span>
+
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">ISatSolver</span><span class="p">()</span> <span class="p">{</span>
+  <span class="p">}</span>
+
+  <span class="cm">/*</span>
+<span class="cm">   Add an assumption (one assigned). Assumption &quot;-var2&quot; corresponds to</span>
+<span class="cm">   clause &quot;-var2&quot;, but assumptions are lost once Solve is called.</span>
+<span class="cm">   */</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">Assume</span><span class="p">(</span><span class="kt">int</span> <span class="n">assignment</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="cm">/*</span>
+<span class="cm">   Add a clause to the set of boolean equations. For example:</span>
+
+<span class="cm">     a or (not b) or c = true</span>
+
+<span class="cm">   corresponds to</span>
+
+<span class="cm">     a = NewVar()</span>
+<span class="cm">     b = NewVar()</span>
+<span class="cm">     c = NewVar()</span>
+<span class="cm">     AddClause({a, -b, c})</span>
+<span class="cm">   */</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">AddClause</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">AddClause</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">initializer_list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">literals</span><span class="p">(</span><span class="n">lits</span><span class="p">);</span>
+    <span class="n">AddClause</span><span class="p">(</span><span class="n">literals</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="cm">/*</span>
+<span class="cm">   Adds a XOR relation to the set of boolean equations. For example:</span>
+
+<span class="cm">     a or (not b) or c = false</span>
+
+<span class="cm">   corresponds to</span>
+
+<span class="cm">     a = NewVar()</span>
+<span class="cm">     b = NewVar()</span>
+<span class="cm">     c = NewVar()</span>
+<span class="cm">     AddXor({a, -b, c}, false)</span>
+<span class="cm">   */</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">AddXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">initializer_list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">literals</span><span class="p">(</span><span class="n">lits</span><span class="p">);</span>
+    <span class="n">AddXor</span><span class="p">(</span><span class="n">literals</span><span class="p">,</span> <span class="n">is_true</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">AddXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">AddClauseForXor</span><span class="p">(</span><span class="n">lits</span><span class="p">,</span> <span class="n">is_true</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="c1">// Request a new, unique variable</span>
+  <span class="c1">// Two successive calls to this method of this instance never</span>
+  <span class="c1">// yield the same result. Returned variables have greater value than zero.</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">NewVar</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="c1">// Solve the equation system</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">Solve</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="c1">// Print statistics about the last evaluation or the current configuration</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">PrintStats</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="c1">// Helpers</span>
+<span class="nl">protected:</span>
+  <span class="c1">// Generates the CNF for a given XOR by generating the truth table.</span>
+  <span class="c1">// So it kind of simulates AddXor using AddClause. O(2^n) clauses.</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">AddClauseForXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span> <span class="o">=</span> <span class="nb">true</span><span class="p">);</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">AddClauseForXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">initializer_list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span> <span class="o">=</span> <span class="nb">true</span><span class="p">);</span>
+<span class="p">};</span>
+
+
+
+
+<span class="k">class</span> <span class="nc">CMSatSolver</span><span class="o">:</span> <span class="k">public</span> <span class="n">ISatSolver</span> <span class="p">{</span>
+<span class="nl">protected:</span>
+  <span class="n">CMSat</span><span class="o">::</span><span class="n">Solver</span> <span class="n">solver_</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">CMSat</span><span class="o">::</span><span class="n">Var</span><span class="o">&gt;</span> <span class="n">variables_</span><span class="p">;</span>
+  <span class="n">CMSat</span><span class="o">::</span><span class="n">vec</span><span class="o">&lt;</span><span class="n">CMSat</span><span class="o">::</span><span class="n">Lit</span><span class="o">&gt;</span> <span class="n">assumptions_</span><span class="p">;</span>
+  <span class="n">CMSat</span><span class="o">::</span><span class="n">lbool</span> <span class="n">solution_</span> <span class="o">=</span> <span class="n">CMSat</span><span class="o">::</span><span class="n">l_Undef</span><span class="p">;</span>
+
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">ResetSolution</span><span class="p">();</span>
+
+<span class="nl">public:</span>
+  <span class="k">static</span> <span class="n">constexpr</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">NAME</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&quot;Abstract SatSolver interface&quot;</span><span class="p">;</span>
+
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">CMSatSolver</span><span class="p">()</span> <span class="p">{</span>
+  <span class="p">}</span>
+
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">Assume</span><span class="p">(</span><span class="kt">int</span> <span class="n">assignment</span><span class="p">)</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">AddClause</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">)</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">AddXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">initializer_list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">NewVar</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">PrintStats</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">PrintStats</span><span class="p">(</span><span class="kt">bool</span> <span class="n">print_full_model</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">print_stats</span><span class="p">);</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">Solve</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+<span class="p">};</span>
+
+
+
+
+
+<span class="c1">// Plain text debugging information.</span>
+<span class="k">class</span> <span class="nc">DebugSatSolver</span><span class="o">:</span> <span class="k">public</span> <span class="n">ISatSolver</span> <span class="p">{</span>
+<span class="nl">protected:</span>
+  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">variables_</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">clauses_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">xors_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">assumptions_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">old_assumptions_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+  <span class="k">static</span> <span class="n">constexpr</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">NAME</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&quot;Debugging SatSolver&quot;</span><span class="p">;</span>
+
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">DebugSatSolver</span><span class="p">()</span> <span class="p">{</span>
+  <span class="p">}</span>
+
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">Assume</span><span class="p">(</span><span class="kt">int</span> <span class="n">assignment</span><span class="p">)</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">AddClause</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">)</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">AddXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">NewVar</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">Solve</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">PrintStats</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+<span class="p">};</span>
+
+
+
+
+
+<span class="c1">// Dimacs output</span>
+<span class="k">class</span> <span class="nc">DimacsSatSolver</span><span class="o">:</span> <span class="k">public</span> <span class="n">ISatSolver</span> <span class="p">{</span>
+<span class="nl">protected:</span>
+  <span class="k">static</span> <span class="n">constexpr</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">PREFIX</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">;</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">variables_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">clauses_</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+  <span class="k">static</span> <span class="n">constexpr</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">NAME</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&quot;Dimacs output&quot;</span><span class="p">;</span>
+
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">DimacsSatSolver</span><span class="p">()</span> <span class="p">{</span>
+  <span class="p">}</span>
+
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">Assume</span><span class="p">(</span><span class="kt">int</span> <span class="n">assignment</span><span class="p">)</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">AddClause</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">)</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">NewVar</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">Solve</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">PrintStats</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+<span class="p">};</span>
+
+
+
+
+
+<span class="c1">// If you are sure that CMSat has a bug, use this SAT solver</span>
+<span class="c1">// and create a github issue</span>
+<span class="c1">//</span>
+<span class="c1">// Run it with something like:</span>
+<span class="c1">//   ./executableprogram &gt; testcase.cpp</span>
+<span class="c1">//   vim testcase.cpp  # strip unnecessary characters</span>
+<span class="c1">//   g++ -std=c++11 -Wall testcase.cpp -lcryptominisat</span>
+<span class="c1">//   ./a.out</span>
+<span class="k">class</span> <span class="nc">CppSatSolver</span><span class="o">:</span> <span class="k">public</span> <span class="n">ISatSolver</span> <span class="p">{</span>
+<span class="nl">protected:</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">variables_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">all_clauses_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">clauses_</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">xor_clauses_</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">assumptions_</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+  <span class="k">static</span> <span class="n">constexpr</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">NAME</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&quot;C++ output&quot;</span><span class="p">;</span>
+
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">CppSatSolver</span><span class="p">()</span> <span class="p">{</span>
+  <span class="p">}</span>
+
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">Assume</span><span class="p">(</span><span class="kt">int</span> <span class="n">assignment</span><span class="p">)</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">AddClause</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">)</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">AddXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">NewVar</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">Solve</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">PrintStats</span><span class="p">()</span> <span class="n">override</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="cp">#endif</span></pre></figure>
+
+      <h3 id="cpp">
+        C++ file
+      </h3>
+
+      <figure class="syntax cpp"><pre><span class="cm">/*</span>
+<span class="cm"> * satsolverinterface.cpp</span>
+<span class="cm"> *</span>
+<span class="cm"> * This file contains an abstraction for all SAT solvers and</span>
+<span class="cm"> * various implementations of it.</span>
+<span class="cm"> *</span>
+<span class="cm"> * @class ISatSolver</span>
+<span class="cm"> * @class CMSatSolver  implementing ISatSolver</span>
+<span class="cm"> * @class DebugSatSolver  implementing ISatSolver</span>
+<span class="cm"> * @class DimacsSatSolver  implementing ISatSolver</span>
+<span class="cm"> */</span>
+
+<span class="cp">#include &quot;satsolverinterface.h&quot;</span>
+
+<span class="n">constexpr</span> <span class="kt">char</span> <span class="n">ISatSolver</span><span class="o">::</span><span class="n">NAME</span><span class="p">[];</span>
+<span class="n">constexpr</span> <span class="kt">char</span> <span class="n">CMSatSolver</span><span class="o">::</span><span class="n">NAME</span><span class="p">[];</span>
+<span class="n">constexpr</span> <span class="kt">char</span> <span class="n">DebugSatSolver</span><span class="o">::</span><span class="n">NAME</span><span class="p">[];</span>
+<span class="n">constexpr</span> <span class="kt">char</span> <span class="n">DimacsSatSolver</span><span class="o">::</span><span class="n">NAME</span><span class="p">[];</span>
+
+<span class="c1">///////////////////////////// class ISatSolver ////////////////////////////</span>
+
+<span class="kt">void</span> <span class="n">ISatSolver</span><span class="o">::</span><span class="n">AddClauseForXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">variables</span> <span class="o">=</span> <span class="n">lits</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+  <span class="n">assert</span><span class="p">(</span><span class="n">variables</span> <span class="o">&lt;=</span> <span class="mi">32</span> <span class="o">&amp;&amp;</span> <span class="s">&quot;32-bit integer boundary. #(literals) &lt;= 32&quot;</span><span class="p">);</span>
+
+  <span class="k">for</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">variables</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// take only the ones that result into false</span>
+    <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">variables</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
+      <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">^</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="n">j</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">result</span> <span class="o">&amp;</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+      <span class="k">continue</span><span class="p">;</span>
+
+    <span class="c1">// Create the disjunctive clause</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">clause</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">l</span> <span class="o">=</span> <span class="n">lits</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">l</span> <span class="o">!=</span> <span class="n">lits</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="n">l</span><span class="o">++</span><span class="p">,</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kt">bool</span> <span class="n">add_sign</span> <span class="o">=</span> <span class="p">((</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="n">j</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">add_sign</span><span class="p">)</span>
+        <span class="n">clause</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="o">*</span><span class="n">l</span><span class="p">));</span>
+      <span class="k">else</span>
+        <span class="n">clause</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="o">*</span><span class="n">l</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">is_true</span><span class="p">)</span> <span class="c1">// invert one of the literals</span>
+      <span class="n">clause</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">clause</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">AddClause</span><span class="p">(</span><span class="n">clause</span><span class="p">);</span>
+    <span class="n">clause</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">ISatSolver</span><span class="o">::</span><span class="n">AddClauseForXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">initializer_list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">literals</span><span class="p">(</span><span class="n">lits</span><span class="p">);</span>
+  <span class="n">AddClauseForXor</span><span class="p">(</span><span class="n">literals</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">//////////////////////////// class CMSatSolver ////////////////////////////</span>
+
+<span class="cm">/*</span>
+<span class="cm"> * Remark about CMSAT:</span>
+<span class="cm"> *</span>
+<span class="cm"> * When creating CMSat::Lit instances, parameter 2 asks &quot;has_negative_sign?&quot;.</span>
+<span class="cm"> * So &quot;varA = true&quot; is &quot;CMSat::Lit(varA, false)&quot; [0]</span>
+<span class="cm"> *</span>
+<span class="cm"> * [0] To quote Mate Soos,</span>
+<span class="cm"> *   (2013-07-25 02:24:27 PM) msoos: well....</span>
+<span class="cm"> *   (2013-07-25 02:24:32 PM) msoos: it&#39;s stupid really</span>
+<span class="cm"> */</span>
+
+<span class="kt">void</span> <span class="n">CMSatSolver</span><span class="o">::</span><span class="n">Assume</span><span class="p">(</span><span class="kt">int</span> <span class="n">assignment</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">bool</span> <span class="n">has_sign</span> <span class="o">=</span> <span class="n">assignment</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">var</span> <span class="o">=</span> <span class="n">assignment</span><span class="p">;</span>
+  <span class="n">var</span> <span class="o">=</span> <span class="p">(</span><span class="n">var</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="o">-</span><span class="n">var</span> <span class="o">:</span> <span class="n">var</span><span class="p">;</span>
+  <span class="n">var</span> <span class="o">=</span> <span class="n">var</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="n">var</span> <span class="o">=</span> <span class="n">variables_</span><span class="p">[</span><span class="n">var</span><span class="p">];</span>
+
+  <span class="n">assumptions_</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">CMSat</span><span class="o">::</span><span class="n">Lit</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">has_sign</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">CMSatSolver</span><span class="o">::</span><span class="n">ResetSolution</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">solution_</span> <span class="o">=</span> <span class="n">CMSat</span><span class="o">::</span><span class="n">l_Undef</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">CMSatSolver</span><span class="o">::</span><span class="n">AddClause</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">CMSat</span><span class="o">::</span><span class="n">vec</span> <span class="o">&lt;</span> <span class="n">CMSat</span><span class="o">::</span><span class="n">Lit</span> <span class="o">&gt;</span> <span class="n">clause</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">:</span> <span class="n">lits</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">bool</span> <span class="n">has_sign</span> <span class="o">=</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">var</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="p">(</span><span class="n">var</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="o">-</span><span class="n">var</span> <span class="o">:</span> <span class="n">var</span><span class="p">;</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">variables_</span><span class="p">[</span><span class="n">var</span><span class="p">];</span>
+    <span class="n">assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">find</span><span class="p">(</span><span class="n">variables_</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">variables_</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">var</span><span class="p">)</span> <span class="o">!=</span> <span class="n">variables_</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+    <span class="n">clause</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">CMSat</span><span class="o">::</span><span class="n">Lit</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">has_sign</span><span class="p">));</span>
+  <span class="p">}</span>
+
+  <span class="n">solver_</span><span class="p">.</span><span class="n">addClause</span><span class="p">(</span><span class="n">clause</span><span class="p">);</span>
+  <span class="n">ResetSolution</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">CMSatSolver</span><span class="o">::</span><span class="n">AddXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">initializer_list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">CMSat</span><span class="o">::</span><span class="n">vec</span> <span class="o">&lt;</span> <span class="n">CMSat</span><span class="o">::</span><span class="n">Lit</span> <span class="o">&gt;</span> <span class="n">clause</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">:</span> <span class="n">lits</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">bool</span> <span class="n">has_sign</span> <span class="o">=</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">var</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="p">(</span><span class="n">var</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="o">-</span><span class="n">var</span> <span class="o">:</span> <span class="n">var</span><span class="p">;</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">variables_</span><span class="p">[</span><span class="n">var</span><span class="p">];</span>
+    <span class="n">assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">find</span><span class="p">(</span><span class="n">variables_</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">variables_</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">var</span><span class="p">)</span> <span class="o">!=</span> <span class="n">variables_</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+    <span class="n">clause</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">CMSat</span><span class="o">::</span><span class="n">Lit</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">has_sign</span><span class="p">));</span>
+  <span class="p">}</span>
+  <span class="n">solver_</span><span class="p">.</span><span class="n">addXorClause</span><span class="p">(</span><span class="n">clause</span><span class="p">,</span> <span class="o">!</span><span class="n">is_true</span><span class="p">);</span>   <span class="c1">// negated by intention, again</span>
+  <span class="n">ResetSolution</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="n">CMSatSolver</span><span class="o">::</span><span class="n">NewVar</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">CMSat</span><span class="o">::</span><span class="n">Var</span> <span class="n">variable</span> <span class="o">=</span> <span class="n">solver_</span><span class="p">.</span><span class="n">newVar</span><span class="p">();</span>
+  <span class="n">variables_</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">variable</span><span class="p">);</span>
+
+  <span class="n">ResetSolution</span><span class="p">();</span>
+
+  <span class="k">return</span> <span class="n">variables_</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>  <span class="c1">// no -1 by intention</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">CMSatSolver</span><span class="o">::</span><span class="n">PrintStats</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kt">bool</span> <span class="n">print_full_model</span> <span class="o">=</span> <span class="nb">false</span><span class="p">,</span> <span class="n">print_stats</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+<span class="cp">#ifdef SAT_EXPLICIT_SOLUTION</span>
+  <span class="n">print_full_model</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+<span class="cp">#endif</span>
+  <span class="n">PrintStats</span><span class="p">(</span><span class="n">print_full_model</span><span class="p">,</span> <span class="n">print_stats</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">CMSatSolver</span><span class="o">::</span><span class="n">PrintStats</span><span class="p">(</span><span class="kt">bool</span> <span class="n">print_full_model</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">print_stats</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Variables:                 &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">solver_</span><span class="p">.</span><span class="n">nVars</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Long, active clauses:      &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">solver_</span><span class="p">.</span><span class="n">nClauses</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">solution_</span> <span class="o">==</span> <span class="n">CMSat</span><span class="o">::</span><span class="n">l_Undef</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Undefined result.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">solution_</span> <span class="o">==</span> <span class="n">CMSat</span><span class="o">::</span><span class="n">l_False</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[0;31m&quot;</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[[ Unsatisfiable ]]&quot;</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[0m&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">solution_</span> <span class="o">==</span> <span class="n">CMSat</span><span class="o">::</span><span class="n">l_True</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Model:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">print_full_model</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">solver_</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  var_&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">solver_</span><span class="p">.</span><span class="n">model</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="kt">int</span> <span class="n">smaller</span> <span class="o">=</span> <span class="n">solver_</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">5</span> <span class="o">?</span> <span class="n">solver_</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">:</span> <span class="mi">5</span><span class="p">;</span>
+      <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">smaller</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  var_&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">solver_</span><span class="p">.</span><span class="n">model</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">smaller</span> <span class="o">&lt;</span> <span class="n">solver_</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">size</span><span class="p">())</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  ... (and &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">solver_</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">-</span> <span class="n">smaller</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; others)&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[0;32m&quot;</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[[ Satisfiable ]]&quot;</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[0m&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">print_stats</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">solver_</span><span class="p">.</span><span class="n">printStats</span><span class="p">();</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span> <span class="n">CMSatSolver</span><span class="o">::</span><span class="n">Solve</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">solution_</span> <span class="o">=</span> <span class="n">solver_</span><span class="p">.</span><span class="n">solve</span><span class="p">(</span><span class="n">assumptions_</span><span class="p">);</span>
+  <span class="n">assumptions_</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+
+<span class="cp">#ifdef SAT_EXPLICIT_SOLUTION</span>
+  <span class="n">PrintStats</span><span class="p">();</span>
+<span class="cp">#endif</span>
+
+  <span class="n">assert</span><span class="p">(</span><span class="n">solution_</span> <span class="o">!=</span> <span class="n">CMSat</span><span class="o">::</span><span class="n">l_Undef</span> <span class="o">&amp;&amp;</span> <span class="s">&quot;SAT solver result is undefined&quot;</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">solution_</span> <span class="o">==</span> <span class="n">CMSat</span><span class="o">::</span><span class="n">l_True</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">/////////////////////////// class DebugSatSolver //////////////////////////</span>
+
+<span class="kt">void</span> <span class="n">DebugSatSolver</span><span class="o">::</span><span class="n">Assume</span><span class="p">(</span><span class="kt">int</span> <span class="n">assignment</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[SAT] Add assumption: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">assignment</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">assumptions_</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">DebugSatSolver</span><span class="o">::</span><span class="n">AddClause</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">lits</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[SAT] Adding &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">count</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;-ary clause: &quot;</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">i</span> <span class="o">:</span> <span class="n">lits</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;(NOT var&quot;</span> <span class="o">&lt;&lt;</span> <span class="o">-</span><span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;)&quot;</span> <span class="o">&lt;&lt;</span> <span class="p">((</span><span class="n">count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">?</span> <span class="s">&quot; OR &quot;</span> <span class="o">:</span> <span class="s">&quot;&quot;</span><span class="p">);</span>
+    <span class="k">else</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;var&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="p">((</span><span class="n">count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">?</span> <span class="s">&quot; OR &quot;</span> <span class="o">:</span> <span class="s">&quot;&quot;</span><span class="p">);</span>
+    <span class="n">count</span><span class="o">--</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">clauses_</span><span class="o">++</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">DebugSatSolver</span><span class="o">::</span><span class="n">AddXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[SAT] Adding: &quot;</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">lits</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">i</span> <span class="o">:</span> <span class="n">lits</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;(NOT &quot;</span> <span class="o">&lt;&lt;</span> <span class="o">-</span><span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;)&quot;</span> <span class="o">&lt;&lt;</span> <span class="p">((</span><span class="n">count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">?</span> <span class="s">&quot; XOR &quot;</span> <span class="o">:</span> <span class="s">&quot;&quot;</span><span class="p">);</span>
+    <span class="k">else</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="p">((</span><span class="n">count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">?</span> <span class="s">&quot; XOR &quot;</span> <span class="o">:</span> <span class="s">&quot;&quot;</span><span class="p">);</span>
+    <span class="n">count</span><span class="o">--</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; = &quot;</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="n">is_true</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">xors_</span><span class="o">++</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="n">DebugSatSolver</span><span class="o">::</span><span class="n">NewVar</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">assert</span><span class="p">(</span><span class="n">variables_</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="o">*</span> <span class="mi">8</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="s">&quot;Maximum number of variables requested&quot;</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[SAT] Request new variable &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">variables_</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="k">return</span> <span class="n">variables_</span><span class="o">++</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span> <span class="n">DebugSatSolver</span><span class="o">::</span><span class="n">Solve</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[SAT] Triggering Solve() method. Returning UNSAT; as always.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[SAT] Dropping assumptions.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">PrintStats</span><span class="p">();</span>
+  <span class="n">old_assumptions_</span> <span class="o">=</span> <span class="n">assumptions_</span><span class="p">;</span>
+  <span class="n">assumptions_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">DebugSatSolver</span><span class="o">::</span><span class="n">PrintStats</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[SAT] Stats:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[SAT]   &quot;</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">variables_</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; variables added.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[SAT]   &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">clauses_</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; clauses added.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[SAT]   &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">xors_</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; xor structures added.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[SAT]   &quot;</span> <span class="o">&lt;&lt;</span> <span class="p">((</span><span class="n">assumptions_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="n">old_assumptions_</span> <span class="o">:</span> <span class="n">assumptions_</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="s">&quot; assumptions added.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">////////////////////////// class DimacsSatSolver //////////////////////////</span>
+
+<span class="n">constexpr</span> <span class="kt">char</span> <span class="n">DimacsSatSolver</span><span class="o">::</span><span class="n">PREFIX</span><span class="p">[];</span>
+
+<span class="kt">void</span> <span class="n">DimacsSatSolver</span><span class="o">::</span><span class="n">Assume</span><span class="p">(</span><span class="kt">int</span> <span class="n">assignment</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">;</span>
+  <span class="n">lits</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">assignment</span><span class="p">);</span>
+  <span class="n">clauses_</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">lits</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">DimacsSatSolver</span><span class="o">::</span><span class="n">AddClause</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">clauses_</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">lits</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="n">DimacsSatSolver</span><span class="o">::</span><span class="n">NewVar</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="o">++</span><span class="n">variables_</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span> <span class="n">DimacsSatSolver</span><span class="o">::</span><span class="n">Solve</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">DimacsSatSolver</span><span class="o">::</span><span class="n">PREFIX</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;p cnf &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">variables_</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">clauses_</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+      <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">lits</span> <span class="o">:</span> <span class="n">clauses_</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">DimacsSatSolver</span><span class="o">::</span><span class="n">PREFIX</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">i</span> <span class="o">:</span> <span class="n">lits</span><span class="p">)</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; &quot;</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;0&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">DimacsSatSolver</span><span class="o">::</span><span class="n">PrintStats</span><span class="p">()</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="c1">////////////////////////// class CppSatSolver //////////////////////////</span>
+
+<span class="kt">void</span> <span class="n">CppSatSolver</span><span class="o">::</span><span class="n">Assume</span><span class="p">(</span><span class="kt">int</span> <span class="n">assignment</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">assumptions_</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">assignment</span><span class="p">);</span>
+  <span class="n">all_clauses_</span><span class="o">++</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">CppSatSolver</span><span class="o">::</span><span class="n">AddClause</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">clauses_</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">lits</span><span class="p">);</span>
+  <span class="n">all_clauses_</span><span class="o">++</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">CppSatSolver</span><span class="o">::</span><span class="n">AddXor</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">lits</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">is_true</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">copy</span><span class="p">(</span><span class="n">lits</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">is_true</span><span class="p">)</span>
+    <span class="n">copy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">copy</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+  <span class="n">assert</span><span class="p">(</span><span class="n">copy</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;x&quot;</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">is_true</span><span class="p">)</span> <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;-&quot;</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">l</span> <span class="o">:</span> <span class="n">lits</span><span class="p">)</span> <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">l</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; &quot;</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">xor_clauses_</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">copy</span><span class="p">);</span>
+  <span class="n">all_clauses_</span><span class="o">++</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="n">CppSatSolver</span><span class="o">::</span><span class="n">NewVar</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="o">++</span><span class="n">variables_</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span> <span class="n">CppSatSolver</span><span class="o">::</span><span class="n">Solve</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;#include &lt;iostream&gt;&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;#include &lt;cassert&gt;&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;#include </span><span class="se">\&quot;</span><span class="s">cmsat/Solver.h</span><span class="se">\&quot;</span><span class="s">&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;#include </span><span class="se">\&quot;</span><span class="s">cmsat/SolverConf.h</span><span class="se">\&quot;</span><span class="s">&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;#include </span><span class="se">\&quot;</span><span class="s">cmsat/SolverTypes.h</span><span class="se">\&quot;</span><span class="s">&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;#include </span><span class="se">\&quot;</span><span class="s">cmsat/Vec.h</span><span class="se">\&quot;</span><span class="s">&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;int main() {&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  CMSat::Solver s;&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  for (unsigned i = 0; i &lt; &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">variables_</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;; i++)&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;    s.newVar();&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="c1">// clauses</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  CMSat::vec&lt;CMSat::Lit&gt; clause;&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  // Conjunctive clauses&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">clause</span> <span class="o">:</span> <span class="n">clauses_</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  &quot;</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">var</span> <span class="o">:</span> <span class="n">clause</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kt">int</span> <span class="n">abs</span> <span class="o">=</span> <span class="p">(</span><span class="n">var</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="o">-</span><span class="n">var</span> <span class="o">:</span> <span class="n">var</span><span class="p">);</span>
+      <span class="n">assert</span><span class="p">(</span><span class="n">abs</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">);</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;clause.push(CMSat::Lit(&quot;</span>
+          <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">abs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;, &quot;</span>
+          <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">var</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="s">&quot;true&quot;</span> <span class="o">:</span> <span class="s">&quot;false&quot;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;)); &quot;</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;s.addClause(clause); clause.clear();&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="c1">// XOR clauses</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  // XOR clauses&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">clause</span> <span class="o">:</span> <span class="n">xor_clauses_</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  &quot;</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">var</span> <span class="o">:</span> <span class="n">clause</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kt">int</span> <span class="n">abs</span> <span class="o">=</span> <span class="p">(</span><span class="n">var</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="o">-</span><span class="n">var</span> <span class="o">:</span> <span class="n">var</span><span class="p">);</span>
+      <span class="n">assert</span><span class="p">(</span><span class="n">abs</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">);</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;clause.push(CMSat::Lit(&quot;</span>
+          <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">abs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;, &quot;</span>
+          <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">var</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="s">&quot;true&quot;</span> <span class="o">:</span> <span class="s">&quot;false&quot;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;)); &quot;</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;s.addXorClause(clause, false); &quot;</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;clause.clear();&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="c1">// assumptions</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  CMSat::vec&lt;CMSat::Lit&gt; assumptions;&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">assume</span> <span class="o">:</span> <span class="n">assumptions_</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">abs</span> <span class="o">=</span> <span class="p">(</span><span class="n">assume</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="o">-</span><span class="n">assume</span> <span class="o">:</span> <span class="n">assume</span><span class="p">);</span>
+    <span class="n">assert</span><span class="p">(</span><span class="n">abs</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  assumptions.push(CMSat::Lit(&quot;</span>
+      <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">abs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;, &quot;</span>
+      <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">assume</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="s">&quot;true&quot;</span> <span class="o">:</span> <span class="s">&quot;false&quot;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;));&quot;</span>
+      <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  std::cout &lt;&lt; </span><span class="se">\&quot;</span><span class="s">Is satisfiable? </span><span class="se">\&quot;</span><span class="s"> &lt;&lt; &quot;</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;s.solve(assumptions) &lt;&lt; std::endl;&quot;</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;  return 0;&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;}&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">CppSatSolver</span><span class="o">::</span><span class="n">PrintStats</span><span class="p">()</span> <span class="p">{</span>
+<span class="p">}</span></pre></figure>
+
+
+    <h3 id="final-example">
+      Final example
+    </h3>
+
+    <p>
+      And here we can see an example from productive code:
+    </p>
+
+    <figure class="syntax cpp"><pre><span class="kt">void</span> <span class="n">SatCondition</span><span class="o">::</span><span class="n">ClausesDiffPos</span><span class="p">(</span><span class="n">ISatSolver</span><span class="o">&amp;</span> <span class="n">sat_solver</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="n">sat_solver</span><span class="p">.</span><span class="n">NewVar</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="n">sat_solver</span><span class="p">.</span><span class="n">NewVar</span><span class="p">();</span>
+
+  <span class="n">sat_solver</span><span class="p">.</span><span class="n">Assume</span><span class="p">(</span><span class="o">-</span><span class="n">a</span><span class="p">);</span>
+  <span class="n">sat_solver</span><span class="p">.</span><span class="n">Assume</span><span class="p">(</span><span class="n">b</span><span class="p">));</span>
+  <span class="n">sat_solver</span><span class="p">.</span><span class="n">AddClause</span><span class="p">({</span><span class="n">c</span><span class="p">,</span> <span class="p">})</span>
+<span class="p">}</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#dpl01-ref" id="dpl01">[dpl01]</a>
+      </dt>
+      <dd>msoos, "msoos/cryptominisat", <br>
+        <a href="https://github.com/msoos/cryptominisat">https://github.com/msoos/cryptominisat</a>
+        [accessed 10th Jul 2014].
+      </dd>
+
+      <dt class="index">
+        <a href="#dpl01-ref" id="dpl01">[dpl01]</a>
+      </dt>
+      <dd>Wikipedia the free encyclopedia, "DPLL algorithm", <br>
+        <a href="https://en.wikipedia.org/wiki/DPLL_algorithm">https://en.wikipedia.org/wiki/DPLL_algorithm</a>
+        [accessed 10th Jul 2014].
+      </dd>
+
+      <dt class="index">
+        <a href="#min01-ref" id="min01">[min01]</a>
+      </dt>
+      <dd>Niklas Eén and Niklas Sörensson, "MiniSat Page", <br>
+        <a href="http://minisat.se/">http://minisat.se/</a>
+        [accessed 10th Jul 2014].
+      </dd>
+
+      <dt class="index">
+        <a href="#pic01-ref" id="pic01">[pic01]</a>
+      </dt>
+      <dd>
+        Armin Biere, "PicoSAT", <br>
+        <a href="http://fmv.jku.at/picosat/">http://fmv.jku.at/picosat/</a>
+        [accessed 10th Jul 2014].
+      </dd>
+
+      <dt class="index">
+        <a href="#pyc01-ref" id="pyc01">[pyc01]</a>
+      </dt>
+      <dd>
+        Ilan Schnell, "pycosat 0.6.0 : Python Package Index", <br>
+        <a href="https://pypi.python.org/pypi/pycosat/0.6.0">https://pypi.python.org/pypi/pycosat/0.6.0</a>
+        [accessed 10th Jul 2014].
+      </dd>
+    </dl>
+  </body>
+</html>
