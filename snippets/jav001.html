@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>Java 001</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Java 001 Ambiguous dispatching</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>MeisterLuk, sebastinas</dd>
+        <dt>Date</dt>
+          <dd>25th of Jul 2014</dd>
+        <dt>Tags</dt>
+          <dd>Java dispatching method overloading ambiguous subtype supertype</dd>
+        <dt>Tested with</dt>
+          <dd>javac 1.7.0_55 (xubuntu/Linux 3.13.0-32-generic x86_64)</dd>
+        <dt>License</dt>
+          <dd>Public Domain</dd>
+      </dl>
+    </aside>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <figure class="syntax java"><pre><span class="kd">class</span> <span class="nc">Ambiguous</span> <span class="o">{</span>
+    <span class="kd">class</span> <span class="nc">Super1</span> <span class="o">{}</span>
+    <span class="kd">class</span> <span class="nc">Sub1</span> <span class="kd">extends</span> <span class="n">Super1</span> <span class="o">{}</span>
+    <span class="kd">class</span> <span class="nc">Super2</span> <span class="o">{}</span>
+    <span class="kd">class</span> <span class="nc">Sub2</span> <span class="kd">extends</span> <span class="n">Super2</span> <span class="o">{}</span>
+
+    <span class="kt">void</span> <span class="nf">ambiguous</span><span class="o">(</span><span class="n">Super1</span> <span class="n">a</span><span class="o">,</span> <span class="n">Sub2</span> <span class="n">b</span><span class="o">)</span> <span class="o">{}</span>
+    <span class="kt">void</span> <span class="nf">ambiguous</span><span class="o">(</span><span class="n">Sub1</span> <span class="n">a</span><span class="o">,</span> <span class="n">Super2</span> <span class="n">b</span><span class="o">)</span> <span class="o">{}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">ambiguous</span><span class="o">(</span><span class="k">new</span> <span class="n">Sub1</span><span class="o">(),</span> <span class="k">new</span> <span class="n">Sub2</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span></pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <figure class="syntax"><pre><span class="m">Ambiguous.java:11: error: reference to ambiguous is ambiguous, both method ambiguous(Ambiguous.Super1,Ambiguous.Sub2) in Ambiguous and method ambiguous(Ambiguous.Sub1,Ambiguous.Super2) in Ambiguous match
+        ambiguous(new Sub1(), new Sub2());
+        ^
+1 error
+6</span></pre></figure>
+  </body>
+</html>
