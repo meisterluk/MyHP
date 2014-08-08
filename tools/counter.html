@@ -1,116 +1,135 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Counters</title>
     <meta charset="utf-8" />
-    <script type="text/javascript" src="http://lukas-prokop.at/jquery.js"></script>
+    <title>Count elements</title>
+    <script type="text/javascript" src="/jquery.js"></script>
     <script type="text/javascript">
     <!--
-      archive = function(word, count)
-      {
-        var li = '<li><b>' + word + '</b>: ' + count + '</li>';
-        $('#counters_record').append(li);
+      var Counter = function(element) {
+        var count = 0;
+        var stored = false;
+        var htmlelement = null;
+        var filterelem = function () { return $(this).text() == element; };
+
+        // create this counter visually
+        var create = function () {
+          htmlelement = $("<div></div>").addClass("counter");
+          var elem = $("<p></p>").addClass("element").text("" + element);
+          var counter = $("<p></p>").addClass("count").text("" + count);
+          htmlelement.append(elem);
+          htmlelement.append(counter);
+          $("#counters").append(htmlelement);
+        };
+
+        // Increment counter
+        var increment = function () {
+          count++;
+          if (htmlelement === null)
+            create();
+          else {
+            htmlelement.find(".count").text("" + count);
+          }
+        };
+
+        // write counter to storage
+        var store = function () {
+          // remove counter div
+          htmlelement.remove();
+
+          // insert into archive list
+          var dt = $("<dt></dt>");
+          dt.text(element);
+          var dd = $("<dd></dd>");
+          dd.text(count);
+
+          if ($("#counters_archive dt").filter(filterelem).length === 0) {
+            $("#counters_archive").append(dt);
+            $("#counters_archive").append(dd);
+          }
+
+          stored = true;
+        };
+
+        return {
+          create : create,
+          increment : increment,
+          store : store
+        };
       };
 
-      retrieve = function()
-      {
-        var counters = {};
-        for (c_id in $('#counters .counter'))
-        {
-          var count = $('#counters .counter:eq(' + c_id + ') .count').text();
-          var word = $('#counters .counter:eq(' + c_id + ') .word').text();
-          
-          counters[c_id] = {'count': parseInt(count), 'word': word};
-        }
-        return counters;
-      }
-
-      add_counter = function(word)
-      {
-        var num = $('#counters').length;
-        $('#counters').append($('<div class="counter" id="counter' + num + '">' +
-            '<p class="word">' + word + '</p><p class="count">0</p></div>'));
-      }
-      
-      delete_counter = function(word)
-      {
-        // delete div container
-        $('#counters .counter .word').each(function () {
-          if ($(this).text() === word)
-            $(this).parent().remove();
-        });
-
-        // reorganize id attributes
-        var id = 0;
-        for (c_id in $('#counters .counter'))
-        {
-          var c_word = $('#counters .counter:eq(' + c_id + ') .word').text();
-          $('#counters .counter:eq(' + c_id + ')').attr('id', 'counter' + id);
-          id++;
-        }
-      }
-
-      update = function(counter_words)
-      {
-        var cc = {};  // {word: exists in the future}
-        var counts = {};  // {word: count}
-
-        for (cw_id in counter_words)
-          cc[counter_words[cw_id]] = false;
-
-        // mark existing words
-        $('#counters .counter').each(function () {
-          var count = $(this).children('.count').text();
-          var word = $(this).children('.word').text();
-
-          counts[word] = count;
-          if (counter_words.indexOf(word) === -1)
-            cc[word] = null;
+      // Take the given strings and extract all unique words
+      function readWords(str) {
+        var elems = str.split(',');
+        elems = elems.filter(function (v) { return v.length > 0; });
+        elems = elems.map(function (v) { return v.trim() });
+        elems = elems.filter(function (v, id) {
+          if (elems.indexOf(v) < id)
+            return false;
           else
-            cc[word] = true;
+            return true;
         });
-
-        // create new ones, archive old ones
-        for (word in cc)
-        {
-          var exists = cc[word];
-          if (exists === false)
-          {
-            add_counter(word);
-          } else if (exists === null) {
-            delete_counter(word);
-            if (counts[word] > 0)
-              archive(word, counts[word]);
-          } else {
-            // keep it
-          }
-        }
+        return elems;
       }
 
       $(document).ready(function() {
-        // update if words change
-        var counters = new Array($('.counter').length);
-        $('#words').change(function () {
-          var new_counters = $(this).val().replace(/^,+|,+$/g, '').split(',');
-          if (new_counters.length === 1 && new_counters[0] === '')
-            new_counters = [];
-          update(new_counters);
+        elements = {};
+
+        // update counter objects
+        function updateCounters() {
+          var words = readWords($("#elements").val());
+
+          for (var word in elements) {
+            if (words.indexOf(word) === -1) {
+              elements[word].store();
+              delete elements[word];
+            }
+          }
+
+          for (var w in words) {
+            if (elements[words[w]] === undefined) {
+              elements[words[w]] = new Counter(words[w]);
+              elements[words[w]].create();
+            }
+          }
+        }
+
+        // events
+        $("#elements").change(updateCounters);
+        $(".counter").live('click', function () {
+          var word = $(this).find(".element").text();
+          elements[word].increment();
         });
 
-        // increment
-        $('.counter').live('click', function () {
-          var count = parseInt($(this).children('.count').text()) + 1;
-          if (count === NaN)
-            count = 0;
-          $(this).children('.count').text(count);
-        });
-
-        $('#words').trigger('change');
+        // init
+        updateCounters();
       });
     -->
     </script>
     <style type="text/css">
     <!--
+      dl {
+        width: 100%;
+        overflow: hidden;
+        background: #ff0;
+      }
+      dt {
+        float: left;
+        width: 30%;
+        background: #cc0;
+        padding: 0;
+        margin: 0;
+      }
+      dd {
+        float: left;
+        width: 70%;
+        background: #dd0;
+        margin: 0;
+      }
+      footer p {
+        font-size: 70%;
+        color: gray;
+      }
       .counter {
         background-color: #EEE;
         border: 3px solid #66A;
@@ -122,8 +141,9 @@
         margin: 10px;
         float: left;
       }
-      #counters_record {
+      #counters_archive {
         clear: both;
+        overflow: visible;
       }
     -->
     </style>
@@ -132,26 +152,33 @@
   <body>
     <article>
       <h1>Counters</h1>
+      <noscript>
+        This application relies on javascript
+        and you won't see any elements without it.
+        Please activate Javascript or ture for alternatives.
+      </noscript>
+      <ul>
+        <li>Click on some counter to increment it.</li>
+        <li>Add or remove words in the textbox as comma-separated values.</li>
+        <li style="font-size:80%">
+          Original usecase: Count repeating phrases to fix
+          semantic satiation in your speechs.
+        </li>
+      </ul>
       <p>
-        Click on the counters to increment their value. Use the textbox
-        to define which words you would like to work with.
-      </p>
-      <p>
-        Comma-separated list of counters:
-        <input type="text" id="words" value="ehm,so" />
+        Counters:
+        <input type="text" id="elements" size="50" value="uhm, so, hence, the crucial point is" />
       </p>
 
       <div id="counters">
-<!--      
-      <div class="counter" id="counter2">
-        <p class="word">Irgendwas</p>
-        <p class="count">0</p>
-      </div>
--->
       </div>
       
-      <ul id="counters_record">
+      <ul id="counters_archive">
       </ul>
     </article>
+
+    <footer>
+      <p>© 2013-2014, meisterluk</p>
+    </footer>
   </body>
 </html>
