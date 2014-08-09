@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Deduction of production rules</title>
+    <title>Derivation of production rules</title>
     <style type="text/css">
       body {
         width: 70%;
@@ -31,18 +31,18 @@
       #errors li:before { content: "→ "; }
       #def { background-color: #333; line-height: 1.4em; }
       #def * { margin: 0; padding-left: 10px; background-color: #1A1A1A; }
-      #deduced { column-count: 2; column-gap: 3em; }
-      #deduced * { display: inline-block; }
+      #derived { column-count: 2; column-gap: 3em; }
+      #derived * { display: inline-block; }
       .metadata {
         font-size: 0.6em;
         margin-left: 30px;
       }
     </style>
 
-    <script type="text/javascript" src="/jquery.js"></script>
+    <script type="text/javascript" src="http://lukas-prokop.at/jquery.js"></script>
     <script type="text/javascript">
       // maximum recursion depth (ie. maximum number of assignments)
-      var max_deductions = 2;
+      var max_derivations = 2;
 
       function all(lst) {
         if (lst.length === 0) return true;
@@ -101,7 +101,7 @@
 
       // -- sorting ----------------------------------------------------------
 
-      // defines order of deduced output
+      // defines order of derived output
       function compareRules(/* Rule */ rule1, /*Rule*/ rule2)
         // returns -1|0|1
       {
@@ -112,7 +112,7 @@
         var d1 = rule1.depth || 0;
         var d2 = rule2.depth || 0;
 
-        // by number of deductions
+        // by number of derivations
         if (d1 < d2) return -1;
         if (d2 > d1) return 1;
 
@@ -214,8 +214,8 @@
           return new_list;
         }
 
-        // use possible assignments `pos_ass` to deduce `def` recursively
-        var deduce = function(/*Map[Var:List[List[String|Var]|Rule]]*/ pos_ass)
+        // use possible assignments `pos_ass` to derived `def` recursively
+        var derive = function(/*Map[Var:List[List[String|Var]|Rule]]*/ pos_ass)
           // returns List[Rule]
         {
           var results = [];
@@ -236,8 +236,8 @@
               var rule = new Rule(target, new_def, depth + 1);
               results.push(rule);
 
-              if (depth < max_deductions - 1) {
-                var rules = rule.deduce(pos_ass);
+              if (depth < max_derivations - 1) {
+                var rules = rule.derive(pos_ass);
                 for (var r in rules)
                   results.push(rules[r]);
               }
@@ -250,7 +250,7 @@
             'repr': repr,
             'toString': toString,
             'complete': complete,
-            'deduce': deduce,
+            'derive': derive,
 
             'depth': depth,
             'definition': def,
@@ -283,18 +283,18 @@
       function run() {
         // cleanup
         clearList("errors");
-        clearList("deduced-complete");
-        clearList("deduced-incomplete");
+        clearList("derived-complete");
+        clearList("derived-incomplete");
         clearList("def");
 
         // retrieval
-        var input = document.getElementById("deductions").value;
+        var input = document.getElementById("derivations").value;
         var start_symbol = document.getElementById("start").value.trim();
-        var deductions = document.getElementById("max_ded").value;
-        if (isNaN(parseInt(deductions)) || parseInt(deductions) <= 0)
-          addListItem("errors", deductions + " is not a non-negative number");
+        var derivations = document.getElementById("max_ded").value;
+        if (isNaN(parseInt(derivations)) || parseInt(derivations) <= 0)
+          addListItem("errors", derivations + " is not a non-negative number");
         else
-          max_deductions = parseInt(deductions);
+          max_derivations = parseInt(derivations);
 
         // processing
         var rules = read(input);
@@ -308,47 +308,48 @@
           else
             repls[rules[i].target.name].push(rules[i]);
 
-        var all_deductions = [];
+        var all_derivations = [];
         for (var i in rules) {
           if (rules[i].target.name !== start_symbol)
             continue;
-          all_deductions.push(rules[i]);
-          var recursive = rules[i].deduce(repls);
+          all_derivations.push(rules[i]);
+          var recursive = rules[i].derive(repls);
           for (var j = 0; j < recursive.length; j++)
-            all_deductions.push(recursive[j]);
+            all_derivations.push(recursive[j]);
         }
 
         // print
-        all_deductions = sortRules(all_deductions);
-        for (var i in all_deductions) {
-          if (all_deductions[i].complete())
-            addListItem("deduced-complete", all_deductions[i].repr(),
-                        "deductions = " + all_deductions[i].depth);
+        all_derivations = sortRules(all_derivations);
+        for (var i in all_derivations) {
+          if (all_derivations[i].complete())
+            addListItem("derived-complete", all_derivations[i].repr(),
+                        "derivations = " + all_derivations[i].depth);
           else
-            addListItem("deduced-incomplete", all_deductions[i].repr(),
-                        "deductions = " + all_deductions[i].depth);
+            addListItem("derived-incomplete", all_derivations[i].repr(),
+                        "derivations = " + all_derivations[i].depth);
         }
-
-        // return
-        setTimeout(run, 3000);
       }
 
       $(document).ready(function () {
         if (window.location.hash.contains(";")) {
           var value = window.location.hash.substr(1);
-          document.getElementById("deductions")
+          document.getElementById("derivations")
                   .textContent = value.replace(";", "\n");
         }
+
+        // init & events
         run();
+        setInterval(run, 3000);
+        $("#derivations").change(run);
       });
     </script>
   </head>
 
   <body>
-    <h1>Deduction of production rules</h1>
+    <h1>Derivation of production rules</h1>
 
     <p>Enter production rules:</p>
-    <textarea id="deductions" rows="5" cols="50">S ← S S
+    <textarea id="derivations" rows="5" cols="50">S ← S S
 S ← 1
 S ← A
 A ← epsilon
@@ -359,7 +360,7 @@ A &lt;- 00</textarea>
       <tr>
         <td>Start symbol:</td> <td><input type="text" size="5" id="start" value="S" /></td>
       </tr><tr>
-        <td>Maximum number of deductions:</td> <td><input type="text" size="3" id="max_ded" value="2" /></td>
+        <td>Maximum number of derivations:</td> <td><input type="text" size="3" id="max_ded" value="2" /></td>
       </tr>
     </table>
 
@@ -368,11 +369,11 @@ A &lt;- 00</textarea>
     <h2>Definitions</h2>
     <ol id="def"></ol>
 
-    <h2>Deductions</h2>
-    <h3 id="complete">Complete deductions</h3>
-    <ul id="deduced-complete"></ul>
+    <h2>Derivations</h2>
+    <h3 id="complete">Complete derivations</h3>
+    <ul id="derived-complete"></ul>
 
-    <h3 id="incomplete">Incomplete deductions</h3>
-    <ul id="deduced-incomplete"></ul>
+    <h3 id="incomplete">Incomplete derivations</h3>
+    <ul id="derived-incomplete"></ul>
   </body>
 </html>
