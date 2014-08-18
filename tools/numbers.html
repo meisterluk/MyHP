@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Stirling numbers, Catalan numbers, Binomial coefficients</title>
+    <meta name="creator" content="Lukas Prokop" />
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript">
+    <!--
+
+    //
+    // Framework to visualize integer sequences with 1 or 2 parameters.
+    //
+    // Provide an implementation of the sequence in a function.
+    // Register the sequence in the sequences array.
+    // Remark. Use `call` instead of the function name to call it recursively
+    //         (adds memoization capabilities).
+    //
+
+    // use this function to implement recursion
+    function call() { }
+
+    function gcd(a, b) {
+        if (a <= 1 || b <= 1)
+            return 1;
+        for (var d = Math.min(a, b); d >= 2; d--) {
+            if (a % d == 0 && b % d == 0)
+                return d;
+        }
+        return 1;
+    }
+
+    function factorial(n) {
+        if (n === 0)
+            return 1;
+        if (n === 20)
+            return 2432902008176640000;
+
+        var result = 1;
+        for (var i = 2; i < n; i++)
+            result *= i;
+        return result;
+    }
+
+    function totient(n) {
+        var count = 0;
+        for (var k = 1; k <= n; k++)
+            if (gcd(n, k) == 1)
+                count++;
+        return count;
+    }
+
+    function fibonacci(n) {
+        if (n == 1 || n == 2)
+            return 1;
+
+        var f_1 = 1;
+        var f_2 = 1;
+        for (var i = 2; i < n - 1; i++)
+            if (i % 2 == 0)
+                f_1 = f_1 + f_2;
+            else
+                f_2 = f_1 + f_2;
+        return f_1 + f_2;
+    }
+
+    function sylvester(n) {
+        if (n === 0)
+            return 2;
+        var value = call(n - 1);
+        return value * (value - 1) + 1;
+    }
+
+    function catalan(n) {
+        if (n === 0 || n === 1)
+            return 1;
+
+        // C_n = binomial(2n,n) / (n+1)
+        // C_n = (2n)!/(n!(n+1)!)
+        // C_n = \sum_{k=0}^{n-1} C_k * C_{n-k-1}
+
+        var sum = 0;
+        for (var k = 0; k <= n - 1; k++)
+            sum += call(k) * call(n - k - 1);
+        return sum;
+    }
+
+    function binomial_coefficient(n, k) {
+        if (k < 0 || k > n)
+            return 0;
+        if (k == 0 || k == n)
+            return 1;
+        if (k > n - k)
+            k = n - k;
+        var c = 1;
+        for (var i = 0; i < k; i++)
+            c *= (n - i) / (i + 1);
+        return c;
+    }
+
+    function stirling_first_order(n, k) {
+        if (n === 0 && k === 0)
+            return 1;
+        if (n === 0 || k === 0)
+            return 0;
+        return call(n - 1, k - 1) + (n - 1) * call(n - 1, k);
+    }
+
+    function stirling_second_order(n, k) {
+        if (n === 0 && k === 0)
+            return 1;
+        if (n === 0 || k === 0)
+            return 0;
+        return call(n - 1, k - 1) + n * call(n - 1, k);
+    }
+
+    // Feel free to add sequences here.
+    var sequences = [
+    	{
+    		'sequence' : 'Binomial coefficients',
+    		'algo'     : binomial_coefficient,
+    		'args'     : ['k', 'n'],
+    		'base'     : [1, 1],
+    		'oeis'     : 'A000984',
+    		'cache'    : {}
+    	}, {
+    		'sequence' : 'Catalan numbers',
+    		'algo'     : catalan,
+    		'args'     : ['C'],
+    		'base'     : [0],
+    		'oeis'     : 'A000108',
+    		'cache'    : {}
+    	}, {
+            'sequence' : 'Factorial',
+            'algo'     : factorial,
+            'args'     : ['n'],
+            'base'     : [1],
+            'oeis'     : 'A000142',
+            'cache'    : {}
+        }, {
+            'sequence' : 'phi function',
+            'algo'     : totient,
+            'args'     : ['n'],
+            'base'     : [1],
+            'oeis'     : 'A000010',
+            'cache'    : {}
+        }, {
+            'sequence' : 'fibonacci number',
+            'algo'     : fibonacci,
+            'args'     : ['n'],
+            'base'     : [1],
+            'oeis'     : 'A000045',
+            'cache'    : {}
+        }, {
+            'sequence' : "sylvester's sequence",
+            'algo'     : sylvester,
+            'args'     : ['n'],
+            'base'     : [1],
+            'oeis'     : 'A000058',
+            'cache'    : {}
+        }, {
+    		'sequence' : 'Stirling numbers of first kind',
+    		'algo'     : stirling_first_order,
+    		'args'     : ['k', 'n'],
+    		'base'     : [0, 0],
+    		'oeis'     : 'A000914',
+    		'cache'    : {}
+    	}, {
+    		'sequence' : 'Stirling numbers of second kind',
+    		'algo'     : stirling_second_order,
+    		'args'     : ['k', 'n'],
+    		'base'     : [0, 0],
+    		'oeis'     : 'A000392',
+            'cache'    : {}
+    	}
+    ];
+    var current_sequence = "";
+
+    function call() {
+        if (arguments.length === 0)
+            throw new Error("Recursion called without parameter!");
+
+        // find the current sequence
+        // 1. either current_sequence is an object and we use it
+        // 2. or it's a string and we search for it
+        if (typeof current_sequence === 'object') {
+            var seq = current_sequence;
+        } else if (typeof current_sequence === 'string') {
+            if (current_sequence === '')
+                throw new Error("Sequence not found!");
+            var seq = {};
+            for (var s in sequences) {
+                if (sequences[s]['sequence'] === current_sequence)
+                    seq = sequences[s];
+            }
+            if (!seq)
+                throw new Error("Sequence '" + current_sequence + "' not found!");
+        }
+
+        // if in cache, return cached value. Else call it.
+        if (arguments in seq['cache'])
+            return seq['cache'][arguments];
+
+        var value = seq['algo'].apply(seq, arguments);
+        if (value === undefined)
+            throw new Error(seq['sequence'] + "(" + Array.join(arguments, ',') + ") is undefined.");
+        seq['cache'][Array.join(arguments)] = Math.round(value);  // round? Yes, I hate Javascript "integers".
+        return value;
+    }
+
+    function float_repr(value) {
+        return parseInt(Math.round(value) * 100) / 100;
+    }
+
+    function init(size) {
+        for (var seq in sequences) {
+            sequences[seq]['element'] = $('<div class="sequence"></div>')
+                .attr("data-args", sequences[seq]['args'].length);
+            create(sequences[seq]['element'], sequences[seq], size);
+            $("body").append(sequences[seq]['element']);
+        }
+
+        document.getElementById('range_1ary').value = parseInt(size);
+        document.getElementById('range_2ary').value = parseInt(size);
+    }
+
+    function create(element, seq, size) {
+        if (!element || !seq || !size)
+            return;
+        if (seq['args'].length > 2 || seq['args'].length === 0)
+            throw new Error("Sorry, only sequences with 1 or 2 parameters supported");
+
+        var width = size;
+        var height = size;
+
+        // title
+        $(element).append($("<h3></h3>").text(seq['sequence']));
+
+        // OEIS link
+        var url = 'http://oeis.org/' + encodeURIComponent(seq['oeis']);
+        $(element).append($("<p></p>").html('See <a href="' + url + '">' + seq['oeis'] + '</a>'));
+
+        // one-dimensional table
+        if (seq['args'].length === 1) {
+            current_sequence = seq;
+            var par = $('<p class="seq"></p>').attr("data-size", size).attr("data-sequence", seq['sequence']);
+            for (var i = seq['base'][0]; i < seq['base'][0] + width; i++) {
+                var prefix = (i === seq['base'][0]) ? '' : ', ';
+                var repr = '<span title="' + seq['args'][0] + '=' + i + '">' + float_repr(call(i)) + '</span>';
+                par.append(prefix + repr);
+            }
+            $(element).append(par);
+            current_sequence = "";
+            return;
+        }
+
+        // two-dimensional table
+        var table = '<table class="seq">';
+        current_sequence = seq;
+
+        table += "<tr><th>" + seq['args'][1] + " \\ " + seq['args'][0] + "</th>";
+        for (var col = seq['base'][0]; col < seq['base'][0] + width; col++)
+            table += "<th>" + col + "</th>";
+        table += "</tr>";
+
+        for (var row = seq['base'][0]; row < seq['base'][0] + height; row++) {
+            table += "<tr>";
+            table += "  <td>" + row + "</td>";
+            for (var col = seq['base'][1]; col < seq['base'][1] + height; col++)
+                table += "  <td>" + float_repr(call(row, col)) + "</td>";
+            table += "</tr>";
+        }
+
+        $(element).append($(table).attr("data-size", size).attr("data-sequence", seq['sequence']));
+        current_sequence = "";
+        return;
+    }
+
+    function shrink(element) {
+        var base = parseInt($(element).attr("data-size"));
+        element.find("tr").each(function () {
+            $(this).find("td").last().remove();
+            $(this).find("th").last().remove();
+        });
+        element.find("tr").last().remove();
+        element.attr("data-size", base - 1);
+    }
+
+    function grow(element) {
+        var base = parseInt($(element).attr("data-size"));
+        var seq = {};
+        var row_nr = 0, col_nr = 0;
+
+        // retrieve size and seq
+        for (var s in sequences) {
+            if (sequences[s]['sequence'] === $(element).attr("data-sequence")) {
+                seq = sequences[s];
+                break;
+            }
+        }
+        if (seq['sequence'] === undefined)
+            throw new Error("data-sequence '" + $(element).attr("data-sequence") +
+                "' does not occur in sequences");
+
+        if (seq['args'].length === 1) {
+            var count = $(element).text().split(',').length;
+            var new_element = count + seq['base'][0];
+
+            // evaluate new element
+            current_sequence = seq;
+            var value = call(new_element);
+            current_sequence = '';
+
+            $(element).text($(element).text() + ", " + float_repr(value));
+            return;
+        }
+
+        // append column
+        var new_first_param = NaN;
+        var cols = 0;
+        element.find("tr").each(function () {
+            // header
+            if (row_nr === 0) {
+                var greatest_number = parseInt($(this).find("th").last().text());
+                if (isNaN(greatest_number))
+                    return false;
+
+                cols = $(this).find("th").length;
+
+                new_first_param = greatest_number + 1;
+                $(this).append("<th>" + (greatest_number + 1) + "</th>");
+
+            } else {
+                current_sequence = seq;
+                $(this).append("<td>" + float_repr(call(seq['base'][1] - 1 + row_nr, new_first_param)) + "</td>")
+                current_sequence = "";
+            }
+            row_nr += 1;
+        });
+        cols += 1;  // one new column
+
+        // append row
+        var new_second_param = parseInt($(element).find("tr").last().find("td").first().text()) + 1;
+        if (isNaN(new_second_param))
+            return false;
+        element.append("<tr></tr>");
+        current_sequence = seq;
+        for (var i = 0; i < cols; i++)
+            if (i === 0)
+                element.find("tr").last().append("<td>" + float_repr(new_second_param) + "</td>");
+            else {
+                var value = call(new_second_param, (seq['base'][0] + i - 1));
+                element.find("tr").last().append("<td>" + float_repr(value) +  "</td>");
+            }
+
+        element.attr("data-size", base + 1);
+        return true;
+    }
+
+    function update(nary, value) {
+        switch (nary) {
+            case 1:
+                document.getElementById('range_1ary').value = parseInt(value);
+                $("*[data-args=1]").each(function () {
+                    var child = $(this).children("*[data-size]");
+                    var diff = value - parseInt(child.attr("data-size"));
+                    while (diff < 0) {
+                        shrink(child);
+                        diff++;
+                    }
+                    while (diff > 0) {
+                        grow(child);
+                        diff--;
+                    }
+                });
+                break;
+
+            case 2:
+                document.getElementById('range_2ary').value = parseInt(value);
+                $("*[data-args=2]").each(function () {
+                    var child = $(this).children("*[data-size]");
+                    var diff = value - parseInt(child.attr("data-size"));
+                    while (diff < 0) {
+                        shrink(child);
+                        diff++;
+                    }
+                    while (diff > 0) {
+                        grow(child);
+                        diff--;
+                    }
+                });
+                break;
+        }
+    }
+
+    $(document).ready(function () {
+        init(10);
+    });
+    -->
+    </script>
+    <style type="text/css">
+      body { min-width: 400px; margin: 20px; }
+      table.seq { text-align: center; font-size: 12px; margin-left: 20px; }
+      table.seq th { min-width: 30px; background-color: #AAA; }
+      table.seq td:nth-child(1) { min-width: 50px; }
+      table.seq td:nth-child(2n) { background-color: #CCC; }
+    </style>
+  </head>
+
+  <body>
+    <h1>Stirling numbers of 2 kinds, Catalan numbers, Binomial coefficients</h1>
+    <p>
+      There <a href="http://stackoverflow.com/a/307200">might be overflows</a>!
+    </p>
+    <p>Use with caution! Here be dragons!</p>
+    <p style="padding-left:50pt">
+      Define size of 2-ary sequences:
+        <input type="range" min="10" max="22" value="10" onchange="javascript:update(2, this.value)" />
+        <input type="text" id="range_2ary" value="" size="2" readonly /> <br />
+      Define size of sequences with 1 parameter:
+        <input type="range" min="10" max="18" value="10" onchange="javascript:update(1, this.value)" />
+        <input type="text" id="range_1ary" value="" size="3" readonly />
+    </p>
+  </body>
+</html>
