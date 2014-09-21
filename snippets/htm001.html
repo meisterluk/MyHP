@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <title>HTML 001</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+    <style type="text/css">
+      .case { font-variant: small-caps; text-transform: capitalize; }
+    </style>
+  </head>
+
+  <body>
+    <h1>HTML 001 &amp;nbsp; versus U+00A0</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>21st of Sept 2014</dd>
+        <dt>Tags</dt>
+          <dd>HTML nbsp no-break space U+00A0 div whitespace collapse not shown invisible named character reference</dd>
+        <dt>Tested with</dt>
+          <dd>Firefox 32</dd>
+        <dt>License</dt>
+          <dd>Public Domain</dd>
+      </dl>
+    </aside>
+
+    <p>
+      <strong>TL;DR</strong>
+      <code>U+00A0</code> is palpable content in HTML5. <code>&amp;nbsp;</code> is not. This is surprising to me.
+    </p>
+
+    <h3 id="input">
+        Input
+    </h3>
+
+    <p>Consider the following input file:</p>
+
+    <figure class="syntax html"><pre><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;utf-8&quot;</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;title&gt;</span>nbsp demo<span class="nt">&lt;/title&gt;</span>
+    <span class="nt">&lt;style </span><span class="na">type=</span><span class="s">&quot;text/css&quot;</span><span class="nt">&gt;</span>
+      <span class="nc">.box</span> <span class="p">{</span> <span class="k">margin</span><span class="o">:</span> <span class="m">20px</span><span class="p">;</span> <span class="k">width</span><span class="o">:</span> <span class="m">100px</span><span class="p">;</span> <span class="k">background-color</span><span class="o">:</span> <span class="nb">yellow</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">&lt;/style&gt;</span>
+  <span class="nt">&lt;/head&gt;</span>
+
+  <span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;h1&gt;</span>Divs and whitespace<span class="nt">&lt;/h1&gt;</span>
+    <span class="nt">&lt;table&gt;</span>
+      <span class="nt">&lt;tr&gt;&lt;td&gt;</span>Completely empty<span class="nt">&lt;/td&gt;&lt;td&gt;&lt;div</span> <span class="na">class=</span><span class="s">&quot;box&quot;</span><span class="nt">&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;</span>
+      <span class="nt">&lt;tr&gt;&lt;td&gt;</span>One letter<span class="nt">&lt;/td&gt;</span>      <span class="nt">&lt;td&gt;&lt;div</span> <span class="na">class=</span><span class="s">&quot;box&quot;</span><span class="nt">&gt;</span>O<span class="nt">&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;</span>
+      <span class="nt">&lt;tr&gt;&lt;td&gt;</span><span class="ni">&amp;amp;</span>nbsp;<span class="nt">&lt;/td&gt;</span>      <span class="nt">&lt;td&gt;&lt;div</span> <span class="na">class=</span><span class="s">&quot;box&quot;</span><span class="nt">&gt;</span><span class="ni">&amp;nbsp;</span><span class="nt">&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;</span>
+      <span class="nt">&lt;tr&gt;&lt;td&gt;</span>U+00A0<span class="nt">&lt;/td&gt;</span>          <span class="nt">&lt;td&gt;&lt;div</span> <span class="na">class=</span><span class="s">&quot;box&quot;</span><span class="nt">&gt;</span> <span class="nt">&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;</span>
+    <span class="nt">&lt;/table&gt;</span>
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre></figure>
+
+    <h3 id="output">
+        Output
+    </h3>
+
+    <p>The output looks like the following:</p>
+
+    <style type="text/css">
+      .box { margin: 20px; width: 100px; background-color: yellow; }
+    </style>
+    <figure style="background-color:#F9F9F9; padding:10px">    <h4>Divs and whitespace</h4>
+    <table>
+      <tr><td>Completely empty</td><td><div class="box"></div></td></tr>
+      <tr><td>One letter</td>      <td><div class="box">O</div></td></tr>
+      <tr><td>&amp;nbsp;</td>      <td><div class="box">&nbsp;</div></td></tr>
+      <tr><td>U+00A0</td>          <td><div class="box"> </div></td></tr>
+    </table></figure>
+
+    <h3 id="background">
+      Background
+    </h3>
+
+    <h4 id="html-entities">
+      HTML entities
+    </h4>
+
+    <p>
+      HTML entites (a list is given at dev.w3.org <a href="#ent01" id="ent01-ref">[ent01]</a>) are
+      an HTML-specific way<a href="#footnote-0" id="footnote-ref-0" class="footnote">0</a> to write characters.
+      The official name is "character reference" <a href="#cha01" id="cha01-ref">[cha01]</a>.
+    </p>
+
+    <p>Examples:</p>
+    <ul>
+      <li><code>&amp;nbsp;</code> as non-breaking space '&nbsp;'.</li>
+      <li><code>&amp;aring;</code> as latin capital letter A with ring above '&aring;'.</li>
+      <li><code>&amp;amp;</code> as ampersand '&amp;'.</li>
+    </ul>
+
+    <p>
+      In fact some characters (including &amp;) must be written as HTML entity.
+      Otherwise they have a non-representative meaning in HTML.
+    </p>
+
+    <h4 id="u00A0">
+      Unicode point U+00A0
+    </h4>
+
+    <p>
+      <code>U+00A0</code> is the unicode point refering to the glyph 'NO-BREAK SPACE'.
+      It is classified as whitespace and semantically is a space preventing an
+      automatic line break at this place (relevant for typesetting).
+    </p>
+
+    <ul>
+      <li>Hex <code>00A0</code> is 160 decimal.</li>
+      <li>In TeX this glyph is represented by a tilde <code>~</code>.</li>
+      <li>The HTML entity of <code>00A0</code> is <code>&amp;nbsp;</code>.</li>
+    </ul>
+
+    <h3 id="analysis">
+      Analysis
+    </h3>
+
+    <p>
+      I listed 4 different cases here. They all have a yellow background and a width of 100 pixels.
+    </p>
+
+    <ol>
+      <li>In the <em>empty</em> case, the div tag is closed immediately after it is opened.</li>
+      <li>If we insert <em>one letter</em> between the opening and closing div tag, this letter is shown.</li>
+      <li>The HTML entity <em>&amp;nbsp;</em> is used in our third case.</li>
+      <li>The character <code>U+00A0</code> encoded in UTF-8 in this document is inserted directly.</li>
+    </ol>
+
+    <p>
+      The point here is whether or not they are displayed: If the box of the <code>div</code> element 
+      <a href="#div01" id="div01-ref">[div01]</a> has some height greater 0, the element is shown.
+      The height is determined by the number of lines and the font-size (and line-height, etc.)
+      or an explicit <code>height</code> definition in CSS.
+    </p>
+
+    <p>
+      We observe that in <span class="case">case #2</span> and <span class="case">case #3</span>
+      content is provided which constitutes <em>palpable content</em> <a href="#pal01" id="pal01-ref">[pal01]</a>
+      which means the box is shown.
+    </p>
+
+    <p>
+      <strong>Convention:</strong>
+      If you want to avoid collapse without setting <code>height</code> in CSS explicitly, the general convention
+      in HTML is to use <code>&amp;nbsp;</code>. This character triggers a height greater 0, but is invisible
+      due to its whitespace property. This trick is used in <span class="case">case #3</span> to make the box visible.
+    </p>
+
+    <p>
+      <strong>My point:</strong>
+      HTML entities are considered to be an alternative way to write characters in HTML.
+      However <code>&amp;nbsp;</code> does not have an equivalent in Unicode and
+      <code>U+00A0</code> does not have an equivalent in HTML. Because there is no
+      palpable Unicode character and there is no non-palpable html entity for non-breaking spaces.
+    </p>
+
+    <h3 id="escaping">
+      Afterword 1: String escaping in HTML5
+    </h3>
+
+    <p>
+     Escaping a string in HTML5 requires 3–4 replacements <a href="#esc01" id="esc01-ref">[esc01]</a>.
+     The non-breaking space is part of it (last 3 are only conditionally required):
+    </p>
+    <ul>
+      <li><code>&amp;amp;</code> represents 'AMPERSAND' (&amp;, U+0026)</li>
+      <li><code>&amp;nbsp;</code> represents 'NO-BREAK SPACE' (&nbsp;, U+00A0)</li>
+      <li><code>&amp;quot;</code> represents 'QUOTATION MARK' (&quot;, U+0022)</li>
+      <li><code>&amp;lt;</code> represents 'LESS-THAN SIGN' (&lt;, U+003C)</li>
+      <li><code>&amp;gt;</code> represents 'GREATER-THAN SIGN' (&gt;, U+003E)</li>
+    </ul>
+    <p>
+      Hence to get no-break space semantics, you <strong>have to</strong> use the html entity.
+    </p>
+
+    <h3 id="collapse">
+      Afterword 2: Preventing the collapse
+    </h3>
+
+    <p>Some tricks to prevent collapse of a <code>div</code> element which only has whitespace as content:</p>
+
+    <ul>
+      <li>Add the <code>&amp;nbsp;</code> entity as content as discussed.
+          <code>&amp;#160;</code> and <code>&amp;#x00A0;</code> work as well of course.</li>
+      <li>Define the box <code>height</code> (additionally to <code>width</code>) explicitly via CSS.</li>
+      <li>Use the <code>white-space</code> attribute in CSS to define the behavior of whitespace.
+          For example <code>white-space: pre-wrap</code> results in no, yes, yes, yes for box visibility
+          in the four cases respectively.</li>
+    </ul>
+
+    <dl class="footnotes">
+      <dt class="index" id="footnote-0"><a href="#footnote-ref-0">0</a></dt>
+      <dd>
+        Originally coming from SGML, entities are very important for XML today.
+        But they found their first usecase in HTML <a href="#ent02" id="ent02-ref">[ent02]</a>.
+      </dd>
+    </dl>
+
+    <dl class="references">
+      <dt class="index">
+        <a href="#cha01-ref" id="cha01">[cha01]</a>
+      </dt>
+      <dd>W3C, "8 The HTML syntax — HTML5", <br>
+        <a href="http://www.w3.org/TR/html5/syntax.html#character-references">http://www.w3.org/TR/html5/syntax.html#character-references</a>
+        [accessed 21st Sep 2014].
+      </dd>
+
+      <dt class="index">
+        <a href="#div01-ref" id="div01">[div01]</a>
+      </dt>
+      <dd>W3C, "4.4 Grouping content — HTML5", <br>
+        <a href="http://www.w3.org/TR/html5/grouping-content.html#the-div-element">http://www.w3.org/TR/html5/grouping-content.html#the-div-element</a>
+        [accessed 21st Sep 2014].
+      </dd>
+
+      <dt class="index">
+        <a href="#ent01-ref" id="ent01">[ent01]</a>
+      </dt>
+      <dd>W3C, "Character Entity Reference Chart", <br>
+        <a href="http://dev.w3.org/html5/html-author/charref">http://dev.w3.org/html5/html-author/charref</a>
+        (see most-left element fifth row)
+        [accessed 21st Sep 2014].
+      </dd>
+      <dt class="index">
+        <a href="#ent02-ref" id="ent02">[ent02]</a>
+      </dt>
+      <dd>W3C, "Character Entity Set(s)", <br>
+        <a href="http://www.w3.org/MarkUp/html3/latin1.html">http://www.w3.org/MarkUp/html3/latin1.html</a>
+        [accessed 21st Sep 2014].
+      </dd>
+
+      <dt class="index">
+        <a href="#esc01-ref" id="esc01">[esc01]</a>
+      <dt>
+      <dd>W3C, "8 The HTML syntax &mdash; HTML5", <br>
+        <a href="http://www.w3.org/TR/html5/syntax.html#escapingString">http://www.w3.org/TR/html5/syntax.html#escapingString</a>
+        [accessed 21st of Sep 2014].
+      </dd>
+
+      <dt class="index">
+        <a href="#pal01-ref" id="pal01">[pal01]</a>
+      <dt>
+      <dd>W3C, "3 Semantics, structure, and APIs of HTML documents — HTML5", <br>
+        <a href="http://www.w3.org/TR/html5/dom.html#palpable-content-0">http://www.w3.org/TR/html5/dom.html#palpable-content-0</a>
+        [accessed 21st of Sep 2014].
+      </dd>
+    </dl>
+  </body>
+</html>
