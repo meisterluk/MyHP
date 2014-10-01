@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Derivation of production rules</title>
+    <meta name="application-name" content="Derivation of production rules" />
     <style type="text/css">
       body {
         width: 70%;
@@ -331,7 +332,7 @@
       }
 
       $(document).ready(function () {
-        if (window.location.hash.contains(";")) {
+        if (window.location.hash.indexOf(";") !== -1) {
           var value = window.location.hash.substr(1);
           document.getElementById("derivations")
                   .textContent = value.replace(";", "\n");
