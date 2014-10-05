@@ -40,7 +40,7 @@
       }
     </style>
 
-    <script type="text/javascript" src="http://lukas-prokop.at/jquery.js"></script>
+    <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript">
       // maximum recursion depth (ie. maximum number of assignments)
       var max_derivations = 2;
@@ -347,34 +347,43 @@
   </head>
 
   <body>
-    <h1>Derivation of production rules</h1>
+    <article>
+      <h1>Derivation of production rules</h1>
 
-    <p>Enter production rules:</p>
-    <textarea id="derivations" rows="5" cols="50">S ← S S
+      <p>Enter production rules:</p>
+      <textarea id="derivations" rows="5" cols="50">S ← S S
 S ← 1
 S ← A
 A ← epsilon
 A ← 0
 A &lt;- 00</textarea>
 
-    <table>
-      <tr>
-        <td>Start symbol:</td> <td><input type="text" size="5" id="start" value="S" /></td>
-      </tr><tr>
-        <td>Maximum number of derivations:</td> <td><input type="text" size="3" id="max_ded" value="2" /></td>
-      </tr>
-    </table>
+      <table>
+        <tr>
+          <td>Start symbol:</td> <td><input type="text" size="5" id="start" value="S" /></td>
+        </tr><tr>
+          <td>Maximum number of derivations:</td> <td><input type="text" size="3" id="max_ded" value="2" /></td>
+        </tr>
+      </table>
 
-    <ul id="errors"></ul>
+      <ul id="errors"></ul>
 
-    <h2>Definitions</h2>
-    <ol id="def"></ol>
+      <h2>Definitions</h2>
+      <ol id="def"></ol>
 
-    <h2>Derivations</h2>
-    <h3 id="complete">Complete derivations</h3>
-    <ul id="derived-complete"></ul>
+      <h2>Derivations</h2>
+      <h3 id="complete">Complete derivations</h3>
+      <ul id="derived-complete"></ul>
 
-    <h3 id="incomplete">Incomplete derivations</h3>
-    <ul id="derived-incomplete"></ul>
+      <h3 id="incomplete">Incomplete derivations</h3>
+      <ul id="derived-incomplete"></ul>
+    </article>
+    <footer>
+      <p style="font-size:70%">
+        <strong>Description:</strong>
+        Modify production rules in the text box provided.
+        Derivations will be computed every 3 seconds.
+      </p>
+    </footer>
   </body>
 </html>

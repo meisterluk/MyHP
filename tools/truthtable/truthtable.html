@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Truthtable</title>
+  <meta charset="UTF-8">
+  <script src="jquery.js" type="text/javascript"></script>
+  <script type="text/javascript">
+  <!--
+    var two_plus = {};
+
+    function assert_eq(val1, val2, msg) {
+      if (val1 !== val2) {
+        console.error(msg || val1 + ' does not equate to ' + val2);
+        throw msg || 'Value "' + val1 + '" does not equate to "' + val2 + '"';
+      }
+    }
+
+    function assert(condition) {
+      if (!condition) {
+        console.error('Condition does not hold');
+        throw 'AssertionError';
+      }
+    }
+
+    function error(msg) {
+      // evaluate identifier
+      var identifier = 0;
+      for (var i = 0; i < msg.length; i++)
+        identifier += (msg.charCodeAt(i) + i);
+
+      return { is_error : true, msg : msg, id : identifier % 10000 };
+    }
+
+    function extend(array) {
+      for (var i = 1; i < arguments.length; i++) {
+        arguments[i].forEach(function (v) { array.push(v); });
+      }
+    }
+
+    var tokens = {
+      0 : {
+        'cat' : 'operator',
+        'name' : 'not',
+        'arity' : 1,
+        'precedence' : 10,
+        'match' : new RegExp(/^(not\s+|(¬|~|-|!)\s*)/i),
+        'normalize' : 'not',
+        'implementation' : function (v) { return !v; }
+      },
+      1 : {
+        'cat' : 'operator',
+        'name' : 'and', 
+        'arity' : two_plus,
+        'precedence' : 20,
+        'match' : new RegExp(/^((and|und)\s+|(&{1,2}|\*|∧|•)\s*)/i),
+        'normalize' : 'and',
+        'implementation' : function (a, b) {
+          var args = [];
+          for (var i = 0; i < arguments.length; i++)
+            args.push(arguments[i]);
+          return args.reduce(function (p, c) { return !!(p) && !!(c); });
+        }
+      },
+      2 : {
+        'cat' : 'operator',
+        'name' : 'or',
+        'arity' : two_plus,
+        'precedence' : 21,
+        'match' : new RegExp(/^((or|oder)\s+|(\|{1,2}|\+|∨)\s*)/i),
+        'normalize' : 'or',
+        'implementation' : function (a, b) {
+          var args = [];
+          for (var i = 0; i < arguments.length; i++)
+            args.push(arguments[i]);
+          return args.reduce(function (p, c) { return !!(p) || !!(c); });
+        }
+      },
+      3 : {
+        'cat' : 'operator',
+        'name' : 'xor',
+        'arity' : two_plus,
+        'precedence' : 22,
+        'match' : new RegExp(/^((xor|neq)\s+|(\^||⊕|≠|≢|⊻)\s*)/i),
+        'normalize' : 'xor',
+        'implementation' : function (a, b) {
+          var args = [];
+          for (var i = 0; i < arguments.length; i++)
+            args.push(arguments[i]);
+          return args.reduce(function (p, c) { return !!(p) ^ !!(c); });
+        }
+      },
+      4 : {
+        'cat' : 'operator',
+        'name' : 'implies',
+        'arity' : 2,
+        'precedence' : 23,
+        'match' : new RegExp(/^(impl(ies)?\s+|(⇒|→|⊃)\s*)/i),
+        'normalize' : 'implies',
+        'implementation' : function (a, b) {
+          var args = [];
+          for (var i = 0; i < arguments.length; i++)
+            args.push(arguments[i]);
+          return args.reduce(function (p, c) { return !(p) || !!(c); });
+        }
+      },
+      5 : {
+        'cat' : 'operator',
+        'name' : 'equates',
+        'arity' : two_plus,
+        'precedence' : 24,
+        'match' : new RegExp(/^((equates|eq)\s+|(⇔|≡|↔)\s*)/i),
+        'normalize' : 'equates',
+        'implementation' : function (a, b) {
+          var args = [];
+          for (var i = 0; i < arguments.length; i++)
+            args.push(arguments[i]);
+          return args.reduce(function (p, c) { return !!(p) === !!(c); });
+        }
+      },
+      6 : {
+        'cat' : 'startgroup',
+        'name' : '(',
+        'match' : new RegExp(/^(\(|\{|\[)\s*/),
+        'normalize' : '('
+      },
+      7 : {
+        'cat' : 'endgroup',
+        'name' : ')',
+        'match' : new RegExp(/^(\)|\}|\])\s*/),
+        'normalize' : ')'
+      },
+      8 : {
+        'cat' : 'value',
+        'name' : 'true',
+        'match' : new RegExp(/^(true\s+|(⊤|T|1)\s*)/i),
+        'normalize' : function () { return true; }
+      },
+      9 : {
+        'cat' : 'value',
+        'name' : 'false',
+        'match' : new RegExp(/^(false\s+|(⊥|F|0)\s*)/i),
+        'normalize' : function () { return false; }
+      },
+      10 : {
+        'cat' : 'value',
+        'name' : 'var',
+        'match' : new RegExp(/^(\w+)\s*/),
+        'normalize' : function (v) { return v.replace(new RegExp(/^(.*)\s*$/), '$1'); }
+      }
+    };
+
+    for (var i = 0; tokens[i] !== undefined; i++)
+      tokens['length'] = i + 1;
+
+
+    var InfixFunction = function (infix, mode) {
+
+      // ------------------------ Step 1: Tokenization -----------------------
+      var tokenize = function (infix_str) {
+        var tokenlist = [];
+        var start = 0;
+
+        while (start < infix_str.length) {
+          var m = (new RegExp(/^(\s+)/)).exec(infix_str.slice(start));
+          if (m !== null)
+            start += m[0].length;
+
+          for (var t in tokens) {
+            var m = tokens[t]['match'].exec(infix_str.slice(start));
+            if (m !== null) {
+              tokenlist.push({
+                'cat' : tokens[t]['cat'],
+                'name' : tokens[t]['name'],
+                'arity' : tokens[t]['arity'],
+                'precedence' : tokens[t]['precedence'],
+                'match' : tokens[t]['match'],
+                'normalize' : tokens[t]['normalize'],
+                'implementation' : tokens[t]['implementation'],
+                'position' : start,
+                'string' : m[1]
+              });
+              start += m[1].length;
+              break;
+            }
+          }
+        }
+
+        return tokenlist;
+      };
+
+      // -------------------- Step 2: Checking consistency -----------------
+      var checkParensNesting = function (tokenlist) {
+        // Return (parentheses are correctly nested as true) or error
+        var level = 0;
+        var positions = [];
+
+        for (var i in tokenlist) {
+          switch (tokenlist[i]['cat']) {
+            case 'startgroup':
+              level += 1;
+              positions[level] = tokenlist[i]['position'];
+              break;
+
+            case 'endgroup':
+              level -= 1;
+              if (level < 0)
+                return error('Too many closing parentheses at index ' +
+                  tokenlist[i]['position']);
+              positions[level] = tokenlist[i]['position'];
+              break;
+          }
+        }
+
+        if (level === 0)
+          return true;
+        else
+          return error('Unbalanced number of parentheses. No closing parens ' +
+            'found for paren at index ' + positions[level]);
+      };
+
+      var checkTokenSuccessor = function (tokenlist) {
+        // Return (successor of a token is of desired category)
+
+        var catcheck = function (tokenlist, index, possibilities) {
+          if (index < 0 || index >= tokenlist.length)
+            return true;
+          return $.inArray(tokenlist[index]['cat'], possibilities) !== -1;
+        };
+
+        if (!catcheck(tokenlist, 0, ['operator', 'value', 'startgroup']))
+          return error('First token must be value, opening parentheses or ' +
+            'unary operator at index ' + tokenlist[0]['position']);
+        if (!catcheck(tokenlist, tokenlist.length - 1, ['value', 'endgroup']))
+          return error('Last token must be value or closing parentheses ' +
+            'at index ' + tokenlist[tokenlist.length - 1]['position']);
+
+        for (var i in tokenlist) {
+          if (isNaN(i = parseInt(i)))
+            continue;
+
+          switch (tokenlist[i]['cat']) {
+            case 'startgroup':
+              var poss = ['operator', 'value', 'startgroup'];
+              if (!catcheck(tokenlist, i + 1, poss))
+                return error('Opening parentheses must be followed by ' +
+                  'unary operator, value or opening parentheses at index ' +
+                  tokenlist[i]);
+              break;
+
+            case 'endgroup':
+              var poss = ['operator', 'endgroup'];
+              if (!catcheck(tokenlist, i + 1, poss))
+                return error('Closing parentheses must be followed by ' +
+                  'operator or closing parentheses at index ' +
+                  tokenlist[i]);
+              break;
+
+            case 'value':
+              var poss = ['operator', 'endgroup'];
+              if (!catcheck(tokenlist, i + 1, poss))
+                return error('Value must be followed by ' +
+                  'operator or closing parentheses at index ' +
+                  tokenlist[i]);
+              break;
+
+            case 'operator':
+              var poss = ['value', 'startgroup'];
+              if (!catcheck(tokenlist, i + 1, poss))
+                return error('Operator must be followed by ' +
+                  'value or opening parentheses at index ' +
+                  tokenlist[i]);
+              break;
+
+            default:
+              console.error('Token of unknown category: ', tokenlist[i]);
+              break;
+          }
+        }
+
+        return true;
+      };
+
+      // ---------------------- Step 3: Postfix conversion -------------------
+      var jumpParens = function (tokenlist, index) {
+        // if prims[index] is opening parenthesis, then return corr. closing p.
+        // if prims[index] is closing parenthesis, then return corr. opening p.
+        // else index
+        if (tokenlist[index]['cat'] === 'operator')
+          console.info("jumpParens index is pointing to operator. " +
+            "I guess this shouldn't be?! ", index, tokenlist[index]);
+
+        var dir = 0;
+        if (tokenlist[index]['cat'] === 'startgroup')
+          dir = 1;
+        else if (tokenlist[index]['cat'] === 'endgroup')
+          dir = -1;
+        else
+          return index;  // we don't have to jump.
+
+        var level = 0;
+        while (0 <= index && index < tokenlist.length) {
+          if (tokenlist[index]['cat'] === 'startgroup')
+            level += 1;
+          else if (tokenlist[index]['cat'] === 'endgroup')
+            level -= 1;
+
+          if (level === 0)
+            return index;
+
+          index += dir;
+        }
+
+        console.error('Reached unreachable code!');
+        return index;
+      };
+
+      function parse(tokenlist, mode, metadata) {
+        if (isNaN(mode = parseInt(mode)))
+          return error('Mode must be integer');
+
+        // The main parsing routine traversing the infix string recursively
+        // using a Divide & Conquer strategy.
+        //   {tokenlist, mode, metadata} → {postfix string}
+
+        // If tokenlist is surrounded by a pair of parentheses,
+        // call recursively and return same result
+        if (tokenlist[0]['cat'] === 'startgroup' &&
+            tokenlist[tokenlist.length - 1]['cat'] === 'endgroup' &&
+            jumpParens(tokenlist, 0) === tokenlist.length - 1)
+          return parse(tokenlist.slice(1, tokenlist.length - 1), mode, metadata);
+
+        // if unary operator is applied to whole tokenlist
+        if (tokenlist.length >= 2 && tokenlist[0]['arity'] === 1 &&
+            jumpParens(tokenlist, 1) === tokenlist.length - 1)
+          return parse(tokenlist.slice(1), mode, metadata) +
+            " " + tokenlist[0]['normalize'];
+
+        // Search for first operator which splits tokenlist
+        // by the left and right argument (depends on mode) (arity >= 2)
+        var begin = 0;
+        var end = tokenlist.length - 1;
+
+        if (tokenlist[begin]['cat'] === 'startgroup') {
+          begin = jumpParens(tokenlist, begin);
+          if (tokenlist[begin]['cat'] === 'endgroup')
+            begin += 1;
+        }
+        if (tokenlist[end]['cat'] === 'endgroup')
+          end = jumpParens(tokenlist, end);
+
+        var find_op = null;
+        for (var o = begin; o < end; o++) {
+          if (tokenlist[o]['cat'] === 'operator' &&
+            (tokenlist[o]['arity'] >= 2 || tokenlist[o]['arity'] === two_plus))
+            if (mode === 1) {
+              find_op = o;
+              break;
+            } else if (mode === 0) {
+              if (find_op === null ||
+                  tokenlist[o]['precedence'] < tokenlist[find_op]['precedence'])
+                find_op = o;
+            } else
+              console.error('mode unknown: ', mode);
+        }
+        var op = tokenlist[find_op];
+
+        // If none found, parse primitive value itself or
+        //                parse groups recursively.
+        if (find_op === null) {
+          assert(tokenlist.length === 1);
+          if (tokenlist[0]['name'] === 'var') {
+            var val = tokenlist[0]['normalize'](tokenlist[0]['string']);
+            if (!('variables' in metadata))
+              metadata['variables'] = [];
+            if ($.inArray(val, metadata['variables']) === -1)
+              metadata['variables'].push(val);
+          } else
+            var val = tokenlist[0]['value'];
+          return "" + val;
+        }
+
+        // Parse each part recursively. Merge results.
+        var arg1 = tokenlist.slice(0, find_op);
+        var arg2 = tokenlist.slice(find_op + 1);
+
+        var text = 'operator at index ' + op['position'];
+        if (arg1 === [])
+          return error('Expected some value before ' + text);
+        if (arg2 === [])
+          return error('Expected some value after ' + text);
+
+        var ret1 = parse(arg1, mode, metadata);
+        var ret2 = parse(arg2, mode, metadata);
+
+        if (ret1.is_error)
+          return ret1;
+        if (ret2.is_error)
+          return ret2;
+
+        return ret1 + ' ' + ret2 + ' ' + op['normalize'];
+      }
+
+      // --------------------------- Constructor ------------------------------
+      var tokenized = tokenize(infix);
+      var test = checkParensNesting(tokenized);
+      if (test.is_error)
+        return test;
+      var test = checkTokenSuccessor(tokenized);
+      if (test.is_error)
+        return test;
+      var metadata = {};
+      var postfix = parse(tokenized, mode, metadata);
+
+      var toString = function () {
+        return postfix;
+      };
+
+      var getVariables = function () {
+        return metadata['variables'];
+      };
+
+      return { toString: toString, getVariables: getVariables };
+    };
+
+    var PostfixEvaluator = function (postfix) {
+
+      var variables = [];
+
+      // ------------------------ Step 1: Tokenization ------------------------
+      var tokenize = function (postfix) {
+        var start = 0;
+        var toks = [];
+
+        postfix += " ";
+        while (start < postfix.length) {
+          var matched = false;
+          for (var o = 0; o < tokens.length; o++) {
+            var m = tokens[o]['match'].exec(postfix.slice(start));
+            if (m === null)
+              continue;
+
+            matched = true;
+            start += m[0].length;
+
+            if (tokens[o]['name'] === 'var' && $.inArray(m[1], variables) === -1)
+              variables.push(m[1]);
+
+            toks.push({
+              'cat' : tokens[o]['cat'],
+              'name' : tokens[o]['name'],
+              'arity' : tokens[o]['arity'],
+              'precedence' : tokens[o]['precedence'],
+              'match' : tokens[o]['match'],
+              'normalize' : tokens[o]['normalize'],
+              'implementation' : tokens[o]['implementation'],
+              'position' : start,
+              'string' : m[1]
+            });
+            break;
+          }
+          if (!matched)
+            return error("No token matched string '" +
+              postfix.slice(start) + "'");
+        }
+
+        return toks;
+      };
+
+      // ---------------------------- Constructor -----------------------------
+      var toks = tokenize(postfix);
+
+      var evaluate = function (assignment) {
+        var lookup = function (v) {
+          var index = variables.indexOf(v);
+          if (index !== -1)
+            return assignment[index];
+          return v;
+        };
+
+        var stack = [];
+        for (var t in toks) {
+          t = parseInt(t);
+
+          switch (toks[t]['cat']) {
+            case 'operator':
+              switch (toks[t]['arity']) {
+                case 1:
+                  stack.push(toks[t]['implementation'](stack.pop()));
+                  break;
+                case two_plus: // 2+ is not possible in postfix. Only 2.
+                case 2:
+                  var arg2 = stack.pop();
+                  var arg1 = stack.pop();
+                  stack.push(toks[t]['implementation'](arg1, arg2));
+                  break;
+              }
+              break;
+
+            case 'value':
+              var val = null;
+              if (toks[t]['name'] === 'var')
+                val = lookup(toks[t]['normalize'](toks[t]['string']));
+              else
+                val = toks[t]['normalize'];
+
+              stack.push(val);
+              break;
+
+            default:
+              return error("Operator of unknown category in postfix notation: ",
+                toks[t]);
+          }
+        }
+        assert(stack.length === 1);
+        return stack[0];
+      };
+
+      var getTruthtable = function () {
+        var tt = [];
+        if (variables.length === 0)
+          return tt;
+
+        for (var i = 0; i < (1 << variables.length); i++) {
+          var model = [];
+          for (var j = 0; j < variables.length; j++) {
+            model.push(!!((i >> j) & 1));
+          }
+          model[" result"] = evaluate(model);
+
+          tt.push(model);
+        }
+        return tt;
+      };
+
+      return { evaluate: evaluate, getTruthtable: getTruthtable };
+    };
+
+    var notify_error = function (err) {
+      $('#error').show();
+      $('#error').text(err['msg']);
+      $('#error').css('color', 'red');
+      $('#internal_repr').hide();
+    };
+
+    function write_truthtable(truthtable, variables) {
+      $('#truthtable > *').remove();
+
+      if (truthtable.length === 0 || truthtable.length === undefined ||
+          variables.length === 0)
+        return;
+
+      $('#truthtable').append('<thead><tr></tr></thead>');
+      for (var v in variables)
+        $('#truthtable tr').append('<th>' + variables[v] + '</th>')
+      $('#truthtable tr').append('<th>function</th>')
+      $('#truthtable').append('<tbody></tbody>');
+
+      var row = 0, col = 0;
+
+      for (row in truthtable) {
+        var tr = '';
+        for (col in variables)
+          if (truthtable[row][col])
+            tr += '<td>true</td>';
+          else
+            tr += '<td>false</td>';
+
+        if (truthtable[row][' result'])
+          tr += '<td>true</td>';
+        else
+          tr += '<td>false</td>';
+
+        $('#truthtable tbody').append('<tr>' + tr + '</tr>');
+      }
+
+      $("#truthtable tr td:last-child").each(function () {
+        if ($(this).text().trim() === 'true') {
+          $(this).parent().css('background-color', '#EEE');
+          //$(this).css('padding-left', '10px');
+        } else {
+          //$(this).parent().css('color', 'red');
+          $(this).parent().css('background-color', 'inherit');
+          $(this).css('padding-left', '0px');
+        }
+      });
+    }
+
+    var update_function = function () {
+      var func = new InfixFunction($("#function").val(),
+        $("input[name=mode]:checked").val()
+      );
+      if (func.is_error) {
+        notify_error(func);
+        return;
+      }
+
+      $("#internal_postfix").text(func.toString());
+      $("#internal_repr").show();
+
+      var funceval = new PostfixEvaluator(func.toString());
+      var vars = func.getVariables();
+      if (funceval.is_error)
+        notify_error(funceval);
+
+      var truthtable = funceval.getTruthtable();
+      write_truthtable(truthtable, func.getVariables());
+
+      $('#error').hide();
+    };
+
+    $(document).ready(function () {
+      //testsuite();
+
+      $("#internal_repr").hide();
+      $("#evaluate_function, label").click(function (e) {
+        //e.preventDefault();
+        try {
+          update_function();
+        } catch (e) {
+          notify_error("Internal exception occured: " + e.message);
+        }
+      });
+    });
+  -->
+  </script>
+  <style type="text/css">
+    body { text-align: center; }
+    h1 {
+      font-family: monospace;
+      font-size: 3em;
+      background-color: white;
+    }
+    article {
+      width: 60%;
+      min-width: 50em;
+      margin: auto;
+      background-color: #CCC;
+      padding: 1em;
+      border-radius: 10px;
+    }
+    #function {
+      border: #999 solid 3px;
+      border-radius: 5px;
+      box-shadow: 5px 5px 5px 5px #666;
+      padding: 5px;
+      font-family: "Vollkorn", "Gentium", serif;
+      font-size: 18px;
+      margin: 15px 0px;
+    }
+    .options {
+      margin-left: 3em;
+      text-align: left;
+    }
+    footer {
+      font-family: sans-serif;
+      font-size: 12px;
+      line-height: 0.7em;
+    }
+
+    #error { color: red; font-weight: bold; }
+    #evaluate_function {
+      text-decoration: underline;
+      background-color: #DDD;
+      padding: 0.5em;
+      border: #AAA solid 1px;
+      border-radius: 5px;
+    }
+    #truthtable { text-align: center; margin: 20px auto; }
+    #truthtable th { border-bottom: 4px solid #555; }
+    #truthtable td, #truthtable th { min-width: 4em; padding: 3px; }
+    #truthtable thead { font-weight: bold; background-color: #EEE; }
+    #truthtable tr td:last-child { background-color: #DDD; }
+    #internal_postfix { font-family: monospace; }
+    #internal_repr { color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Truthtable</h1>
+  <p id="error">
+  </p>
+
+  <article>
+    <input type="text" value="(a AND b)" id="function" size="50" name="function" /> <br />
+    <input type="submit" id="evaluate_function" value="Update function" tabindex="1" />
+    <div class="options">
+      <h3 style="margin-bottom: 0px">Options</h3>
+      <label>
+        <input type="radio" name="mode" value="0" checked="checked" />
+        Left-to-right association <br />
+      </label>
+      <label>
+        <input type="radio" name="mode" value="1" />
+        Operator precedence: ¬, ∧, ∨, ⊕, →, ↔ <br />
+      </label>
+    </div>
+
+    <div id="internal_repr">
+      <p>
+        I parsed the function in postfix as "<span id="internal_postfix"></span>".
+      </p>
+      <noscript>
+        This application does not work without Javascript.
+        I'm sorry!
+      </noscript>
+    </div>
+
+    <table id="truthtable">
+      <thead>
+        <tr>
+          <th>a</th>
+          <th>b</th>
+          <th>function</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>false</td>
+          <td>false</td>
+          <td>false</td>
+        </tr>
+        <tr>
+          <td>true</td>
+          <td>false</td>
+          <td>false</td>
+        </tr>
+        <tr>
+          <td>false</td>
+          <td>true</td>
+          <td>false</td>
+        </tr>
+        <tr>
+          <td>true</td>
+          <td>true</td>
+          <td>true</td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+
+  <footer>
+    <p style="font-size:80%"><strong>Description:</strong> Enter some function and press "Update function".</p>
+    <p>Public Domain, 2013, Lukas Prokop</p>
+  </footer>
+</body>
+</html>

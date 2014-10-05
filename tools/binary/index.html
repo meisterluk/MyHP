@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Binary value</title>
+    <script type="text/javascript" src="http://lukas-prokop.at/jquery.js"></script>
+    <script type="text/javascript">
+      var c_file = "binary_checked.svg";
+      var unc_file = "binary_unchecked.svg";
+
+      var Bits = function () {
+        var elements = [];
+
+        var _createBit = function (number) {
+          var img = $("<img></img>").attr("src", unc_file).attr("alt", "0");
+          var div = $("<div></div>").addClass("bit")
+                .attr('data-log', number).attr('title',
+                "2^" + number + " = " + Math.pow(2, number));
+          div.prepend(img);
+          return div;
+        };
+
+        var count = function () {
+          return elements.length;
+        };
+
+        var align = function (cols) {
+          var index = 0;
+          $(".bit").each(function () {
+            if (index % cols === 0)
+              $(this).css("clear", "left");
+            else
+              $(this).css("clear", "none");
+            index += 1;
+          });
+        };
+
+        var add = function () {
+          var new_element = _createBit(count());
+          $(".bits").prepend(new_element);
+          elements.push(new_element);
+        };
+
+        var remove = function () {
+          var last = elements.pop();
+          last.remove();
+        };
+
+        var require = function (rows, cols) {
+          var elements_count = rows * cols;
+          while (count() - elements_count > 0)
+            remove();
+          while (count() - elements_count < 0)
+            add();
+          align(cols);
+        };
+
+        var value = function () {
+          var number = 0;
+          for (var e in elements) {
+            if ($(elements[e]).find('img').attr('alt') === '0')
+              continue;
+            var logarithm = parseInt(elements[e].attr('data-log'));
+            number += Math.pow(2, logarithm);
+          }
+          return number;
+        };
+
+        return { count : count, add : add, remove : remove,
+                 align : align, require : require, value : value };
+      };
+
+      // Update callback for any event
+      function update(bits) {
+        // update number of elements
+        var rows = parseInt($("#rows").val());
+        var cols = parseInt($("#cols").val());
+        bits.require(rows, cols);
+
+        // set width and height of .bits
+        var comp = function (cols) {
+          return (cols > 64) ? 10 : (
+            (cols <= 0) ? 0 : parseInt((-35/64) * cols + 45)
+          );
+        };
+        var margin = 5;
+        var bitsize = comp(cols) + 2 * margin;
+        var bitsize_wo_margin = comp(cols);
+        $(".bit").css("width", bitsize_wo_margin + "px");
+        $(".bit").css("height", bitsize_wo_margin + "px");
+        $(".bit").find("img").css("width", bitsize_wo_margin + "px");
+        $(".bit").find("img").css("height", bitsize_wo_margin + "px");
+        $(".bit").find("img").css("line-height", bitsize_wo_margin + "px");
+        $(".bits").css("width", (cols * bitsize) + "px");
+        $(".bits").css("height", (rows * bitsize) + "px");
+
+        // Update "selected"
+        var number = bits.value();
+        $("#user-input").val(number);
+
+        // compute function result
+        var func = $("#function").val().replace("num", number);
+        var result = eval(func);
+        $("#program-output").val(result);
+      }
+
+      $(document).ready(function () {
+        var bits = new Bits();
+        bits.require(5, 8);
+
+        $("#rows").change(function () { update(bits); });
+        $("#cols").change(function () { update(bits); });
+        $(document.body).on("click", ".bit", function () {
+          if ($(this).find("img").attr('alt') === '0')
+            $(this).find("img").attr("src", c_file).attr("alt", "1");
+          else
+            $(this).find("img").attr("src", unc_file).attr("alt", "0");
+          update(bits);
+        });
+
+        $("#function").change(function () { update(bits); });
+
+        update(bits);
+      })
+    </script>
+    <style type="text/css">
+      body {
+        width: 60%;
+        min-width: 400px;
+        margin: auto;
+      }
+      h1 {
+        background-color: #CCC;
+        padding: 10px 20px;
+      }
+      .bits {
+        border: black solid 1px;
+        padding: 0;
+      }
+      .bit {
+        text-align: center;
+        margin: 5px;
+        padding: 0;
+        float: left;
+      }
+      .bit img {
+        vertical-align: middle;
+        line-height: 45px;
+      }
+      .bithelper {
+        display: inline-block;
+        height: 100%;
+        vertical-align: middle;
+      }
+      table, div { margin-left: 40px; }
+    </style>
+  </head>
+
+  <body class="binary">
+    <article>
+      <h1>Binary value</h1>
+      <h2 id="bits">Bits</h2>
+      <div class="bits">
+        <div style="clear:left"></div>
+      </div>
+
+      <h2 style="clear:left" id="params">Parameters</h2>
+      <table>
+        <tr><td>Rows:</td><td><input type="number" size="20" id="rows" value="5" /></td></tr>
+        <tr><td>Columns:</td><td><input type="number" size="20" id="cols" value="8" /></td></tr>
+        <tr><td>Function <span style="font-variant:small-caps">f</span>:</td><td><input type="text" size="50" id="function" value="num + 3" /></td></tr>
+        <tr><td style="font-variant:small-caps">binary value:</td><td><input type="number" size="50" id="user-input" readonly /></td></tr>
+        <tr><td style="font-variant:small-caps">f(binary value):</td><td><input type="number" size="50" id="program-output" readonly /></td></tr>
+      </table>
+    </article>
+
+    <footer>
+      <p style="font-size:70%">
+        <strong>Description:</strong>
+        Click into boxes to toggle one bit from 0 to 1. Significance of bits increase from right to left and bottom to top. Function will be executed using <code>eval()</code> and will replace <code>num</code> with the selected number beforehand.
+      </p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Align characters in line</title>
+    <meta name="application-name" content="Align oneline to a certain width" />
+    <script src="jquery.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      /*\
+      |*|
+      |*|  :: cookies.js ::
+      |*|  https://developer.mozilla.org/en-US/docs/Web/API/document.cookie
+      |*|
+      |*|  A complete cookies reader/writer framework with full unicode support.
+      |*|
+      |*|  https://developer.mozilla.org/en-US/docs/DOM/document.cookie
+      |*|
+      |*|  This framework is released under the GNU Public License,
+      |*|  version 3 or later.
+      |*|  http://www.gnu.org/licenses/gpl-3.0-standalone.html
+      |*|
+      |*|  Syntaxes:
+      |*|
+      |*|  CookieManager.setItem(name, value[, end[, path[, domain[, secure]]]])
+      |*|  CookieManager.getItem(name)
+      |*|  CookieManager.removeItem(name[, path], domain)
+      |*|  CookieManager.hasItem(name)
+      |*|  CookieManager.keys()
+      |*|
+      \*/
+      var CookieManager = {
+        getItem: function (sKey) {
+          return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
+        },
+        setItem: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+          if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) { return false; }
+          var sExpires = "";
+          if (vEnd) {
+            switch (vEnd.constructor) {
+              case Number:
+                sExpires = vEnd === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + vEnd;
+                break;
+              case String:
+                sExpires = "; expires=" + vEnd;
+                break;
+              case Date:
+                sExpires = "; expires=" + vEnd.toUTCString();
+                break;
+            }
+          }
+          document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
+          return true;
+        },
+        removeItem: function (sKey, sPath, sDomain) {
+          if (!sKey || !this.hasItem(sKey)) { return false; }
+          document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + ( sDomain ? "; domain=" + sDomain : "") + ( sPath ? "; path=" + sPath : "");
+          return true;
+        },
+        hasItem: function (sKey) {
+          return (new RegExp("(?:^|;\\s*)" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(document.cookie);
+        },
+        keys: /* optional method: you can safely remove it! */ function () {
+          var aKeys = document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g, "").split(/\s*(?:\=[^;]*)?;\s*/);
+          for (var nIdx = 0; nIdx < aKeys.length; nIdx++) { aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]); }
+          return aKeys;
+        }
+      };
+
+      // ------------------------ Alignment module -----------------------
+      // string repetition
+      String.prototype.repeat = function(count) {
+        return new Array(count + 1).join(this);
+      };
+
+      // read configuration from cookie if available
+      function readCookie() {
+        var cookie = CookieManager.getItem("config");
+        if (cookie) {
+          cookie = JSON.parse(cookie);
+          $("#left").val(cookie['left']);
+          $("#middle").val(cookie['middle']);
+          $("#right").val(cookie['right']);
+          $("#repeat").val(cookie['repeat']);
+          $("#width").val(cookie['width']);
+        }
+      }
+
+      // write given configuration to cookie
+      function writeCookie() {
+        var config = {};
+        config['left'] = $("#left").val();
+        config['middle'] = $("#middle").val();
+        config['right'] = $("#right").val();
+        config['repeat'] = $("#repeat").val();
+        config['width'] = $("#width").val();
+        CookieManager.setItem("config", JSON.stringify(config),
+                              Infinity, null, null, false);
+      }
+
+      // The actual alignment algorithm
+      function computeText(left, middle, right, rep, width) {
+        // to string
+        left = (typeof left !== 'string') ? "" : left;
+        right = (typeof right !== 'string') ? "" : right;
+        middle = (typeof middle !== 'string') ? "" : middle;
+        rep = (typeof rep !== 'string') ? "-" : rep;
+
+        // create left and right
+        if (!left.match(/\s$/))
+          left = (typeof left === 'string') ? left : "";
+        if (!right || !right.match(/^\s/))
+          right = (typeof right === 'string') ? right : "";
+        if (left)
+          left += " ";
+        if (right)
+          right = " " + right;
+
+        var insertion = 2 + rep.length; // rep, " ", rep, " "
+        if ((left.length + middle.length + right.length + insertion) >= width)
+          return left + middle + right;
+
+        // create middle
+        if (!middle.match(/^\s/))
+          middle = " " + middle;
+        if (!middle.match(/\s$/))
+          middle = middle + " ";
+
+        // compute free space
+        var base = left.length + middle.length + right.length;
+        var free_space = width - base;
+
+        // create string of free_space with rep
+        var fillin = rep.repeat(Math.ceil(free_space / rep.length));
+        if ((fillin.length % rep.length) !== 0)
+          fillin = fillin.substr(0, free_space);
+
+        // split fillin into left and right
+        var split = Math.floor(fillin.length / 2);
+        var left_fillin = fillin.substr(0, split);
+        var right_fillin = fillin.substr(split);
+
+        return left + left_fillin + middle + right_fillin + right;
+      }
+
+      // update alignment
+      function update() {
+        var left = $("#left").val();
+        var right = $("#right").val();
+        var middle = $("#middle").val();
+        var rep = $("#repeat").val();
+        var width = parseInt($("#width").val());
+
+        if (width < 0 || width > 99999)
+          alert("Width is invalid (must be 0-99999). Cannot compute text.");
+
+        var text = computeText(left, middle, right, rep, width);
+
+        $("#output").attr("size", text.length).val(text);
+
+        // Store as cookie
+        writeCookie();
+      };
+
+      $(document).ready(function () {
+        readCookie();
+
+        $("#left, #middle, #right, #repeat, #width").change(update);
+        $("#output").dblclick(function () {
+          if ($(this).attr('readonly'))
+            $(this).attr('readonly', false);
+          else
+            $(this).attr('readonly', true);
+        });
+
+        update();
+      });
+    </script>
+    <style type="text/css">
+      article, footer { margin: 20px auto; width: 60%; text-align: center; }
+      table.align { width: 60%; margin: auto; }
+      th { font-weight: normal; text-align: left; padding-left: 2em; }
+      footer { font-size: 70%; }
+    </style>
+  </head>
+
+  <body>
+    <article>
+      <table class="align">
+        <tbody>
+          <tr style="height:60px; vertical-align:top">
+            <td colspan="2">
+              <input type="text" size="80" id="output" style="box-shadow:5px 5px 5px 5px grey; text-align:center; font-family:monospace" readonly="true" />
+            </td>
+          </tr>
+          <tr>
+            <th>Text left:</th>
+            <td><input type="text" size="20" id="left" value="//" /></td>
+          </tr>
+          <tr>
+            <th>Text middle:</th>
+            <td><input type="text" size="20" id="middle" value="class SolutionFactory" /></td>
+          </tr>
+          <tr>
+            <th>Text right:</th>
+            <td><input type="text" size="20" id="right" value="" /></td>
+          </tr>
+          <tr>
+            <th>Repetition character:</th>
+            <td><input type="text" size="5" id="repeat" value="-" /></td>
+          </tr>
+          <tr>
+            <th>Width:</th>
+            <td><input type="text" size="5" id="width" value="75" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
+    <footer>
+      <strong>Description:</strong>
+      Enter parameters. Left, middle and right will be aligned to width.
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!--
+      Javascript Clock by http://css-tricks.com/examples/CSS3Clock/
+      License is similar to Public Domain
+        See http://css-tricks.com/license/
+    -->
+    <meta charset="utf-8">
+    <title>Timezones</title>
+    <meta name="application-name" content="Clock in various timezones" />
+    <script type="text/javascript" src="jquery.js"></script>
+    <style type="text/css">
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      
+      a:link, a:visited, a:focus {
+        text-decoration: none;
+        color: darkblue;
+      }
+
+      h1 {
+        background-color: #FC0;
+        margin: 10px;
+        font-family: sans-serif;
+        text-align: center;
+      }
+
+      .timezone {
+        width: 400px;
+        height: 450px;
+        float: left;
+      }
+      
+      .clock {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        margin: 20px auto 0 auto;
+        background: url("clockface.jpg");
+        list-style: none;
+      }
+      
+      .clock .sec, .clock .min, .clock .hour {
+        position: absolute;
+        width: 15px;
+        height: 300px;
+        top: 0px;
+        left: 142px;
+      }
+      
+      .clock .sec {
+        background-image: url("sechand.png");
+        z-index: 3;
+      }
+         
+      .clock .min {
+        background-image: url("minhand.png");
+        z-index: 2;
+      }
+         
+      .clock .hour {
+        background-image: url("hourhand.png");
+        z-index: 1;
+      }
+
+      p {
+        text-align: center; 
+        padding: 10px 0 0 0;
+      }
+
+      figcaption {
+        text-align: center;
+      }
+    </style>
+    
+    <script type="text/javascript">
+      var show_clock = function(timestamp, elem) {
+        var seconds = timestamp.getSeconds();
+        var sdegree = seconds * 6;
+        var srotate = "rotate(" + sdegree + "deg)";
+
+        $(elem + " .sec").css({"-moz-transform" : srotate, "-webkit-transform" : srotate});
+
+        var hours = timestamp.getHours();
+        var mins = new Date().getMinutes();
+        var hdegree = hours * 30 + (mins / 2);
+        var hrotate = "rotate(" + hdegree + "deg)";
+
+        $(elem + " .hour").css({"-moz-transform" : hrotate, "-webkit-transform" : hrotate});
+
+        var mins = timestamp.getMinutes();
+        var mdegree = mins * 6;
+        var mrotate = "rotate(" + mdegree + "deg)";
+
+        $(elem + " .min").css({"-moz-transform" : mrotate, "-webkit-transform" : mrotate});
+      };
+
+      var dump_timestamp = function (date, elem) {
+        var h = date.getHours();
+        h = h < 10 ? '0' + h : h;
+        var m = date.getMinutes();
+        m = m < 10 ? '0' + m : m;
+        var s = date.getSeconds();
+        s = s < 10 ? '0' + s : s;
+
+        var str = date.toLocaleDateString() + "  " + h + ":" + m + ":" + s;
+        $(elem).text(str);
+      };
+
+      var get_date = function (summer_timezone, winter_timezone) {
+        var d = new Date();
+        if (d.getTimezoneOffset() == -120)  // Austria-specific source code. It sucks.
+          var dst = true;
+        else
+          var dst = false;
+
+        var localOffset = d.getTimezoneOffset() * 60000;
+        var utc = d.getTime() + localOffset;
+        var new_tz = utc + (3600000 * (dst ? summer_timezone : winter_timezone));
+        return new Date(new_tz);
+      };
+        
+      $(document).ready(function() {
+        // I am not happy with JS date/timezone libraries. Using native one.
+
+        var clocks = {
+          'at' : [function () {return get_date(2, 1)}, "#clock_at", "#at_time"],
+          'us_ca' : [function () {return get_date(-7, -8)}, "#clock_us-ca", "#us-ca_time"],
+          'au' : [function () {return get_date(11, 10)}, "#clock_au", "#au_time"],
+          'ir' : [function () {return get_date(1, 0)}, "#clock_ir", "#ir_time"],
+          'in' : [function () {return get_date(5.5, 5.5)}, "#clock_in", "#in_time"]
+        };
+        
+        var update = function () {
+          var hash = window.location.hash;
+          if (hash.length > 0) {
+            $(".timezone h1").css("background-color", "#FC0");
+            document.getElementById(hash.substr(1)).style.backgroundColor = "#CC8800";
+          }
+
+          for (tz in clocks) {
+            dump_timestamp(clocks[tz][0](), clocks[tz][2]);
+            show_clock(clocks[tz][0](), clocks[tz][1]);
+          }
+        };
+
+        update();
+        setInterval(update, 1000);
+      });
+    </script>
+  </head>
+
+  <body>
+    <article>
+      <div class="timezone">
+        <h1 id="at">Austria <a href="#at">#</a></h1>
+        <figure>
+          <figcaption>Austria (<span id="at_time"></span>)</figcaption>
+          <ul class="clock" id="clock_at">    
+            <li class="sec"></li>
+            <li class="hour"></li>
+            <li class="min"></li>
+          </ul>
+        </figure>
+      </div>
+
+      <div class="timezone">
+        <h1 id="us-ca">USA California <a href="#us-ca">#</a></h1>
+        <p>(Stanford University, Google Inc, Apple Inc)</p>
+        <figure>
+          <figcaption>USA California (<span id="us-ca_time"></span>)</figcaption>
+          <ul class="clock" id="clock_us-ca">    
+            <li class="sec"></li>
+            <li class="hour"></li>
+            <li class="min"></li>
+          </ul>
+        </figure>
+      </div>
+
+      <div class="timezone">
+        <h1 id="au">Australia <a href="#au">#</a></h1>
+        <figure>
+          <figcaption>Sydney (<span id="au_time"></span>)</figcaption>
+          <ul class="clock" id="clock_au">    
+            <li class="sec"></li>
+            <li class="hour"></li>
+            <li class="min"></li>
+          </ul>
+        </figure>
+      </div>
+
+      <div class="timezone">
+        <h1 id="ir">Ireland <a href="#ir">#</a></h1>
+        <figure>
+          <figcaption>Dublin (<span id="ir_time"></span>)</figcaption>
+          <ul class="clock" id="clock_ir">    
+            <li class="sec"></li>
+            <li class="hour"></li>
+            <li class="min"></li>
+          </ul>
+        </figure>
+      </div>
+
+      <div class="timezone">
+        <h1 id="in">India <a href="#in">#</a></h1>
+        <figure>
+          <figcaption>India (<span id="in_time"></span>)</figcaption>
+          <ul class="clock" id="clock_in">    
+            <li class="sec"></li>
+            <li class="hour"></li>
+            <li class="min"></li>
+          </ul>
+        </figure>
+      </div>
+    </article>
+  </body>
+</html>
+
