@@ -571,13 +571,13 @@ layout: true
 
 layout: true
 
-# Feature 5: stdlib prefers iterators
+# Feature 5: stdlib prefers generators
 
 ---
 
 - This is the hardest one to sell.
 
-- Iterators exist in Python 2 as well.
+- Generators exist in Python 2 as well.
 
 - But you have to use them. Don't write `range` or `zip` or `dict.values` or
   ....
@@ -649,7 +649,7 @@ layout: true
 
 ---
 
-- In Python 3, `range`, `zip`, `map`, `dict.values`, etc. are all iterators.
+- In Python 3, `range`, `zip`, `map`, `dict.values`, etc. are all generators.
 
 - If you want a list, just wrap the result with `list`.
 
@@ -741,7 +741,7 @@ layout: true
 ---
 
 - Makes it easier to turn everything into a generator. See "Feature 5:
-  stdlib prefers iterators" above for why you should do this.
+  stdlib prefers generators" above for why you should do this.
 
 - Instead of accumulating a list, just `yield` or `yield from`.
 
