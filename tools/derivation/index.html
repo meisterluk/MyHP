@@ -27,7 +27,7 @@
       }
       #errors {
         list-style: none;
-        color: #C00;
+        color: #F88;
       }
       #errors li:before { content: "→ "; }
       #def { background-color: #333; line-height: 1.4em; }
@@ -59,21 +59,21 @@
         if (str[0] == "{" && str[str.length - 1] == "}")
           str = str.substring(1, str.length - 2);
         var lines = str.split(/[\r\n]+/);
-        var assignop = /(<-|->|⇐|⇒|←|→|:-|:?=)/;
+        var assignop = /(<-+|-+>|⇐|⇒|←|→|:-|:?=)/;
 
         var rules = [];
-        for (var line in lines) {
-          line = lines[line].trim();
+        for (var lineno = 0; lineno < lines.length; lineno++) {
+          line = lines[lineno].trim();
           if (line[line.length - 1] == ",")
             line = line.substr(0, line.length - 1);
-          if (line.length == 0)  // skip empty lines
+          if (line.length === 0)  // skip empty lines
             continue;
           var split = line.split(assignop);
           var target_name = split[0].trim();
           var target = new Variable(target_name);
 
-          if (split.length != 3) {
-            addListItem("errors", "Line '" + line + "' is invalid.");
+          if (split.length !== 3) {
+            addListItem("errors", "Line '" + line + "' is invalid syntax.");
             continue;
           }
 
@@ -130,7 +130,7 @@
       {
         var last = -42;
         var new_list = [];
-        for (var r in rules) {
+        for (var r = 0; r < rules.length; r++) {
           if (rules[r] !== last)
             new_list.push(rules[r]);
           last = rules[r];
@@ -152,7 +152,7 @@
         return { 'repr': function () { return name; },
                  'toString': function () { return "Var⟨" + name + "⟩"; },
                  'name': name, 'is_variable': true, 'is_rule': false };
-      }
+      };
 
       var Rule = function(/*Variable*/ target,
                           /*List[Variable|string]*/ def,
@@ -186,7 +186,7 @@
         var complete = function ()
           // returns boolean
         {
-          for (var i in def)
+          for (var i = 0; i < def.length; i++)
             if (def[i].is_variable)
               return false;
           return true;
@@ -200,12 +200,12 @@
           var new_list = [];
           var count_subs = 0;
 
-          for (var i in base) {
+          for (var i = 0; i < base.length; i++) {
             var sub = assignment[base[i].name];
             if (base[i].is_variable && sub !== undefined && count_subs < 1) {
               if (sub.is_rule)
                 sub = sub.definition;
-              for (var j in sub)
+              for (var j = 0; j < sub.length; j++)
                 new_list.push(sub[j]);
               count_subs++;
             } else
@@ -213,19 +213,21 @@
           }
 
           return new_list;
-        }
+        };
 
         // use possible assignments `pos_ass` to derived `def` recursively
         var derive = function(/*Map[Var:List[List[String|Var]|Rule]]*/ pos_ass)
           // returns List[Rule]
         {
           var results = [];
-          for (var i in def) {
+          for (var i = 0; i < def.length; i++) {
             if (!(def[i].is_variable))
               continue;
 
             var nonterminal = def[i].name;
-            for (var j in pos_ass[nonterminal]) {
+            if (!pos_ass[nonterminal])
+              continue;
+            for (var j = 0; j < pos_ass[nonterminal].length; j++) {
               var sub = pos_ass[nonterminal][j];
               if (sub.is_rule)
                 sub = sub.definition;
@@ -239,13 +241,13 @@
 
               if (depth < max_derivations - 1) {
                 var rules = rule.derive(pos_ass);
-                for (var r in rules)
+                for (var r = 0; r < rules.length; r++)
                   results.push(rules[r]);
               }
             }
           }
           return results;
-        }
+        };
 
         return {
             'repr': repr,
@@ -299,18 +301,18 @@
 
         // processing
         var rules = read(input);
-        for (var i in rules)
+        for (var i = 0; i < rules.length; i++)
           addListItem("def", rules[i].toString());
 
         var repls = {};
-        for (var i in rules)
+        for (var i = 0; i < rules.length; i++)
           if (repls[rules[i].target.name] === undefined)
             repls[rules[i].target.name] = [rules[i]];
           else
             repls[rules[i].target.name].push(rules[i]);
 
         var all_derivations = [];
-        for (var i in rules) {
+        for (var i = 0; i < rules.length; i++) {
           if (rules[i].target.name !== start_symbol)
             continue;
           all_derivations.push(rules[i]);
@@ -321,7 +323,7 @@
 
         // print
         all_derivations = sortRules(all_derivations);
-        for (var i in all_derivations) {
+        for (var i = 0; i < all_derivations.length; i++) {
           if (all_derivations[i].complete())
             addListItem("derived-complete", all_derivations[i].repr(),
                         "derivations = " + all_derivations[i].depth);
