@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <meta charset="utf-8" />
+   <title>Python 015</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Python 015 Comma-delimited indices in square brackets</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>14th of March 2015</dd>
+        <dt>Tags</dt>
+          <dd>Python comma tuple indexing getitem multivariadic</dd>
+        <dt>Tested with</dt>
+          <dd>Python 3.4.0</dd>
+      </dl>
+    </aside>
+
+    <h2 id="input">Source code</h2>
+
+    <p>Indexing works with square brackets and is zero-based.</p>
+    <figure class="syntax python"><pre><span class="n">ages</span> <span class="o">=</span> <span class="p">[</span><span class="mi">18</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">29</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">ages</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>  <span class="c"># Out: 29</span></pre></figure>
+
+    <p>We can also work multi-dimensionally.</p>
+    <figure class="syntax python"><pre><span class="n">multi_array</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">]]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">multi_array</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>  <span class="c"># Out: 9</span></pre></figure>
+
+    <p>
+      The operator for indexing is called <code>__getitem__</code>
+      and we can overload it on custom classes.
+    </p>
+
+    <p>
+        The following implementation will act as a proxy.
+        So, whatever is indexed, is immediately forwarded to the stored list.
+        The result will be stored in a <code>MyOwnList</code> again.
+    </span>
+
+    <figure class="syntax python"><pre><span class="k">class</span> <span class="nc">MyOwnList</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">v</span>
+    
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">MyOwnList</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+
+<span class="n">mol</span> <span class="o">=</span> <span class="n">MyOwnList</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">mol</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>  <span class="c"># Out: MyOwnList(5)</span></pre></figure>
+
+    <p>It even works multi-dimensionally:</p>
+
+    <figure class="syntax python"><pre><span class="n">mol</span> <span class="o">=</span> <span class="n">MyOwnList</span><span class="p">([[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">mol</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>  <span class="c"># Out: MyOwnList(1)</span></pre></figure>
+
+    <p>
+        The point of this snippet is to show that you can get python to even implement
+        indexing like in some other languages:
+    </p>
+
+    <figure class="syntax python"><pre><span class="k">print</span><span class="p">(</span><span class="n">mol[1, 0])</span></pre></figure>
+
+    <p>
+        Tuples are immutable sequence data structures.
+        They always look something like <code>(1, 2, 3)</code>.
+    </p>
+
+    <figure class="syntax python"><pre><span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">]):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">tup</span><span class="p">)</span>
+    <span class="c"># Out: (1, 2)</span>
+    <span class="c"># Out: (4, 3)</span>
+    <span class="c"># Out: (8, 6)</span></pre></figure>
+
+    <p>But actually they are constituted by the comma.</p>
+
+    <figure class="syntax python"><pre><span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="p">)</span>  <span class="c"># exactly the same tuples, Out: True</span></pre></figure>
+
+    <p>I also want to demonstrate unpacking:</p>
+
+    <figure class="syntax python"><pre><span class="n">c</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">b</span>
+<span class="k">print</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>  <span class="c"># Out: 1 5</span></pre></figure>
+
+    <p>
+        Expressions are can always be surrounded by parentheses.
+        # So <code>print([1, 0])</code> is exactly the same like <code>print(mol[(1, 0)])</code>
+    </p>
+
+    <p>So what is this parameter?</p>
+
+    <figure class="syntax python"><pre><span class="k">class</span> <span class="nc">MyOwnCustomIndexedList</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">v</span>
+    
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">MyOwnList</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+
+<span class="n">mocil</span> <span class="o">=</span> <span class="n">MyOwnCustomIndexedList</span><span class="p">([[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span>
+<span class="c">#print(mocil[2, 1])</span>
+<span class="c"># Out: (2, 1)</span>
+<span class="c"># Out: IndexError</span></pre></figure>
+
+    <p>So we could use the tuple elements as index.</p>
+
+<figure class="syntax python"><pre><span class="k">class</span> <span class="nc">MyOwnCustomIndexedList</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">v</span>
+    
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">val</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">MyOwnCustomIndexedList</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+
+<span class="n">mocil</span> <span class="o">=</span> <span class="n">MyOwnCustomIndexedList</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">mocil</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>  <span class="c"># Out: MyOwnCustomIndexedList(9)</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a id="tup01">[tup01]</a>
+      </dt>
+      <dd>Python tuple comma syntax rule - Stack Overflow, <br />
+        <a href="http://stackoverflow.com/questions/7992559/python-tuple-comma-syntax-rule">http://stackoverflow.com/questions/7992559/python-tuple-comma-syntax-rule</a>
+        [accessed 15th March 2015].
+      </dd>
+    </dl>
+  </body>
+</html>
