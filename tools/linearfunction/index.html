@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Linear function computation</title>
+    <style type="text/css">
+      body {
+        width: 60%;
+        margin: auto;
+        font-family: Georgia, sans-serif;
+      }
+      #f-params { margin: auto 20px; }
+      #f-params td { padding: 5px; }
+      #result {
+        font-family: serif;
+        background-color: yellow;
+        padding: 10px;
+      }
+      #latex {
+        font-family: monospace;
+        background-color: orange;
+        padding: 10px;
+      }
+      #verify {
+        font-family: serif;
+        background-color: darkorange;
+        padding: 10px;
+        white-space: pre-wrap;
+      }
+      #error { color: red; }
+      footer {
+        font-size: 70%;
+        border-top: 1px solid black;
+        text-align: center;
+      }
+    </style>
+    <script type="text/javascript">
+      function error(which, what) {
+        document.getElementById('error-msg').textContent = what;
+        document.getElementById('error').style.display = "block";
+      }
+      function no_error() {
+        document.getElementById('error').style.display = "none";
+      }
+
+      function gcd(a, b) {
+        if (a < b) {
+          var tmp = a;
+          a = b;
+          b = a;
+        }
+        while (b !== 0) {
+          var tmp = b;
+          b = a % b;
+          a = tmp;
+        }
+        return a;
+      }
+
+      function LinearFunction(prec) {
+        var _spec = [];
+        var _slope = [];
+        var _offset = [];
+
+        var value_repr = function (val) {
+          if (val % 1 !== 0) {
+            var p = val.toFixed(prec || 5);
+            console.log(p);
+            while (p.charAt(p.length - 1, 1) === '0')
+              p = p.substr(0, p.length - 1);
+            return p;
+          } else
+            return "" + val;
+        };
+
+        var underspecified = function (op) {
+          var suffix = op ? " to apply operation " + op : "";
+          throw new Error("Function is underspecified" + suffix);
+        };
+
+        var overspecified = function (op) {
+          var suffix = op ? " to apply operation " + op : "";
+          throw new Error("Function is overspecified" + suffix);
+        };
+
+        var coord_repr = function (x, y) {
+          return "x=" + value_repr(x) + " y=" + value_repr(y);
+        };
+
+        var valid_int = function (x) {
+          for (var a in arguments)
+            if (isNaN(arguments[a]) || arguments[a] === +Infinity
+              || arguments[a] === -Infinity)
+              throw new Error("Invalid integer " + x + " as parameter");
+        };
+
+        function compute_slope_and_offset() {
+          _slope = [];
+          _offset = [];
+
+          if (_spec.length < 2)
+            underspecifed('compute slope and offset');
+
+          var diff_x = _spec[1][0] - _spec[0][0];
+          var diff_y = _spec[1][1] - _spec[0][1];
+
+          // Special case "x = some_constant"
+          if (diff_x === 0) {
+            _slope.push(Infinity);
+            _slope.push([0 ,0]);
+            _offset.push(-Infinity);
+            return;
+          }
+
+          // values
+          _slope.push(diff_y / diff_x);
+          _offset.push(_spec[1][1] - _slope[0] * _spec[1][0]);
+
+          // representation
+          var g = gcd(diff_y, diff_x);
+          var e = diff_y / g;
+          var d = diff_x / g;
+          if ((e >= 0 && d <= 0) || (e <= 0 && d <= 0)) {
+            e *= -1;
+            d *= -1;
+          }
+          _slope.push([e, d]);
+        };
+
+        var at = function (x) {
+          valid_int(x);
+
+          // possibly underspecified
+          if (_spec.length === 1) {
+            if (_spec[0][0] === x)
+              return _spec[0][1];
+          }
+          if (_spec.length <= 1)
+            underspecified(' compute ' + coord_repr(x, '?'));
+
+          var repr_denom = _slope[1][1];
+          var repr_enum = _slope[1][0] * x + _offset[0] * repr_denom;
+
+          var g = gcd(repr_denom, repr_enum);
+          var simple_enum = repr_enum / g;
+          var simple_denom = repr_denom / g;
+
+          return [_slope[0] * x + _offset[0], [simple_enum, simple_denom]];
+        };
+
+        var clear = function () {
+          _spec = [];
+          _offset = [];
+          _slope = [];
+        };
+
+        var latex = function () {
+          if (_spec.length === 0)
+            return 'Undetermined linear function';
+          if (_spec.length === 1)
+            return 'Underspecified linear function';
+
+          var out = '$f(x) = ';
+
+          var sl = slope();
+          if (sl[0] === Infinity)
+            return "$x = " + value_repr(_spec[0][0]) + "$";
+          if (sl[0] < 0)
+            out += '-';
+          if (sl[0] === 1)
+            out += 'x';
+          else
+            out += value_repr(Math.abs(sl[0])) + '\\cdot x';
+
+          var off = offset()[0];
+          if (off === 0)
+            return out + "$";
+
+          if (off >= 0)
+            out += ' + ';
+          else
+            out += ' - ';
+
+          out += value_repr(Math.abs(off));
+
+          if (sl[1][1] !== 1)
+            out += ' \\text{ where } ' + value_repr(sl[0])
+                + ' = \\frac{' + value_repr(sl[1][0])
+                + '}{' + value_repr(sl[1][1]) + '}';
+
+          return out + "$";
+        };
+
+        var offset = function () {
+          if (_spec.length !== 2)
+            underspecified('compute offset');
+          return _offset;
+        };
+
+        var slope = function () {
+          if (_spec.length !== 2)
+            underspecified('compute slope');
+          return _slope;
+        };
+
+        var specify = function (x, y) {
+          valid_int(x);
+          valid_int(y);
+
+          if (_spec.length >= 2) {
+            // overspecified
+            if (at(x) !== y)
+              overspecified('specify ' + coord_repr(x, y));
+            else
+              return; // yet another valid coordinate for this function
+          }
+
+          // fine :)
+          _spec.push([x, y]);
+
+          if (_spec.length === 2)
+            compute_slope_and_offset();
+        };
+
+        var toString = function () {
+          if (_spec.length === 0)
+            return 'Undetermined linear function';
+          if (_spec.length === 1)
+            return 'Underspecified linear function';
+
+          var out = 'f(x) = ';
+
+          var sl = slope();
+          if (sl[0] === Infinity)
+            return "x = " + value_repr(_spec[0][0]);
+          if (sl[0] < 0)
+            out += '-';
+          if (sl[0] === 1)
+            out += 'x';
+          else
+            out += value_repr(Math.abs(sl[0])) + '·x';
+
+          var off = offset()[0];
+          if (off === 0)
+            return out;
+
+          if (off >= 0)
+            out += ' + ';
+          else
+            out += ' - ';
+
+          out += value_repr(Math.abs(off));
+
+          if (sl[1][1] !== 1)
+            out += ' where ' + value_repr(sl[0])
+                + ' is ' + value_repr(sl[1][0])
+                + ' / ' + value_repr(sl[1][1]);
+
+          return out;
+        };
+
+        var verify = function (expected) {
+          if (_spec.length !== 2)
+            underspecified('verification');
+
+          var results = [];
+
+          for (var x in expected) {
+            var y = expected[x];
+
+            valid_int(x);
+            valid_int(y);
+
+            // compute y
+            var cy = at(x)[0];
+
+            results.push({
+              'success': (cy === y),
+              'expected_y': y,
+              'actual_y': cy,
+              'slope': slope()[0],
+              'x': x,
+              'offset': offset()[0]
+            });
+          }
+
+          return results;
+        };
+
+        var wolframalpha = function () {
+          var base = 'http://www.wolframalpha.com/input/?i=';
+
+          if (_spec.length === 0)
+            return base + 'linear+function';
+          if (_spec.length === 1)
+            return base + 'underdetermined';
+
+          var latex_str = latex();
+          var fspec = latex_str.substr(1, latex_str.length - 2);
+          if (fspec.indexOf('\\text{') !== -1)
+            fspec = fspec.substr(0, fspec.indexOf('\\text'));
+
+          // JS is so broken :(
+          return base + escape(fspec).replace(new RegExp( "\\+", "g" ),"%2B");
+        };
+
+        return {
+          at : at,
+          clear : clear,
+          latex : latex,
+          offset : offset,
+          slope: slope,
+          specify : specify,
+          toString : toString,
+          verify : verify,
+          wolframalpha : wolframalpha
+        };
+      };
+
+      function run() {
+        no_error();
+
+        var x1 = parseInt(document.getElementById('x1').value);
+        var y1 = parseInt(document.getElementById('y1').value);
+        var x2 = parseInt(document.getElementById('x2').value);
+        var y2 = parseInt(document.getElementById('y2').value);
+        var precision = parseInt(document.getElementById('prec').value);
+
+        if (isNaN(x1) || x1 === Infinity || x1 === -Infinity)
+          error('x1', 'First x-coordinate is invalid');
+        if (isNaN(y1) || y1 === Infinity || y1 === -Infinity)
+          error('y1', 'First y-coordinate is invalid');
+        if (isNaN(x2) || x2 === Infinity || x2 === -Infinity)
+          error('x2', 'Second x-coordinate is invalid');
+        if (isNaN(y2) || y2 === Infinity || y2 === -Infinity)
+          error('y2', 'Second y-coordinate is invalid');
+
+        try {
+          var f = new LinearFunction(precision);
+          f.specify(x1, y1);
+          f.specify(x2, y2);
+          document.getElementById('result-function').textContent = f;
+          document.getElementById('result-wolframalpha').href = f.wolframalpha();
+          document.getElementById('result-wolframalpha').textContent = "[wolframalpha]";
+          document.getElementById('latex').textContent = f.latex();
+
+          document.getElementById('verify').textContent = '';
+          var v = '{0} {1} = {2}·{3} + {4}';
+          var verify = {};
+          verify[x1] = y1;
+          verify[x2] = y2;
+          var verification = f.verify(verify);
+          for (var _ in verification) {
+            var result = verification[_];
+
+            document.getElementById('verify').textContent += v
+              .replace('{0}', result['success'] ? '😃' : '😫')
+              .replace('{1}', result['actual_y']).replace('{2}', result['slope'])
+              .replace('{3}', result['x']).replace('{4}', result['offset']) + "\n";
+          }
+        } catch (e) {
+          console.error(e);
+          error('linear function', "" + e);
+        }
+      }
+    </script>
+  </head>
+
+  <body>
+    <article>
+      <h1>Linear function computation</h1>
+      <p>Give me two points in the Cartesian coordinate system and I will return the corresponding linear function:</p>
+
+      <table id="f-params">
+        <tbody>
+          <tr>
+            <td>First point:</td>
+            <td>x=<input type="text" pattern="\d+" size="8" name="x1" id="x1" value="0" /></td>
+            <td>y=<input type="text" pattern="\d+" size="8" name="y1" id="y1" value="0" /></td>
+          </tr>
+
+          <tr>
+            <td>Second point:</td>
+            <td>x=<input type="text" pattern="\d+" size="8" name="x2" id="x2" value="1" /></td>
+            <td>y=<input type="text" pattern="\d+" size="8" name="y2" id="y2" value="1" /></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="text-align:right; font-size:80%; width:50%; min-width:100px; float:right">
+        Floating point precision:
+        <input type="text" pattern="\d+" size="2" name="precision" id="prec" value="5" />
+      </p>
+
+      <p><input type="submit" value="Compute" onclick="javascript:run()" /></p>
+
+      <p id="error" style="display:none">
+        <span id="error-msg"></span>
+      </p>
+
+      <p id="result">
+        <span id="result-function"></span>
+        <a id="result-wolframalpha"></a>
+      </p>
+
+      <p id="latex">
+      </p>
+
+      <p id="verify">
+      </p>
+    </article>
+    <footer>
+      <p>Public Domain, 2015, meisterluk</p>
+    </footer>
+  </body>
+</html>
