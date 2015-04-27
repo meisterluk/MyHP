@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <meta charset="utf-8" />
+   <title>Java 016</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Java 016 Print byte array as hexadecimal numbers</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd>27th of April 2015</dd>
+        <dt>Tags</dt>
+          <dd>Representation byte array square brackets hexadecimal notation</dd>
+        <dt>Tested with</dt>
+          <dd>OpenJDK 1.7.0_79</dd>
+      </dl>
+    </aside>
+
+    <h2 id="input">Source code</h2>
+
+    <figure class="syntax java"><pre>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">String</span> <span class="nf">hexArray</span><span class="o">(</span><span class="kt">byte</span><span class="o">[]</span> <span class="n">array</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">result</span> <span class="o">=</span> <span class="s">&quot;[&quot;</span><span class="o">;</span>
+    <span class="n">String</span> <span class="n">hexValues</span> <span class="o">=</span> <span class="s">&quot;0123456789ABCDEF&quot;</span><span class="o">;</span>
+    <span class="kt">int</span> <span class="n">iter</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="k">for</span> <span class="o">(</span><span class="kt">byte</span> <span class="n">b</span> <span class="o">:</span> <span class="n">array</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">String</span> <span class="n">hexOne</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">hexValues</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">b</span> <span class="o">&amp;</span> <span class="mh">0xF</span><span class="o">));</span>
+      <span class="n">String</span> <span class="n">hexTwo</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">hexValues</span><span class="o">.</span><span class="na">charAt</span><span class="o">(((</span><span class="n">b</span> <span class="o">&amp;</span> <span class="mi">240</span><span class="o">)</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="o">)</span> <span class="o">&amp;</span> <span class="mh">0xF</span><span class="o">));</span>
+      <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="s">&quot;0x&quot;</span> <span class="o">+</span> <span class="n">hexTwo</span> <span class="o">+</span> <span class="n">hexOne</span><span class="o">;</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">iter</span> <span class="o">!=</span> <span class="n">array</span><span class="o">.</span><span class="na">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span><span class="o">;</span>
+      <span class="n">iter</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">result</span> <span class="o">+</span> <span class="s">&quot;]&quot;</span><span class="o">;</span>
+  <span class="o">}</span></pre></figure>
+
+    <h2 id="example">Example</h2>
+
+    <figure class="syntax java"><pre><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">hexArray</span><span class="o">(</span><span class="k">new</span> <span class="kt">byte</span><span class="o">[]{</span> <span class="o">(</span><span class="kt">byte</span><span class="o">)</span> <span class="mh">0x13</span><span class="o">,</span> <span class="o">(</span><span class="kt">byte</span><span class="o">)</span> <span class="mh">0xAB</span><span class="o">,</span> <span class="o">(</span><span class="kt">byte</span><span class="o">)</span> <span class="mh">0x9F</span> <span class="o">}));</span></pre></figure>
+
+    <h2 id="output">Output</h2>
+
+    <figure><pre>[0x13, 0xAB, 0x9F]</pre></figure>
+  </body>
+</html>
