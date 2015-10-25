@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <meta charset="utf-8" />
+   <title>Python 016</title>
+
+    <meta name="robots" content="all">
+    <meta name="author" content="Lukas Prokop">
+    <link rel="stylesheet" type="text/css" href="/theme/css/snippet.css">
+  </head>
+
+  <body>
+    <h1>Python 016 CSV to XML with lxml</h1>
+
+    <aside class="meta">
+      <dl>
+        <dt>Author</dt>
+          <dd>Lukas Prokop &lt;meisterluk&gt;</dd>
+        <dt>Date</dt>
+          <dd><time datetime="2015-10-25">25th of October 2015</time></dd>
+        <dt>Tags</dt>
+          <dd>Python CSV lxml.etree XML flat structure conversion</dd>
+        <dt>Tested with</dt>
+          <dd>Python 3.4.3</dd>
+      </dl>
+    </aside>
+
+    <h2 id="source-code">Source code</h2>
+
+    <p>The following listing is the full source code:</p>
+    <figure class="syntax python"><pre><span class="c">#!/usr/bin/env python3</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    XML to CSV converter</span>
+<span class="sd">    ====================</span>
+
+<span class="sd">    Given an XML with a flatten structure, convert it to CSV.</span>
+
+<span class="sd">    Wait… what? flatten? Yeah, if an XML file ...</span>
+
+<span class="sd">    * has one root element **R**</span>
+<span class="sd">    * has one or more children **C** of **R** with the same name</span>
+<span class="sd">    * and every child **C** has a homogeneous set of elements **S**</span>
+<span class="sd">    * then a CSV file is given with **C** rows and columns **S**</span>
+
+<span class="sd">    Remark. The XML structure has a maximum depth of 2.</span>
+<span class="sd">    Remark. All attribute values get lost.</span>
+
+<span class="sd">    (C) 2015, Lukas Prokop, BSD 3-clause</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">lxml.etree</span>
+
+<span class="n">LXML_OPTIONS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;events&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">],</span>
+    <span class="s">&#39;no_network&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="s">&#39;remove_comments&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="s">&#39;remove_pis&#39;</span><span class="p">:</span> <span class="bp">True</span>
+<span class="p">}</span>
+
+<span class="n">E_NOATTR</span> <span class="o">=</span> <span class="s">&quot;Attributes are not supported&quot;</span>
+<span class="n">E_ROWNAME</span> <span class="o">=</span> <span class="s">&quot;Row XML names must always be the same, but &lt;{}&gt; and &lt;{}&gt; collide&quot;</span>
+<span class="n">E_DEPTH</span> <span class="o">=</span> <span class="s">&quot;Expected maximum depth 3, got 4&quot;</span>
+<span class="n">E_HEADER</span> <span class="o">=</span> <span class="s">&quot;Every row should have the same set of elements; &quot;</span> \
+         <span class="o">+</span> <span class="s">&quot;No. {} differs from previous ones&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">CSVStructureError</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Structure of XML is invalid. Does not represent a CSV file.&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+
+
+<span class="k">def</span> <span class="nf">iterate_xml</span><span class="p">(</span><span class="n">filedesc</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Iterate over rows stored in the XML file and return them.</span>
+
+<span class="sd">    :param filedesc: file descriptor to read from</span>
+<span class="sd">    :type filedesc:  _io.TextWrapper</span>
+<span class="sd">    :return:         generator of ``collections.OrderedDict`` instances</span>
+<span class="sd">    :rtype:          generator</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parsing</span> <span class="o">=</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="n">filedesc</span><span class="p">,</span> <span class="o">**</span><span class="n">LXML_OPTIONS</span><span class="p">)</span>
+    <span class="n">rowname</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">depth</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">action</span><span class="p">,</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">parsing</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CSVStructureError</span><span class="p">(</span><span class="n">E_NOATTR</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s">&#39;start&#39;</span><span class="p">:</span>
+            <span class="n">depth</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">depth</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">rowname</span><span class="p">:</span>
+                    <span class="n">rowname</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">tag</span>
+                <span class="k">elif</span> <span class="n">rowname</span> <span class="o">!=</span> <span class="n">elem</span><span class="o">.</span><span class="n">tag</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">CSVStructureError</span><span class="p">(</span><span class="n">E_ROWNAME</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rowname</span><span class="p">,</span> <span class="n">elem</span><span class="o">.</span><span class="n">tag</span><span class="p">))</span>
+                <span class="n">rowentry</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">depth</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">rowentry</span><span class="p">[</span><span class="n">elem</span><span class="o">.</span><span class="n">tag</span><span class="p">]</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">text</span>
+            <span class="k">elif</span> <span class="n">depth</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CSVStructureError</span><span class="p">(</span><span class="n">E_DEPTH</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s">&#39;end&#39;</span><span class="p">:</span>
+            <span class="n">depth</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">depth</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">rowentry</span>
+
+
+<span class="k">def</span> <span class="nf">write_csv</span><span class="p">(</span><span class="n">gen</span><span class="p">,</span> <span class="n">csvfile</span><span class="p">,</span> <span class="o">**</span><span class="n">csv_options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given a generator returning ``collections.OrderedDict`` instances,</span>
+<span class="sd">    write them to a CSV file.</span>
+
+<span class="sd">    :param gen:         the generator for ``collections.OrderedDict`` instances</span>
+<span class="sd">    :type gen:          generator</span>
+<span class="sd">    :param csvfile:     non-existing filepath to output CSV file or &quot;-&quot; for stdin</span>
+<span class="sd">    :type csvfile:      str</span>
+<span class="sd">    :param csv_options: options for the CSV module</span>
+<span class="sd">    :type csv_options:  dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="o">**</span><span class="n">csv_options</span><span class="p">)</span>
+    <span class="n">attrs</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">for</span> <span class="n">rowid</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gen</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">attrs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">attrs</span> <span class="o">!=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="n">CSVStructureError</span><span class="p">(</span><span class="n">E_HEADER</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rowid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">xmlfile</span><span class="p">,</span> <span class="n">csvfile</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">csv_encoding</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p">,</span> \
+    <span class="n">delete</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">validate_only</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert the given XML file to a CSV file.</span>
+
+<span class="sd">    :param xmlfile:            filepath to an input XML file</span>
+<span class="sd">    :type xmlfile:             str</span>
+<span class="sd">    :param csvfile:            non-existing filepath to output CSV file</span>
+<span class="sd">                               or &quot;-&quot; for stdin</span>
+<span class="sd">    :type csvfile:             str</span>
+<span class="sd">    :param csv_encoding:       encoding of the newly created CSV file</span>
+<span class="sd">    :type csv_encoding:        str</span>
+<span class="sd">    :param delete:             delete xmlfile after conversion?</span>
+<span class="sd">    :type delete:              bool</span>
+<span class="sd">    :param validate_only :     do not write anything, just indicate with exit code</span>
+<span class="sd">                               whether or not source XML file has a valid structure</span>
+<span class="sd">    :type validate_only:       bool</span>
+<span class="sd">    :raises CSVStructureError: if DOM has an invalid structure</span>
+<span class="sd">    :return:                   exit code</span>
+<span class="sd">    :rtype:                    int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">xmlfile</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">filedesc</span><span class="p">:</span>
+        <span class="n">gen</span> <span class="o">=</span> <span class="n">iterate_xml</span><span class="p">(</span><span class="n">filedesc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">validate_only</span><span class="p">:</span>
+            <span class="n">write_csv</span><span class="p">(</span><span class="n">gen</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">csvfile</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;-&#39;</span><span class="p">:</span>
+            <span class="n">write_csv</span><span class="p">(</span><span class="n">gen</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="n">csv_encoding</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd2</span><span class="p">:</span>
+                <span class="n">write_csv</span><span class="p">(</span><span class="n">gen</span><span class="p">,</span> <span class="n">fd2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">delete</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">xmlfile</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="mi">0</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Main routine. CLI arg parsing and calling ``run``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s">&#39;Convert XML to CSV.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;xmlfile&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;XML file to read from&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;csvfile&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;CSV filepath to write to (&quot;-&quot; for stdin)&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-e&#39;</span><span class="p">,</span> <span class="s">&#39;--encoding&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p">,</span> \
+            <span class="n">help</span><span class="o">=</span><span class="s">&#39;encoding for CSV file&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-a&#39;</span><span class="p">,</span> <span class="s">&#39;--validate&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span> \
+            <span class="n">help</span><span class="o">=</span><span class="s">&#39;test structure to be CSV-valid or exit with code 1&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--delete-xmlfile&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&#39;delete&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span> \
+            <span class="n">help</span><span class="o">=</span><span class="s">&#39;delete XML file if file was successfully written to a CSV file&#39;</span><span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">run</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">xmlfile</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">csv_encoding</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">encoding</span><span class="p">,</span> \
+        <span class="n">delete</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">delete</span><span class="p">,</span> <span class="n">validate_only</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">validate</span><span class="p">))</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span></pre></figure>
+
+    <h2 id="run">Running it</h2>
+    <ul>
+      <li>To run it store it as a python file; e.g. name it <code>xml_to_csv.py</code>.</li>
+      <li>
+        Followingly create a sample XML file.
+        I added one <a href="#example-input-file">at the end of this snippet</a>
+        as give it a name like <code>example.xml</code>.
+      </li>
+      <li>
+        Install the <a href="#lxml01" id="lxml01-ref">lxml library</a>.
+        Use pip (<code>sudo pip3 install lxml</code>)
+        or install it using the debian repositories on a debian-based system (like Ubuntu Linux):
+        <code>sudo apt-get install python3-lxml</code>.
+      </li>
+      <li>Run the file: <code>python3 xml_to_csv_2.py example.xml output.csv</code></li>
+      <li>The new file <code>output.csv</code> is given as follows:
+        <pre>sender,receiver,date,subject,body
+Ian,Debra,2015-10-20,Meeting?,Are we going to meet?
+Debra,Ian,2015-10-20,Meeting?,"Sure, I have time on Sunday at 10 am!"
+Ian,Debra,2015-10-21,Meeting?,What about 11 am?
+Debra,Ian,2015-10-21,Meeting?,"Alright, see ya!"
+Debra,Ian,2015-10-23,Reminder,"So, don't forget me this weekend!"</pre></li>
+      <li>Use the <code>--help</code> option to get information about further options.</li>
+    </ul>
+
+    <h2 id="properties">Properties</h2>
+    <ul>
+      <li>
+        I only tested this software with python 3.
+        I doubt that it will run on python 2.
+      </li>
+      <li>
+        The implementation uses a SAX-based XML interface.
+        So the program should support XML files of arbitrary sizes.
+      </li>
+    </ul>
+
+    <h2 id="example-input-file">Example input file</h2>
+    <figure class="syntax python"><pre><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="nt">&lt;notes&gt;</span>
+  <span class="nt">&lt;note&gt;</span>
+    <span class="nt">&lt;sender&gt;</span>Ian<span class="nt">&lt;/sender&gt;</span>
+    <span class="nt">&lt;receiver&gt;</span>Debra<span class="nt">&lt;/receiver&gt;</span>
+    <span class="nt">&lt;date&gt;</span>2015-10-20<span class="nt">&lt;/date&gt;</span>
+    <span class="nt">&lt;subject&gt;</span>Meeting?<span class="nt">&lt;/subject&gt;</span>
+    <span class="nt">&lt;body&gt;</span>Are we going to meet?<span class="nt">&lt;/body&gt;</span>
+  <span class="nt">&lt;/note&gt;</span>
+  <span class="nt">&lt;note&gt;</span>
+    <span class="nt">&lt;sender&gt;</span>Debra<span class="nt">&lt;/sender&gt;</span>
+    <span class="nt">&lt;receiver&gt;</span>Ian<span class="nt">&lt;/receiver&gt;</span>
+    <span class="nt">&lt;date&gt;</span>2015-10-20<span class="nt">&lt;/date&gt;</span>
+    <span class="nt">&lt;subject&gt;</span>Meeting?<span class="nt">&lt;/subject&gt;</span>
+    <span class="nt">&lt;body&gt;</span>Sure, I have time on Sunday at 10 am!<span class="nt">&lt;/body&gt;</span>
+  <span class="nt">&lt;/note&gt;</span>
+  <span class="nt">&lt;note&gt;</span>
+    <span class="nt">&lt;sender&gt;</span>Ian<span class="nt">&lt;/sender&gt;</span>
+    <span class="nt">&lt;receiver&gt;</span>Debra<span class="nt">&lt;/receiver&gt;</span>
+    <span class="nt">&lt;date&gt;</span>2015-10-21<span class="nt">&lt;/date&gt;</span>
+    <span class="nt">&lt;subject&gt;</span>Meeting?<span class="nt">&lt;/subject&gt;</span>
+    <span class="nt">&lt;body&gt;</span>What about 11 am?<span class="nt">&lt;/body&gt;</span>
+  <span class="nt">&lt;/note&gt;</span>
+  <span class="nt">&lt;note&gt;</span>
+    <span class="nt">&lt;sender&gt;</span>Debra<span class="nt">&lt;/sender&gt;</span>
+    <span class="nt">&lt;receiver&gt;</span>Ian<span class="nt">&lt;/receiver&gt;</span>
+    <span class="nt">&lt;date&gt;</span>2015-10-21<span class="nt">&lt;/date&gt;</span>
+    <span class="nt">&lt;subject&gt;</span>Meeting?<span class="nt">&lt;/subject&gt;</span>
+    <span class="nt">&lt;body&gt;</span>Alright, see ya!<span class="nt">&lt;/body&gt;</span>
+  <span class="nt">&lt;/note&gt;</span>
+  <span class="nt">&lt;note&gt;</span>
+    <span class="nt">&lt;sender&gt;</span>Debra<span class="nt">&lt;/sender&gt;</span>
+    <span class="nt">&lt;receiver&gt;</span>Ian<span class="nt">&lt;/receiver&gt;</span>
+    <span class="nt">&lt;date&gt;</span>2015-10-23<span class="nt">&lt;/date&gt;</span>
+    <span class="nt">&lt;subject&gt;</span>Reminder<span class="nt">&lt;/subject&gt;</span>
+    <span class="nt">&lt;body&gt;</span>So, don&#39;t forget me this weekend!<span class="nt">&lt;/body&gt;</span>
+  <span class="nt">&lt;/note&gt;</span>
+<span class="nt">&lt;/notes&gt;</span></pre></figure>
+
+    <dl class="references">
+      <dt class="index">
+        <a id="lxml01" href="#lxml01-ref">[lxml01]</a>
+      </dt>
+      <dd>lxml - Processing XML and HTML with Python, <br />
+        <a href="http://lxml.de/">http://lxml.de/</a>
+        [accessed 25th October 2015].
+      </dd>
+    </dl>
+  </body>
+</html>
