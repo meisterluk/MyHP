@@ -49,7 +49,7 @@
       },
       1 : {
         'cat' : 'operator',
-        'name' : 'and', 
+        'name' : 'and',
         'arity' : two_plus,
         'precedence' : 20,
         'match' : new RegExp(/^((and|und)\s+|(&{1,2}|\*|∧|•)\s*)/i),
@@ -243,32 +243,32 @@
               var poss = ['operator', 'value', 'startgroup'];
               if (!catcheck(tokenlist, i + 1, poss))
                 return error('Opening parentheses must be followed by ' +
-                  'unary operator, value or opening parentheses at index ' +
-                  tokenlist[i]);
+                  'unary operator, value or opening parentheses at position ' +
+                  (parseInt(tokenlist[i]['position']) + 1));
               break;
 
             case 'endgroup':
               var poss = ['operator', 'endgroup'];
               if (!catcheck(tokenlist, i + 1, poss))
                 return error('Closing parentheses must be followed by ' +
-                  'operator or closing parentheses at index ' +
-                  tokenlist[i]);
+                  'operator or closing parentheses at position ' +
+                  (parseInt(tokenlist[i]['position']) + 1));
               break;
 
             case 'value':
               var poss = ['operator', 'endgroup'];
               if (!catcheck(tokenlist, i + 1, poss))
                 return error('Value must be followed by ' +
-                  'operator or closing parentheses at index ' +
-                  tokenlist[i]);
+                  'operator or closing parentheses at position ' +
+                  (parseInt(tokenlist[i]['position']) + 1));
               break;
 
             case 'operator':
               var poss = ['value', 'startgroup'];
               if (!catcheck(tokenlist, i + 1, poss))
                 return error('Operator must be followed by ' +
-                  'value or opening parentheses at index ' +
-                  tokenlist[i]);
+                  'value or opening parentheses at position ' +
+                  (parseInt(tokenlist[i]['position']) + 1));
               break;
 
             default:
