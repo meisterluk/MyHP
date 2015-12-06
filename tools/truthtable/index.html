@@ -585,6 +585,57 @@
       });
     }
 
+    function write_cnf(truthtable, variables) {
+      $("#cnf-dump").children().remove();
+      if (truthtable.length === 0 || truthtable.length === undefined ||
+          variables.length === 0) {
+        $("#cnf").hide();
+        return;
+      }
+
+      // read CNF
+      var cnf = [];
+      for (r in truthtable) {
+        var row = truthtable[r];
+        if (row[' result'] != false)
+          continue;
+        var line = [];
+        for (var i = 0; i < row.length; i++) {
+          if (row[i])
+            line.push(-(i + 1));
+          else if (!row[i])
+            line.push(i + 1);
+        }
+        cnf.push(line);
+      }
+
+      // to DIMACS format
+      var dimacs = $("<div></div>");
+      var header = $("<span></span>");
+      header.addClass("dimacs-header");
+      header.text(header.text() + "p cnf " + variables.length + " " + cnf.length + "\n");
+      for (var v = 0; v < variables.length; v++)
+        header.text(header.text() + "c var " + (v + 1) + " = " + variables[v] + "\n");
+      dimacs.append(header);
+      if (cnf.length === 0) {
+        var remark = $("<span></span>");
+        remark.addClass("dimacs-comment");
+        remark.text("c tautologies yield nothing in CNF");
+        dimacs.append(remark);
+      } else {
+        for (var l in cnf) {
+          var clause = $("<span></span>");
+          clause.addClass("dimacs-clause");
+          clause.text(clause.text() + cnf[l].join(" ") + " 0");
+          dimacs.append(clause);
+          dimacs.append(document.createTextNode("\n"));
+        }
+      }
+
+      $("#cnf-dump").append(dimacs);
+      $("#cnf").show();
+    }
+
     var update_function = function () {
       var func = new InfixFunction($("#function").val(),
         $("input[name=mode]:checked").val()
@@ -604,6 +655,7 @@
 
       var truthtable = funceval.getTruthtable();
       write_truthtable(truthtable, func.getVariables());
+      write_cnf(truthtable, func.getVariables());
 
       $('#error').hide();
     };
@@ -612,6 +664,16 @@
       //testsuite();
 
       $("#internal_repr").hide();
+      $("#cnf-dump").click(function () {
+        if ($(this).css("text-align") === "left")
+          $(this).css("text-align", "right");
+        else
+          $(this).css("text-align", "left");
+      });
+      $("#function").keyup(function (evt) {
+        if (evt.keyCode == 13)
+          $("#evaluate_function").click();
+      });
       $("#evaluate_function, label").click(function (e) {
         //e.preventDefault();
         try {
@@ -629,6 +691,9 @@
       font-family: monospace;
       font-size: 3em;
       background-color: white;
+    }
+    h2 {
+      font-size: 1.3em;
     }
     article {
       width: 60%;
@@ -670,8 +735,19 @@
     #truthtable td, #truthtable th { min-width: 4em; padding: 3px; }
     #truthtable thead { font-weight: bold; background-color: #EEE; }
     #truthtable tr td:last-child { background-color: #DDD; }
+    #cnf { display: none; }
     #internal_postfix { font-family: monospace; }
     #internal_repr { color: #666; }
+    .dimacs-header { color: #666; }
+    #cnf-dump {
+      font-family: monospace;
+      color: black;
+      text-align: right;
+      width: 400px;
+      min-width: 400px;
+      overflow: visible;
+      margin: auto;
+    }
   </style>
 </head>
 <body>
@@ -680,8 +756,8 @@
   </p>
 
   <article>
-    <input type="text" value="(a AND b)" id="function" size="50" name="function" /> <br />
-    <input type="submit" id="evaluate_function" value="Update function" tabindex="1" />
+    <input type="text" value="(a AND b)" id="function" size="50" name="function" tabindex="1" /> <br />
+    <input type="submit" id="evaluate_function" value="Update function" tabindex="2" />
     <div class="options">
       <h3 style="margin-bottom: 0px">Options</h3>
       <label>
@@ -735,6 +811,12 @@
         </tr>
       </tbody>
     </table>
+
+
+    <section id="cnf">
+      <h2 id="cnf-title">DIMACS Conjunctive Normal Form</h2>
+      <pre id="cnf-dump"></pre>
+    </section>
   </article>
 
   <footer>
