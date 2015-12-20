@@ -10,11 +10,12 @@
       body { font-family: "Palatino", serif; }
       article { width: 70%; margin: auto; }
       textarea { font-family: monospace; }
+      #lines-table th { background-color: #DDD; }
+      #lines-table thead:hover th { background-color: #CCC; }
       #lines-table tr td:first-child { font-weight: bold: }
-      #lines-table tr td:nth-child(1) { text-align: center; }
-      #lines-table tr td:nth-child(2) { text-align: center; }
-      #lines-table tr td:nth-child(4) { text-align: center; }
-      #lines-table tr td:nth-child(5) { text-align: center; }
+      #lines-table tr td:nth-child(1), #lines-table tr td:nth-child(5), #lines-table tr td:nth-child(6) { text-align: center; }
+      #lines-table tr td:nth-child(2), #lines-table tr td:nth-child(3), #lines-table tr td:nth-child(4) { text-align: left; }
+      #total { border-top: 1px solid black }
     </style>
   </head>
 
@@ -52,6 +53,27 @@
       <section>
         <h2>Output</h2>
         <table id="lines-table">
+          <thead>
+            <tr>
+              <th>line number</th>
+              <th>start</th>
+              <th>end</th>
+              <th>description</th>
+              <th>minutes</th>
+              <th>parsed</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td id="total">0</td>
+            </tr>
+          </tfoot>
         </table>
       </section>
       <footer>
