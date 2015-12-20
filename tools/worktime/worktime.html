@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="author" content="Lukas Prokop" />
+    <meta name="application-name" content="worktime" />
+    <title>worktime</title>
+    <script type="text/javascript" src="out/main.js"></script>
+    <style type="text/css">
+      body { font-family: "Palatino", serif; }
+      article { width: 70%; margin: auto; }
+      textarea { font-family: monospace; }
+      #lines-table tr td:first-child { font-weight: bold: }
+      #lines-table tr td:nth-child(1) { text-align: center; }
+      #lines-table tr td:nth-child(2) { text-align: center; }
+      #lines-table tr td:nth-child(4) { text-align: center; }
+      #lines-table tr td:nth-child(5) { text-align: center; }
+    </style>
+  </head>
+
+  <body>
+    <article>
+      <h1>Worktime</h1>
+      <p>
+        Until 2015 I used a very simple text file format to log my working hours.
+        You can see an excerpt here:
+      </p>
+      <pre id="example">2015.11.27 18:00-18:25          fixing rules and deploy them
+2015.12.02 19:40-22:50          analyzing problems with barg, nuntefel, sorbirtch and bus XML files</pre>
+      <p>
+        I designed a fancy python script to analyze files of this syntax.
+        It was cool and check my working hours against current Austrian labour law.
+        However, this is difficult to maintain and also does not apply if
+        you work on a freelancing basis. So I removed the checks again
+        and what was left is simple script returning the number of seconds I
+        have worked up to now. Next requirement was that everybody should be
+        able to check my working hours (technically, my team leader).
+      </p>
+      <p>
+        So I wanted to implement it in Javascript. Here we are.
+        Apparently it is difficult to get timestamps, arbitrary Unicode text
+        and large numbers in Javascript right. However, this implementation tries
+        its best and warns you of potential errors and lists which lines it
+        interpreted.
+      </p>
+      <section>
+        <h2>Input</h2>
+        <textarea cols="120" rows="10" id="input">2015.11.27 18:00-18:25          fixing rules and deploy them
+2015.12.02 19:40-22:50          analyzing problems with barg, nuntefel, sorbirtch and bus XML files</textarea> <br />
+        <button id="determine">Determine working hours</button>
+      </section>
+      <section>
+        <h2>Output</h2>
+        <table id="lines-table">
+        </table>
+      </section>
+      <footer>
+        2015, Public Domain, Lukas Prokop
+      </footer>
+    </article>
+  </body>
+</html>
